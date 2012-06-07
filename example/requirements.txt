@@ -1,0 +1,5 @@
+django-socketio-chat
+MySQL-python
+
+# ubuntu packages:
+# libevent-dev

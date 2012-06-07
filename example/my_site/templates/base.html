@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta charset="utf-8">
+    <title>Chat Example - {% block title %}{% endblock %}</title>
+    {% block extra_css %}{% endblock %}
+    <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+    <script src="static/js/modernizr-2.5.3.custom.min.js"></script> 
+    {% block extra_js %}{% endblock %}
+
+</head>
+<body>
+    <div id="main">{% block main %}{% endblock %}</div>
+    {% block form %}{% endblock %}
+</body>

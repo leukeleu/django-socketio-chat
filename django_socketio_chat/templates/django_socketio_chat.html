@@ -1,0 +1,23 @@
+{% load socketio_tags %}
+{% block extra_js %} <script src="{{ STATIC_URL }}js/django_socketio_chat.js"></script> {% endblock %}
+{% socketio %}
+<p>Online Contacts</p>
+<ul>
+    {% for contact in online_chat_contacts %}
+    <li>{{ contact }}</li>
+    {% endfor %}
+</ul>
+
+<p>Offline Contacts</p>
+<ul>
+    {% for contact in offline_chat_contacts %}
+    <li>{{ contact }}</li>
+    {% endfor %}
+</ul>
+
+<p>Chats</p>
+<ul>
+    {% for chat in chats %}
+    <li>{{ chat }}</li>
+    {% endfor %}
+</ul>
