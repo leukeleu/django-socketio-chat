@@ -1,6 +1,7 @@
 #TODO: This is not very safe, but will do for now.
 SESSION_COOKIE_HTTPONLY = False 
 
+
 import os
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -47,7 +48,6 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.staticfiles',
-    'django_socketio',
     'django_socketio_chat',
     'my_site',
 )
@@ -60,3 +60,4 @@ DEBUG_TOOLBAR_CONFIG = {
     'SHOW_TOOLBAR_CALLBACK': lambda x: True,
     'INTERCEPT_REDIRECTS': False
 }
+
