@@ -30,10 +30,11 @@
         io.j = [];
         io.sockets = [];
 
-        conn = io.connect('https://meitnerium/chat/', {
+        conn = io.connect('https://ubuntu', {
                   //'force new connection': true,
                   transports: transports,
-                  rememberTransport: false
+                  rememberTransport: false,
+                  resource: 'chat/socket.io'
                });
 
         log('Connecting...');

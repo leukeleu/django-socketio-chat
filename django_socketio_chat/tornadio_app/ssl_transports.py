@@ -26,7 +26,7 @@ class ChatConnection(tornadio2.conn.SocketConnection):
         self.participants.remove(self)
 
 # Create chat server
-ChatRouter = tornadio2.router.TornadioRouter(ChatConnection, dict(websocket_check=True))
+ChatRouter = tornadio2.router.TornadioRouter(ChatConnection, dict(websocket_check=True), namespace='chat/socket.io')
 
 # Create application
 application = tornado.web.Application(
@@ -40,7 +40,4 @@ if __name__ == "__main__":
     import logging
     logging.getLogger().setLevel(logging.DEBUG)
 
-    tornadio2.server.SocketServer(application, ssl_options={
-        "certfile": "server.crt",
-        "keyfile":  "server.key",
-    })
+    tornadio2.server.SocketServer(application)
