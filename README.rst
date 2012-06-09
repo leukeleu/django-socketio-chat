@@ -1,12 +1,21 @@
-Considerations
-==============
+Socket.io - Django - HTTPS - websockets
+=======================================
 
-This app originates from the example chat app that came with Django Socket.io.
+This project is a demonstration of how to get everything socket.io has to offer, deployed over a secure connection combined with 
+the goodness of Django.
 
-Because we only want to allow logged in users into the chat, there are some problems to solve:
+The server setup is as follows:
 
- - The latest socket io version supports handshaking
- - The latest gevent socket io support this as well
- - The latest Django socket io does not yet
+Internet(443) --> STunnel ---> HAProxy ---> Django 
+						  		 \
+						  		  ---> Socket.io 
 
- 
+
+
+
+Tested with
+===========
+
+Mac: Firefox, Chrome, Safari
+Windows: ie8, Firefox
+iPhone 3g: Safari
