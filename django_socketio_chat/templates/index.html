@@ -30,7 +30,7 @@
         io.j = [];
         io.sockets = [];
 
-        conn = io.connect('https://ubuntu', {
+        conn = io.connect('https://' + window.location.host + '/', {
                   //'force new connection': true,
                   transports: transports,
                   rememberTransport: false,
