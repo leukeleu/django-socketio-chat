@@ -1,10 +1,17 @@
 from os import path as op
+import os, sys
+
+sys.path.insert(0, '../../example')
+os.environ['DJANGO_SETTINGS_MODULE'] == 'example.settings'
 
 import tornado.web
 import tornadio2
 import tornadio2.router
 import tornadio2.server
 import tornadio2.conn
+
+from django.contrib.sessions.models import Session
+from django.contrib.auth.models import User
 
 ROOT = op.normpath(op.dirname(__file__))
 
@@ -14,7 +21,16 @@ class ChatConnection(tornadio2.conn.SocketConnection):
     participants = set()
 
     def on_open(self, info):
-        self.send("Welcome from the server.")
+        session_id = info.get_cookie('sessionid').value
+        if session_id:
+            # get user corresponding to session id
+            session = Session.objects.get(session_key=session_id)
+            uid = session.get_decoded().get('_auth_user_id')
+            try:
+                user = User.objects.get(pk=uid)
+            except User.DoesNotExist:
+                user = 'Anonymous User'
+        self.send("Welcome <b>%s</b> from the server." % user)
         self.participants.add(self)
 
     def on_message(self, message):
