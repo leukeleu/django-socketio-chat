@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+  <script src="static/js/socket.io.js"></script>
+  <script src="static/js/chat.js"></script>
+  <script src="static/js/my_site.js"></script>
+</head>
+<body>
+<h3>Django - Socket.io - Tornadio over HTTPS</h3>
+<div>
+  <a id="connect" href="#">Connect</a>&nbsp;|&nbsp;Status: <span id="status">disconnected</span>
+</div>
+<div id="log" style="width: 60em; height: 20em; overflow:auto; border: 1px solid black">
+</div>
+<form id="chatform">
+  <p>Group message</p>
+  <input id="text" type="text" />
+  <input type="submit" />
+</form>
+<form id="private-chatform">
+  <p>Private message</p>
+  <input id="private-text" type="text"/>
+  <input type="submit" text="private message"/>
+  <ul id="participants">
+  </ul>
+</form>
+</body>
+</html>
