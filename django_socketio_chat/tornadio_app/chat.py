@@ -1,5 +1,6 @@
 from os import path as op
-import os, sys
+import os
+import sys
 
 sys.path.insert(0, '../../example')
 os.environ['DJANGO_SETTINGS_MODULE'] == 'example.settings'
@@ -42,21 +43,21 @@ class ChatConnection(SocketConnection):
         self.participants.add(self)
 
         for p in self.participants:
-            p.send('%s joined the chat.' % self.user)
+            p.emit('user_joined', '%s' % self.user)
 
     def on_message(self, message):
         # Pong message back
         for p in self.participants:
             p.send(message)
-        print self.participants
 
     @event
     def private_message(self, user, message):
-        print user
         self.logged_in_participants[str(user)].send('<b>Private</b> %s says: %s' % (self.user, message))
 
     def on_close(self):
         self.participants.remove(self)
+        for p in self.participants:
+            p.emit('user_left', '%s' % self.user)
 
 
 class ParticipantsConnection(SocketConnection):
@@ -88,9 +89,9 @@ ChatRouter = tornadio2.router.TornadioRouter(RouterConnection, dict(websocket_ch
 # Create application
 application = tornado.web.Application(
     ChatRouter.apply_routes([]),
-    flash_policy_port = 843,
-    flash_policy_file = op.join(ROOT, 'flashpolicy.xml'),
-    socket_io_port = 8001
+    flash_policy_port=843,
+    flash_policy_file=op.join(ROOT, 'flashpolicy.xml'),
+    socket_io_port=8001
 )
 
 if __name__ == "__main__":

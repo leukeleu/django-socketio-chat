@@ -6,6 +6,9 @@
 
   <script>
     var conn = null;
+    var online_users = {};
+    var user = 'anonymous'
+
     $(function() {
 
       function log(msg) {
@@ -53,21 +56,24 @@
 
         conn.on('message', function(data) {
           log('Received: ' + data);
+          update_ui();
         });
 
         part_conn.on('users', function(data){
-          log('Logged in users: ' + data);
-          users = $('#participants');
-          users.html('');
-          $.each(data, function(key, val) {
-            var onl = 'offline';
-            if (val) {
-              onl = '<b>online</b>';
-            }
-              users.html(users.html() + '<input type="radio" name="participant" val="' + key+ '"/>' + key + ' ' + onl + '</br>');
-          });
+          online_users = data;
+          update_ui();
         });
         
+        conn.on('user_joined', function(user){
+          log(user + ' joined the chat.');
+          update_ui();
+        })
+
+        conn.on('user_left', function(user){
+          log(user + ' left the chat.');
+          update_ui();
+        })
+
         conn.on('disconnect', function(data) {
           log('Disconnected.');
           conn = null;
@@ -98,6 +104,18 @@
         }
 
         $('#status').text(msg);
+
+        console.log(online_users);
+        users = $('#participants');
+        users.html('');
+        $.each(online_users, function(key, val) {
+          var onl = 'offline';
+          if (val) {
+           onl = '<b>online</b>';
+          }
+          users.html(users.html() + '<input type="radio" name="participant" val="' + key+ '"/>' + key + ' ' + onl + '</br>');
+        });
+
       }
 
       $('#connect').click(function() {
@@ -131,6 +149,9 @@
         $('#text').val('').focus();
         return false;
       });
+
+      
+
 
     });
 </script>
