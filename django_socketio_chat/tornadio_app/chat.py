@@ -48,6 +48,7 @@ class ChatConnection(SocketConnection):
         # Pong message back
         for p in self.participants:
             p.send(message)
+        print self.participants
 
     @event
     def private_message(self, user, message):
@@ -60,12 +61,15 @@ class ChatConnection(SocketConnection):
 
 class ParticipantsConnection(SocketConnection):
     def on_open(self, info):
-       # import pdb
-        #pdb.set_trace()
-        self.send([str(p.user) for p in self.session.conn.get_endpoint('/chat').participants])
+        users = {}
+        for u in User.objects.all():
+            users[str(u)] = True if str(u) in set([str(p.user) for p in self.session.conn.get_endpoint('/chat').participants]) else False
+
+        self.emit('users', users)
 
     def on_message(self, message):
         pass
+
 
 class RouterConnection(SocketConnection):
     __endpoints__ = {'/chat': ChatConnection,

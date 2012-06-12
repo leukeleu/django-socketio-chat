@@ -55,12 +55,16 @@
           log('Received: ' + data);
         });
 
-        part_conn.on('message', function(data){
+        part_conn.on('users', function(data){
           log('Logged in users: ' + data);
           users = $('#participants');
           users.html('');
-          $.each(data, function(i, val) {
-              users.html(users.html() + '<input type="radio" name="participant" val="' + val+ '"/>' + val + '</br>');
+          $.each(data, function(key, val) {
+            var onl = 'offline';
+            if (val) {
+              onl = '<b>online</b>';
+            }
+              users.html(users.html() + '<input type="radio" name="participant" val="' + key+ '"/>' + key + ' ' + onl + '</br>');
           });
         });
         
