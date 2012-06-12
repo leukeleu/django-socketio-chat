@@ -40,13 +40,6 @@
                   resource: 'chat/socket.io'
                });
 
-        part_conn = io.connect('https://' + window.location.host + '/chat/participants', {
-                  //'force new connection': true,
-                  transports: transports,
-                  rememberTransport: false,
-                  resource: 'chat/socket.io'
-               });
-
         log('Connecting...');
 
         conn.on('connect', function() {
@@ -59,18 +52,20 @@
           update_ui();
         });
 
-        part_conn.on('users', function(data){
+        conn.on('users', function(data){
           online_users = data;
           update_ui();
         });
         
         conn.on('user_joined', function(user){
-          log(user + ' joined the chat.');
+          log(user + 'joined the chat.');
+          online_users[user] = true;
           update_ui();
         })
 
         conn.on('user_left', function(user){
           log(user + ' left the chat.');
+          online_users[user] = false;
           update_ui();
         })
 
@@ -105,7 +100,6 @@
 
         $('#status').text(msg);
 
-        console.log(online_users);
         users = $('#participants');
         users.html('');
         $.each(online_users, function(key, val) {

@@ -20,13 +20,19 @@ ROOT = op.normpath(op.dirname(__file__))
 
 
 class ChatConnection(SocketConnection):
-    # Class level variable
+
     participants = set()
     logged_in_participants = {}
     user = 'anonymous'
 
     def on_open(self, info):
+        """
+        Try to find the Django user corresponding to this chat connection and
+        send back useful chat info.
+        """
         router_info = self.session.conn.info
+
+        # get Django session
         session_id = router_info.get_cookie('sessionid')
         if session_id:
             if session_id:
@@ -39,14 +45,20 @@ class ChatConnection(SocketConnection):
                 self.logged_in_participants[str(self.user)] = self
             except User.DoesNotExist:
                 pass
+
         self.send("Welcome <b>%s</b> from the server." % self.user)
         self.participants.add(self)
 
         for p in self.participants:
             p.emit('user_joined', '%s' % self.user)
 
+        users = {}
+        for u in User.objects.all():
+            users[str(u)] = str(u) in self.logged_in_participants
+
+        self.emit('users', users)
+
     def on_message(self, message):
-        # Pong message back
         for p in self.participants:
             p.send(message)
 
@@ -60,21 +72,8 @@ class ChatConnection(SocketConnection):
             p.emit('user_left', '%s' % self.user)
 
 
-class ParticipantsConnection(SocketConnection):
-    def on_open(self, info):
-        users = {}
-        for u in User.objects.all():
-            users[str(u)] = True if str(u) in set([str(p.user) for p in self.session.conn.get_endpoint('/chat').participants]) else False
-
-        self.emit('users', users)
-
-    def on_message(self, message):
-        pass
-
-
 class RouterConnection(SocketConnection):
-    __endpoints__ = {'/chat': ChatConnection,
-                     '/chat/participants': ParticipantsConnection}
+    __endpoints__ = {'/chat': ChatConnection}
 
     def on_open(self, info):
         print 'Router', repr(info)
