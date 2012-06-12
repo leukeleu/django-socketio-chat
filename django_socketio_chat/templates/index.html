@@ -57,8 +57,14 @@
           update_ui();
         });
         
+        conn.on('welcome', function(user_name){
+          log('Received welcome from server.');
+          user = user_name;
+          update_ui();
+        })
+
         conn.on('user_joined', function(user){
-          log(user + 'joined the chat.');
+          log(user + ' joined the chat.');
           online_users[user] = true;
           update_ui();
         })
@@ -94,11 +100,11 @@
           msg = 'disconnected';
           $('#connect').text('Connect');
         } else {
-          msg = 'connected (' + conn.socket.transport.name + ')';
+          msg = 'connected (' + conn.socket.transport.name + ') as ' + '<b>' + user + '</b>';
           $('#connect').text('Disconnect');
         }
 
-        $('#status').text(msg);
+        $('#status').html(msg);
 
         users = $('#participants');
         users.html('');
@@ -109,7 +115,6 @@
           }
           users.html(users.html() + '<input type="radio" name="participant" val="' + key+ '"/>' + key + ' ' + onl + '</br>');
         });
-
       }
 
       $('#connect').click(function() {
@@ -134,11 +139,11 @@
       $('form.#private-chatform').submit(function() {
         var text = $('#private-text').val();
         
-        user = $('#private-chatform input:checked')[0].getAttribute('val');
-        console.log(user);
-        if (user) {
-          log('Sending private message: ' + text + ' to ' + user);
-          conn.emit('private_message', user, text);
+        target_user = $('#private-chatform input:checked')[0].getAttribute('val');
+        console.log(target_user);
+        if (target_user) {
+          log('Sending private message: ' + text + ' to ' + target_user);
+          conn.emit('private_message', target_user, text);
         }
         $('#text').val('').focus();
         return false;

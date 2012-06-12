@@ -46,7 +46,7 @@ class ChatConnection(SocketConnection):
             except User.DoesNotExist:
                 pass
 
-        self.send("Welcome <b>%s</b> from the server." % self.user)
+        self.emit('welcome', '%s' % self.user)
         self.participants.add(self)
 
         for p in self.participants:
