@@ -1,6 +1,10 @@
 #TODO: This is not very safe, but will do for now.
 SESSION_COOKIE_HTTPONLY = False 
 
+SESSION_COOKIE_SECURE = True
+
+# workaround. Django requests pages over HTTP after logging in
+LOGIN_REDIRECT_URL = 'https://meitnerium'
 
 import os
 DEBUG = True

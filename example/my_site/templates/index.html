@@ -1,13 +1,13 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
-  <script src="static/js/socket.io.js"></script>
-  <script src="static/js/chat.js"></script>
-  <script src="static/js/my_site.js"></script>
-</head>
-<body>
-<h3>Django - Socket.io - Tornadio over HTTPS</h3>
+{% extends 'base.html' %}
+
+{% block chat %}
+
+{% if not user.is_active %}
+  <a href="{% url login %}">login</a> 
+{% else %}
+  <a href="{% url logout %}">logout</a> 
+{% endif %}
+
 <div>
   <a id="connect" href="#">Connect</a>&nbsp;|&nbsp;Status: <span id="status">disconnected</span>
 </div>
@@ -25,5 +25,4 @@
   <ul id="participants">
   </ul>
 </form>
-</body>
-</html>
+{% endblock %}

@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% load url from future %}
+
+{% block content %}
+    <form class="form-horizontal" method="POST" action="{% url 'login' %}">
+        <legend>Login</legend>
+        {% csrf_token %}
+        {{ form }}
+        <div class="form-actions">
+            <input class="btn btn-primary" type="submit" value="Login" />
+        </div>
+    </form>
+{% endblock %}
