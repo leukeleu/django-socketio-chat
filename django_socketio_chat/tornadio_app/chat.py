@@ -30,6 +30,7 @@ class ChatConnection(SocketConnection):
         Try to find the Django user corresponding to this chat connection and
         send back useful chat info.
         """
+        print 'open', self
         router_info = self.session.conn.info
 
         # get Django session
@@ -63,13 +64,21 @@ class ChatConnection(SocketConnection):
             p.send(message)
 
     @event
-    def private_message(self, user, message):
-        self.logged_in_participants[str(user)].send('<b>Private</b> %s says: %s' % (self.user, message))
+    def public_message(self, message):
+        for p in self.participants:
+            p.emit('public_message', '%s' % self.user, message)
 
-    def on_close(self):
+    @event
+    def private_message(self, target_user, message):
+        self.logged_in_participants[str(target_user)].emit('private_message', '%s' % self.user, '%s' % message)
+
+    def on_disconnect(self):
         self.participants.remove(self)
         for p in self.participants:
             p.emit('user_left', '%s' % self.user)
+
+    def on_close(self):
+        print 'close', self
 
 
 class RouterConnection(SocketConnection):

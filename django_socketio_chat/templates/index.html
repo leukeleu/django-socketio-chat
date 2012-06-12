@@ -13,7 +13,11 @@
 
       function log(msg) {
         var control = $('#log');
-        control.html(control.html() + msg + '<br/>');
+        date = new Date();
+        timestamp =  date.getHours() + ':' +
+                     date.getMinutes()+ ':' +
+                     date.getSeconds();
+        control.html(control.html() + timestamp+ ': ' + msg + '<br/>');
         control.scrollTop(control.scrollTop() + 1000);
       }
 
@@ -34,7 +38,7 @@
         io.sockets = [];
 
         conn = io.connect('https://' + window.location.host + '/chat', {
-                  //'force new connection': true,
+                  'force new connection': true,
                   transports: transports,
                   rememberTransport: false,
                   resource: 'chat/socket.io'
@@ -47,10 +51,15 @@
           update_ui();
         });
 
-        conn.on('message', function(data) {
-          log('Received: ' + data);
+        conn.on('public_message', function(sender, message) {
+          log(sender + ' says: ' + message);
           update_ui();
         });
+
+        conn.on('private_message', function(sender, message) {
+          log('Private: ' + sender + ' says: ' + message);
+          update_ui();
+        });        
 
         conn.on('users', function(data){
           online_users = data;
@@ -113,7 +122,7 @@
           if (val) {
            onl = '<b>online</b>';
           }
-          users.html(users.html() + '<input type="radio" name="participant" val="' + key+ '"/>' + key + ' ' + onl + '</br>');
+          users.html(users.html() + '<input type="radio" name="participant" val="' + key+ '"/> ' + key + ' ' + onl + '</br>');
         });
       }
 
@@ -131,7 +140,7 @@
       $('form.#chatform').submit(function() {
         var text = $('#text').val();
         log('Sending: ' + text);
-        conn.send(text);
+        conn.emit('public_message', text);
         $('#text').val('').focus();
         return false;
       });
@@ -140,7 +149,6 @@
         var text = $('#private-text').val();
         
         target_user = $('#private-chatform input:checked')[0].getAttribute('val');
-        console.log(target_user);
         if (target_user) {
           log('Sending private message: ' + text + ' to ' + target_user);
           conn.emit('private_message', target_user, text);
