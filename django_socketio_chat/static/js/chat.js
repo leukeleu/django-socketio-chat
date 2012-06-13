@@ -6,7 +6,7 @@ var user = 'anonymous';
 Chat = {
 
   log:function(msg) {
-    var control = $('#log .modal-body');
+    var control = $('#log #modal-collapse');
     date = new Date();
     timestamp =  date.getHours() + ':' +
                  date.getMinutes()+ ':' +
@@ -145,7 +145,6 @@ Chat = {
 
     $('form.#chatform').submit(function() {
       var text = $('#public-text').val();
-      self.log('Sending: ' + text);
       conn.emit('public_message', text);
       $('#public-text').val('').focus();
       return false;
@@ -157,7 +156,6 @@ Chat = {
       var selected = $('#private-chatform input:checked');
       if (selected.length) {
         target_user = selected[0].getAttribute('val');
-        self.log('Sending private message: ' + text + ' to ' + target_user);
         conn.emit('private_message', target_user, text);
       }
       $('#private-text').val('').focus();

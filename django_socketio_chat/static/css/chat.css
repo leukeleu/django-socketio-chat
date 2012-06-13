@@ -3,9 +3,26 @@
 }
 
 #log {
-    height: 500px;
     border: 1px solid orange;
     padding-bottom: 35px;
+    margin: 0;
+    top: auto;
+    bottom: 0;
+}
+
+#modal-collapse {
+    max-height: 400px;
+    margin-bottom: 20px;
+    padding: 0 20px;
+}
+
+.toggle {
+    float:right;
+    margin: 0 5px;
+    font-size: 17px;
+    font-weight: bold;
+    color: #000000;
+    opacity: 0.3;
 }
 
 #chatform {
