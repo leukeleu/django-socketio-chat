@@ -1,28 +1,10 @@
 {% extends 'base.html' %}
 
-{% block chat %}
+{% block content %}
+  <h1>Chat example</h1>
+  
+{% endblock %}
 
-{% if not user.is_active %}
-  <a href="{% url login %}">login</a> 
-{% else %}
-  <a href="{% url logout %}">logout</a> 
-{% endif %}
-
-<div>
-  <a id="connect" href="#">Connect</a>&nbsp;|&nbsp;Status: <span id="status">disconnected</span>
-</div>
-<div id="log" style="width: 60em; height: 20em; overflow:auto; border: 1px solid black">
-</div>
-<form id="chatform">
-  <p>Group message</p>
-  <input id="text" type="text" />
-  <input type="submit" />
-</form>
-<form id="private-chatform">
-  <p>Private message</p>
-  <input id="private-text" type="text"/>
-  <input type="submit" text="private message"/>
-  <ul id="participants">
-  </ul>
-</form>
+{% block sidebar %}
+  {% include 'chat.html' %}
 {% endblock %}

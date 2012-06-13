@@ -1,0 +1,10 @@
+#main-content {
+    width: 600px;
+    float: left;
+}
+
+#sidebar {
+    float: right;
+    border: 3px dotted orange;
+    padding: 20px;
+}

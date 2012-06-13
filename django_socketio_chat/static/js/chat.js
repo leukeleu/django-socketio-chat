@@ -98,10 +98,10 @@ Chat = {
 
     if (conn == null || !conn.socket || !conn.socket.connected) {
       msg = 'disconnected';
-      $('#connect').text('Connect');
+      $('#toggle-connect').text('Connect');
     } else {
       msg = 'connected (' + conn.socket.transport.name + ') as ' + '<b>' + user + '</b>';
-      $('#connect').text('Disconnect');
+      $('#toggle-connect').text('Disconnect');
     }
 
     $('#status').html(msg);
@@ -119,7 +119,7 @@ Chat = {
 
   init: function() {
     var self= this;
-    $('#connect').click(function() {
+    $('#toggle-connect').click(function() {
       if (conn === null) {
         self.connect();
       } else {
@@ -130,10 +130,10 @@ Chat = {
     });
 
     $('form.#chatform').submit(function() {
-      var text = $('#text').val();
+      var text = $('#public-text').val();
       self.log('Sending: ' + text);
       conn.emit('public_message', text);
-      $('#text').val('').focus();
+      $('#public-text').val('').focus();
       return false;
     });
 
@@ -145,7 +145,7 @@ Chat = {
         self.log('Sending private message: ' + text + ' to ' + target_user);
         conn.emit('private_message', target_user, text);
       }
-      $('#text').val('').focus();
+      $('#public-text').val('').focus();
       return false;
     });
   }
