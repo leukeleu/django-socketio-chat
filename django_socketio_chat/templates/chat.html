@@ -9,8 +9,7 @@
 
     <a id="toggle-connect" href="#">Connect</a> Status: <span id="status">disconnected</span>
 
-    <div id="log">
-    </div>
+    <a class="btn" data-toggle="modal" data-backdrop="false" href="#log">Show chat</a>
 
     <form id="chatform">
       <p>Group message</p>
@@ -32,4 +31,16 @@
       <p>Offline users</li>
       <ul></li>
     </div>
+</div>
+
+<div class="modal hide" id="log">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal">×</button>
+    <h3>Group chat</h3>
+  </div>
+  <div class="modal-body">
+    <p>Chit chat...</p>
+  </div>
+  <div class="modal-footer">
+  </div>
 </div>
