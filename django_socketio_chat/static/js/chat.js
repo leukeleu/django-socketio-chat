@@ -140,12 +140,14 @@ Chat = {
     $('form.#private-chatform').submit(function() {
       var text = $('#private-text').val();
       
-      target_user = $('#private-chatform input:checked')[0].getAttribute('val');
-      if (target_user) {
+      var selected = $('#private-chatform input:checked');
+      console.log(selected);
+      if (selected.length) {
+        target_user = selected[0].getAttribute('val');
         self.log('Sending private message: ' + text + ' to ' + target_user);
         conn.emit('private_message', target_user, text);
       }
-      $('#public-text').val('').focus();
+      $('#private-text').val('').focus();
       return false;
     });
   }
