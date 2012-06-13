@@ -1,26 +1,20 @@
-from os import path as op
 import os
 import sys
 
 sys.path.insert(0, '../../example')
 os.environ['DJANGO_SETTINGS_MODULE'] == 'example.settings'
 
-import tornado.web
-import tornadio2
-import tornadio2.router
-import tornadio2.server
-import tornadio2.conn
-from tornadio2.conn import SocketConnection
-from tornadio2 import event
+from tornadio2 import router, server, conn, event
+from tornado import web
 
 from django.contrib.sessions.models import Session
 from django.contrib.auth.models import User
 from django.utils.html import strip_tags
 
-ROOT = op.normpath(op.dirname(__file__))
+ROOT = os.path.normpath(os.path.dirname(__file__))
 
 
-class ChatConnection(SocketConnection):
+class ChatConnection(conn.SocketConnection):
 
     participants = set()
     logged_in_participants = {}
@@ -85,7 +79,7 @@ class ChatConnection(SocketConnection):
         print 'close', self
 
 
-class RouterConnection(SocketConnection):
+class RouterConnection(conn.SocketConnection):
     __endpoints__ = {'/chat': ChatConnection}
 
     def on_open(self, info):
@@ -96,13 +90,13 @@ class RouterConnection(SocketConnection):
 
 
 # Create chat server
-ChatRouter = tornadio2.router.TornadioRouter(RouterConnection, dict(websocket_check=True), namespace='chat/socket.io')
+ChatRouter = router.TornadioRouter(RouterConnection, dict(websocket_check=True), namespace='chat/socket.io')
 
 # Create application
-application = tornado.web.Application(
+application = web.Application(
     ChatRouter.apply_routes([]),
     flash_policy_port=843,
-    flash_policy_file=op.join(ROOT, 'flashpolicy.xml'),
+    flash_policy_file=os.path.join(ROOT, 'flashpolicy.xml'),
     socket_io_port=8001
 )
 
@@ -110,4 +104,4 @@ if __name__ == "__main__":
     import logging
     logging.getLogger().setLevel(logging.DEBUG)
 
-    tornadio2.server.SocketServer(application)
+    server.SocketServer(application)

@@ -6,7 +6,7 @@ var user = 'anonymous';
 Chat = {
 
   log:function(msg) {
-    var control = $('#log');
+    var control = $('#log .modal-body');
     date = new Date();
     timestamp =  date.getHours() + ':' +
                  date.getMinutes()+ ':' +
