@@ -70,10 +70,14 @@ class ChatConnection(conn.SocketConnection):
         message = strip_tags(message)
         self.logged_in_participants[str(target_user)].emit('private_message', '%s' % self.user, '%s' % message)
 
-    def on_disconnect(self):
+    @event
+    def leave(self):
         self.participants.remove(self)
         for p in self.participants:
             p.emit('user_left', '%s' % self.user)
+
+    def on_disconnect(self):
+        self.leave()
 
     def on_close(self):
         print 'close', self

@@ -76,13 +76,15 @@ Chat = {
 
     conn.on('user_joined', function(user){
       self.log(user + ' joined the chat.');
-      online_users[user] = true;
+      online_users.push(user);
+      offline_users.pop(user);
       self.update_ui();
     });
 
     conn.on('user_left', function(user){
       self.log(user + ' left the chat.');
-      online_users[user] = false;
+      online_users.pop(user);
+      offline_users.push(user);
       self.update_ui();
     });
 
@@ -96,8 +98,8 @@ Chat = {
 
   disconnect: function() {
     if (conn !== null) {
+      conn.emit('leave');
       this.log('Disconnected..');
-
       conn.disconnect();
       conn = null;
 
