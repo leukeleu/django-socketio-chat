@@ -141,7 +141,6 @@ Chat = {
       var text = $('#private-text').val();
       
       var selected = $('#private-chatform input:checked');
-      console.log(selected);
       if (selected.length) {
         target_user = selected[0].getAttribute('val');
         self.log('Sending private message: ' + text + ' to ' + target_user);

@@ -15,6 +15,7 @@ from tornadio2 import event
 
 from django.contrib.sessions.models import Session
 from django.contrib.auth.models import User
+from django.utils.html import strip_tags
 
 ROOT = op.normpath(op.dirname(__file__))
 
@@ -30,7 +31,6 @@ class ChatConnection(SocketConnection):
         Try to find the Django user corresponding to this chat connection and
         send back useful chat info.
         """
-        print 'open', self
         router_info = self.session.conn.info
 
         # get Django session
@@ -59,17 +59,16 @@ class ChatConnection(SocketConnection):
 
         self.emit('users', users)
 
-    def on_message(self, message):
-        for p in self.participants:
-            p.send(message)
-
     @event
     def public_message(self, message):
+        message = strip_tags(message)
         for p in self.participants:
             p.emit('public_message', '%s' % self.user, message)
 
     @event
     def private_message(self, target_user, message):
+        target_user = strip_tags(target_user)
+        message = strip_tags(message)
         self.logged_in_participants[str(target_user)].emit('private_message', '%s' % self.user, '%s' % message)
 
     def on_disconnect(self):
