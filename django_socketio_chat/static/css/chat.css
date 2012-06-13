@@ -7,3 +7,20 @@
     border: 1px solid orange;
     padding: 10px;
 }
+
+.online-users {
+    display: none;
+}
+
+.offline-users {
+    display: none;
+}
+
+.online-users li {
+    font-weight: bold;
+    color: orange;
+}
+
+.offline-users li {
+    color: gray;
+}

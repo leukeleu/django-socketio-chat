@@ -53,10 +53,15 @@ class ChatConnection(SocketConnection):
         for p in self.participants:
             p.emit('user_joined', '%s' % self.user)
 
-        users = {}
-        for u in User.objects.all():
-            users[str(u)] = str(u) in self.logged_in_participants
+        users = {'online': [],
+                  'offline': []}
 
+        for u in User.objects.all():
+            u = str(u)
+            if u in self.logged_in_participants:
+                users['online'].append(u)
+            else:
+                users['offline'].append(u)
         self.emit('users', users)
 
     @event

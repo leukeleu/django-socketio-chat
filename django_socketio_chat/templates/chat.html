@@ -1,28 +1,35 @@
 <div class="chat-container">
-  <div class="user-tools">
-    {% if not user.is_active %}
-      <a href="{% url login %}">login</a> 
-    {% else %}
-      <a href="{% url logout %}">logout</a> 
-    {% endif %}
-  </div>
+    <div id="user-tools">
+      {% if not user.is_active %}
+        <a href="{% url login %}">login</a> 
+      {% else %}
+        <a href="{% url logout %}">logout</a> 
+      {% endif %}
+    </div>
 
-  <a id="toggle-connect" href="#">Connect</a> Status: <span id="status">disconnected</span>
+    <a id="toggle-connect" href="#">Connect</a> Status: <span id="status">disconnected</span>
 
-  <div id="log">
-  </div>
+    <div id="log">
+    </div>
 
-  <form id="chatform">
-    <p>Group message</p>
-    <input id="public-text" type="text" />
-    <input type="submit" />
-  </form>
+    <form id="chatform">
+      <p>Group message</p>
+      <input id="public-text" type="text" />
+      <input type="submit" />
+    </form>
 
-  <form id="private-chatform">
-    <p>Private message</p>
-    <input id="private-text" type="text"/>
-    <input type="submit" text="private message"/>
-    <ul id="participants">
-    </ul>
-  </form>
+    <form id="private-chatform">
+      <p>Private message</p>
+      <input id="private-text" type="text"/>
+      <input type="submit" text="private message"/>
+    </form>
+
+    <div class="online-users"> 
+      <p>Online users</li>
+      <ul></ul>
+    </div>
+    <div class="offline-users">
+      <p>Offline users</li>
+      <ul></li>
+    </div>
 </div>

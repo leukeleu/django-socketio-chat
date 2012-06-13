@@ -1,5 +1,6 @@
 var conn = null;
-var online_users = {};
+var online_users = [];
+var offline_users = [];
 var user = 'anonymous';
 
 Chat = {
@@ -39,6 +40,7 @@ Chat = {
 
     conn.on('connect', function() {
       self.log('Connected.');
+      self.show_users();
       self.update_ui();
     });
 
@@ -53,7 +55,8 @@ Chat = {
     });
 
     conn.on('users', function(data){
-      online_users = data;
+      online_users = data['online'];
+      offline_users = data['offline'];
       self.update_ui();
     });
     
@@ -79,12 +82,13 @@ Chat = {
       self.log('Disconnected.');
       conn = null;
       self.update_ui();
+      self.hide_users();
     });
   },
 
   disconnect: function() {
     if (conn !== null) {
-      this.log('Disconnecting...');
+      this.log('Disconnected..');
 
       conn.disconnect();
       conn = null;
@@ -93,10 +97,20 @@ Chat = {
     }
   },
 
+  show_users: function() {
+    $('.online-users').css('display', 'inherit');
+    $('.offline-users').css('display', 'inherit');
+  },
+  
+  hide_users: function() {
+    $('.online-users').css('display', 'none');
+    $('.offline-users').css('display', 'none');
+  },
+
   update_ui: function() {
     var msg = '';
 
-    if (conn == null || !conn.socket || !conn.socket.connected) {
+    if (conn === null || !conn.socket || !conn.socket.connected) {
       msg = 'disconnected';
       $('#toggle-connect').text('Connect');
     } else {
@@ -106,15 +120,15 @@ Chat = {
 
     $('#status').html(msg);
 
-    users = $('#participants');
-    users.html('');
-    $.each(online_users, function(key, val) {
-      var onl = 'offline';
-      if (val) {
-       onl = '<b>online</b>';
-      }
-      users.html(users.html() + '<input type="radio" name="participant" val="' + key+ '"/> ' + key + ' ' + onl + '</br>');
-    });
+    function populate(ul, list) {
+      ul.html('');
+      $.each(list, function() {
+        ul.html(ul.html() + '<li>' + this + '</li>');
+      });
+    }
+
+    populate($('.online-users ul'), online_users);
+    populate($('.offline-users ul'), offline_users);
   },
 
   init: function() {
