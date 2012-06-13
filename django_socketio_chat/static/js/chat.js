@@ -15,6 +15,14 @@ Chat = {
     control.scrollTop(control.scrollTop() + 1000);
   },
 
+  log_private:function(sender, msg) {
+    var control = $('#user-' + sender + '.accordion-inner');
+    date = new Date();
+    timestamp =  date.getHours() + ':' +
+                 date.getMinutes()+ ':' +
+                 date.getSeconds();
+  },
+
   connect: function() {
     //disconnect();
 

@@ -1,10 +1,12 @@
 <div class="chat-container">
     <div id="user-tools">
+      <p>
       {% if not user.is_active %}
         <a href="{% url login %}">login</a> 
       {% else %}
         <a href="{% url logout %}">logout</a> 
       {% endif %}
+    </p>
     </div>
 
     <a class="btn" id="toggle-connect" href="#">Connect</a>
@@ -14,7 +16,7 @@
     <form id="private-chatform">
       <p>Private message</p>
       <input id="private-text" type="text"/>
-      <input type="submit" text="private message"/>
+      <input type="submit" value="send"/>
     </form>
 
     <div class="online-users"> 
@@ -24,6 +26,18 @@
     <div class="offline-users">
       <p>Offline users</li>
       <ul></li>
+    </div>
+    <div id="accordion" class='accordion'>
+      <div class="accordion-group">
+        <div class="accordion-heading">
+          <a class="accordion-toggle" href="#user-admin" data-parent="#accordion" data-toggle="collapse">admin</a>
+        </div>
+          <div id="user-admin" class="accordion-body collapse">
+              <div class="accordion-inner"></div>
+              <input id="public-text" type="text" />
+              <input type="submit" value="send" />
+          </div>
+      </div>
     </div>
 </div>
 
@@ -37,6 +51,6 @@
   </div>
   <form id="chatform">
       <input id="public-text" type="text" />
-      <input type="submit" />
+      <input type="submit" value="send" />
   </form>
 </div>
