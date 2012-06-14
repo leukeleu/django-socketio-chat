@@ -1,8 +1,14 @@
 {% extends 'base.html' %}
 
+{% load templatetag_handlebars %}
+
 {% block content %}
   <h1>Chat example</h1>
   
+{% tplhandlebars "" %}
+    The President of the United States is {{ MyApp.president.fullName }}.  
+{% endtplhandlebars %}
+
 {% endblock %}
 
 {% block sidebar %}

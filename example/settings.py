@@ -1,3 +1,5 @@
+USE_EMBER_STYLE_ATTRS = True
+
 #TODO: This is not very safe, but will do for now.
 SESSION_COOKIE_HTTPONLY = False 
 
@@ -52,6 +54,7 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.staticfiles',
+    'templatetag_handlebars',
     'django_socketio_chat',
     'my_site',
 )
