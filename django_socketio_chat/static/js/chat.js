@@ -24,21 +24,13 @@ Chat = {
   },
 
   connect: function() {
-    //disconnect();
-
-    // Socket.IO magic, $.map does not work and crashes socket.io.
-
-    // Hack to work around bug 251, I really hope it is going to be fixed.
-    // https://github.com/LearnBoost/socket.io-client/issues/251
-    // Alternative way to do full reconnect is to pass 'force new connection',
-    // but you will lose multiplexing.
     io.j = [];
     io.sockets = [];
 
     conn = io.connect('https://' + window.location.host + '/chat', {
               'force new connection': true,
               //transports: transports,
-              rememberTransport: false,
+              rememberTransport: true,
               resource: 'chat/socket.io'
            });
 
