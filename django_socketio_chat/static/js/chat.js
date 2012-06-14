@@ -89,7 +89,6 @@ Chat = {
     });
 
     conn.on('disconnect', function(data) {
-      self.log('Disconnected.');
       conn = null;
       self.update_ui();
       self.hide_users();
@@ -99,10 +98,8 @@ Chat = {
   disconnect: function() {
     if (conn !== null) {
       conn.emit('leave');
-      this.log('Disconnected..');
       conn.disconnect();
-      conn = null;
-
+      this.log('Disconnected.');
       this.update_ui();
     }
   },
