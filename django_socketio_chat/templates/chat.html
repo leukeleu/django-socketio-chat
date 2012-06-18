@@ -1,3 +1,5 @@
+{% load templatetag_handlebars %}
+
 <div class="chat-container">
     <div id="user-tools">
       <p>
@@ -27,18 +29,22 @@
       <p>Offline users</li>
       <ul></li>
     </div>
+    {% tplhandlebars "" %}
     <div id="accordion" class='accordion'>
-      <div class="accordion-group">
+    {{#each MyApp.PeopleView.people}}
+     <div class="accordion-group">
         <div class="accordion-heading">
-          <a class="accordion-toggle" href="#user-admin" data-parent="#accordion" data-toggle="collapse">admin</a>
+          <a class="accordion-toggle" href="#user-{{unbound name}}" data-parent="#accordion" data-toggle="collapse">{{name}}</a>
         </div>
-          <div id="user-admin" class="accordion-body collapse">
+          <div id="user-{{unbound name}}" class="accordion-body collapse">
               <div class="accordion-inner"></div>
               <input type="text" />
               <input type="submit" value="send" />
           </div>
       </div>
+    {{/each}}
     </div>
+{% endtplhandlebars %}
 </div>
 
 <div class="modal hide fade" id="log">

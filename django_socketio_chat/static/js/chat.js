@@ -3,6 +3,12 @@ var online_users = [];
 var offline_users = [];
 var user = 'anonymous';
 
+ChatApp = Ember.Application.create();
+
+Chat.PeopleView = Ember.View.create({
+  people: []
+});
+
 Chat = {
 
   log:function(msg) {
