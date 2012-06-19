@@ -31,12 +31,12 @@
     </div>
     {% tplhandlebars "" %}
     <div id="accordion" class='accordion'>
-    {{#each MyApp.PeopleView.people}}
+    {{#each ChatApp.PeopleView.people}}
      <div class="accordion-group">
         <div class="accordion-heading">
-          <a class="accordion-toggle" href="#user-{{unbound name}}" data-parent="#accordion" data-toggle="collapse">{{name}}</a>
+          <a class="accordion-toggle" href="#user-{{unbound username}}" data-parent="#accordion" data-toggle="collapse">{{username}}</a>
         </div>
-          <div id="user-{{unbound name}}" class="accordion-body collapse">
+          <div id="user-{{unbound username}}" class="accordion-body collapse">
               <div class="accordion-inner"></div>
               <input type="text" />
               <input type="submit" value="send" />
@@ -44,7 +44,7 @@
       </div>
     {{/each}}
     </div>
-{% endtplhandlebars %}
+    {% endtplhandlebars %}
 </div>
 
 <div class="modal hide fade" id="log">

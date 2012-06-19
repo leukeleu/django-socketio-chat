@@ -9,8 +9,11 @@
   <link href="{{ STATIC_URL }}/css/my_site.css" rel="stylesheet" type="text/css">
   <script src="{{ STATIC_URL }}/js/jquery-1.7.1.js"></script>
   <script src="static/js/modernizr-2.5.3.custom.min.js"></script> 
-  <script src="{{ STATIC_URL }}/js/socket.io.js"></script>
+  <script src="{{ STATIC_URL }}/js/lib/socket.io.js"></script>
   <script src="{{ STATIC_URL }}/js/bootstrap.min.js"></script>
+  <script src="{{ STATIC_URL }}/js/lib/ember-0.9.8.1.js"></script>
+  <script src="{{ STATIC_URL }}/js/lib/ember-data-dev.js"></script>
+  <script src="{{ STATIC_URL }}/js/lib/ember-data-local-storage.js"></script>
   <script src="{{ STATIC_URL }}/js/chat.js"></script>
   <script src="{{ STATIC_URL }}/js/my_site.js"></script>
 </head>
@@ -28,7 +31,5 @@
       {% endblock %}
     </section>
 </section>
-<script src="{{ STATIC_URL }}/js/ember-0.9.8.1.js"></script>
-<script src="{{ STATIC_URL }}/js/ember.js"></script>
 </body>
 </html>

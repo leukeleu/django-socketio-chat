@@ -5,9 +5,30 @@ var user = 'anonymous';
 
 ChatApp = Ember.Application.create();
 
-Chat.PeopleView = Ember.View.create({
-  people: []
+ChatApp.Person = DS.Model.extend({
+    firstName: DS.attr('string'),
+    lastName: DS.attr('string'),
+    online: 'boolean',
+
+    fullName: function() {
+        return this.get('firstName') + ' ' + this.get('lastName');
+    }.property('firstName', 'lastName')
 });
+
+ChatApp.store = DS.Store.create({
+  revision: 4,
+  adapter: DS.localStorageAdapter
+});
+
+ChatApp.PeopleView = Ember.View.create({
+  people: ChatApp.store.findAll(ChatApp.Person)
+});
+
+setTimeout(function(){
+//  ChatApp.PeopleView.people.objectAt(0).set('name', 'Joe');
+//  var wycats = ChatApp.store.createRecord(ChatApp.Person,  { firstName: "Brohuda" });
+//  ChatApp.store.commit();
+}, 2000);
 
 Chat = {
 
@@ -61,8 +82,18 @@ Chat = {
     });
 
     conn.on('users', function(data){
-      online_users = data['online'];
-      offline_users = data['offline'];
+      $.each(data, function(i,v){
+        console.log(v);
+        var p = ChatApp.store.find(ChatApp.Person, v.id );
+        if (p) {
+          console.log(p);
+          p.set(v);
+        }
+        else {
+          ChatApp.store.createRecord(ChatApp.Person, v);
+        }
+      });
+      ChatApp.store.commit();
       self.update_ui();
     });
     
