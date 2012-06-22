@@ -6,6 +6,7 @@ var user = 'anonymous';
 ChatApp = Ember.Application.create();
 
 ChatApp.Person = DS.Model.extend({
+    username: DS.attr('string'),
     firstName: DS.attr('string'),
     lastName: DS.attr('string'),
     online: 'boolean',
@@ -82,18 +83,8 @@ Chat = {
     });
 
     conn.on('users', function(data){
-      $.each(data, function(i,v){
-        console.log(v);
-        var p = ChatApp.store.find(ChatApp.Person, v.id );
-        if (p) {
-          console.log(p);
-          p.set(v);
-        }
-        else {
-          ChatApp.store.createRecord(ChatApp.Person, v);
-        }
-      });
-      ChatApp.store.commit();
+      ChatApp.store.loadMany(ChatApp.Person, data);
+      //ChatApp.store.commit();
       self.update_ui();
     });
     
@@ -169,6 +160,8 @@ Chat = {
 
   init: function() {
     var self= this;
+    self.connect();
+
     $('#toggle-connect').click(function() {
       if (conn === null) {
         self.connect();
