@@ -2,7 +2,7 @@ import os
 import sys
 
 sys.path.insert(0, '../../example')
-os.environ['DJANGO_SETTINGS_MODULE'] == 'example.settings'
+os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 
 from tornadio2 import router, server, conn, event
 from tornado import web
@@ -94,9 +94,9 @@ ChatRouter = router.TornadioRouter(RouterConnection, dict(websocket_check=True),
 # Create application
 application = web.Application(
     ChatRouter.apply_routes([]),
-    flash_policy_port=843,
-    flash_policy_file=os.path.join(ROOT, 'flashpolicy.xml'),
-    socket_io_port=8001
+    flash_policy_port = 843,
+    flash_policy_file = os.path.join(ROOT, 'flashpolicy.xml'),
+    socket_io_port = 8001
 )
 
 if __name__ == "__main__":

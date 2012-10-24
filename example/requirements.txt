@@ -1,6 +1,4 @@
-django-socketio-chat
 MySQL-python
+# django-socketio-chat (install using a .pth file in site-packages)
+tornadio2
 django-templatetag-handlebars
-    
-# ubuntu packages:
-# libevent-dev

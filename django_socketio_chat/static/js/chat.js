@@ -17,178 +17,176 @@ ChatApp.Person = DS.Model.extend({
 });
 
 ChatApp.store = DS.Store.create({
-  revision: 4,
-  adapter: DS.localStorageAdapter
+    revision: 4,
+    adapter: DS.localStorageAdapter
 });
 
 ChatApp.PeopleView = Ember.View.create({
-  people: ChatApp.store.findAll(ChatApp.Person)
+    people: ChatApp.store.findAll(ChatApp.Person)
 });
 
-setTimeout(function(){
-//  ChatApp.PeopleView.people.objectAt(0).set('name', 'Joe');
-//  var wycats = ChatApp.store.createRecord(ChatApp.Person,  { firstName: "Brohuda" });
-//  ChatApp.store.commit();
+setTimeout(function() {
+    // ChatApp.PeopleView.people.objectAt(0).set('name', 'Joe');
+    // var wycats = ChatApp.store.createRecord(ChatApp.Person,  { firstName: "Brohuda" });
+    // ChatApp.store.commit();
 }, 2000);
 
 Chat = {
 
-  log:function(msg) {
-    var control = $('#log #modal-collapse');
-    date = new Date();
-    timestamp =  date.getHours() + ':' +
-                 date.getMinutes()+ ':' +
-                 date.getSeconds();
-    control.html(control.html() + timestamp+ ': ' + msg + '<br/>');
-    control.scrollTop(control.scrollTop() + 1000);
-  },
+    log: function(msg) {
+        var control = $('#log #modal-collapse');
+        var now = new Date();
+        var timestamp = ('0' + now.getHours()).slice(-2) + ':' + ('0' + now.getMinutes()).slice(-2) + ':' + ('0' + now.getSeconds()).slice(-2);
+        control.html(control.html() + timestamp + ': ' + msg + '<br/>');
+        control.scrollTop(control.scrollTop() + 1000);
+    },
 
-  log_private:function(sender, msg) {
-    var control = $('#user-' + sender + '.accordion-inner');
-    date = new Date();
-    timestamp =  date.getHours() + ':' +
-                 date.getMinutes()+ ':' +
-                 date.getSeconds();
-  },
+    log_private: function(sender, msg) {
+        var control = $('#user-' + sender + '.accordion-inner');
+        var now = new Date();
+        var timestamp = ('0' + now.getHours()).slice(-2) + ':' + ('0' + now.getMinutes()).slice(-2) + ':' + ('0' + now.getSeconds()).slice(-2);
+        control.html(control.html() + timestamp + ': ' + msg + '<br/>');
+        control.scrollTop(control.scrollTop() + 1000);
+    },
 
-  connect: function() {
-    io.j = [];
-    io.sockets = [];
+    connect: function() {
+        io.j = [];
+        io.sockets = [];
 
-    conn = io.connect('https://' + window.location.host + '/chat', {
-              'force new connection': true,
-              //transports: transports,
-              rememberTransport: true,
-              resource: 'chat/socket.io'
-           });
+        conn = io.connect('https://' + window.location.host + '/chat', {
+            'force new connection': true,
+            //transports: transports,
+            rememberTransport: true,
+            resource: 'chat/socket.io'
+        });
 
-    this.log('Connecting...');
-    
-    var self = this;
+        this.log('Connecting...');
 
-    conn.on('connect', function() {
-      self.log('Connected.');
-      self.show_users();
-      self.update_ui();
-    });
+        var self = this;
 
-    conn.on('public_message', function(sender, message) {
-      self.log(sender + ' says: ' + message);
-      self.update_ui();
-    });
+        conn.on('connect', function() {
+            self.log('Connected.');
+            self.show_users();
+            self.update_ui();
+        });
 
-    conn.on('private_message', function(sender, message) {
-      self.log('Private: ' + sender + ' says: ' + message);
-      self.update_ui();
-    });
+        conn.on('public_message', function(sender, message) {
+            self.log(sender + ' says: ' + message);
+            self.update_ui();
+        });
 
-    conn.on('users', function(data){
-      ChatApp.store.loadMany(ChatApp.Person, data);
-      //ChatApp.store.commit();
-      self.update_ui();
-    });
-    
-    conn.on('welcome', function(user_name){
-      self.log('Received welcome from server.');
-      user = user_name;
-      self.update_ui();
-    });
+        conn.on('private_message', function(sender, message) {
+            self.log('Private: ' + sender + ' says: ' + message);
+            self.update_ui();
+        });
 
-    conn.on('user_joined', function(user){
-      self.log(user + ' joined the chat.');
-      online_users.push(user);
-      offline_users.pop(user);
-      self.update_ui();
-    });
+        conn.on('users', function(data) {
+            ChatApp.store.loadMany(ChatApp.Person, data);
+            //ChatApp.store.commit();
+            self.update_ui();
+        });
 
-    conn.on('user_left', function(user){
-      self.log(user + ' left the chat.');
-      online_users.pop(user);
-      offline_users.push(user);
-      self.update_ui();
-    });
+        conn.on('welcome', function(user_name) {
+            self.log('Received welcome from server.');
+            user = user_name;
+            self.update_ui();
+        });
 
-    conn.on('disconnect', function(data) {
-      conn = null;
-      self.update_ui();
-      self.hide_users();
-    });
-  },
+        conn.on('user_joined', function(user) {
+            self.log(user + ' joined the chat.');
+            online_users.push(user);
+            offline_users.pop(user);
+            self.update_ui();
+        });
 
-  disconnect: function() {
-    if (conn !== null) {
-      conn.emit('leave');
-      conn.disconnect();
-      this.log('Disconnected.');
-      this.update_ui();
-    }
-  },
+        conn.on('user_left', function(user) {
+            self.log(user + ' left the chat.');
+            online_users.pop(user);
+            offline_users.push(user);
+            self.update_ui();
+        });
 
-  show_users: function() {
-    $('.online-users').css('display', 'inherit');
-    $('.offline-users').css('display', 'inherit');
-  },
-  
-  hide_users: function() {
-    $('.online-users').css('display', 'none');
-    $('.offline-users').css('display', 'none');
-  },
+        conn.on('disconnect', function(data) {
+            conn = null;
+            self.update_ui();
+            self.hide_users();
+        });
+    },
 
-  update_ui: function() {
-    var msg = '';
+    disconnect: function() {
+        if (conn !== null) {
+            conn.emit('leave');
+            conn.disconnect();
+            this.log('Disconnected.');
+            this.update_ui();
+        }
+    },
 
-    if (conn === null || !conn.socket || !conn.socket.connected) {
-      msg = 'disconnected';
-      $('#toggle-connect').text('Connect');
-    } else {
-      msg = 'connected (' + conn.socket.transport.name + ') as ' + '<b>' + user + '</b>';
-      $('#toggle-connect').text('Disconnect');
-    }
+    show_users: function() {
+        $('.online-users').css('display', 'inherit');
+        $('.offline-users').css('display', 'inherit');
+    },
 
-    $('#status').html(msg);
+    hide_users: function() {
+        $('.online-users').css('display', 'none');
+        $('.offline-users').css('display', 'none');
+    },
 
-    function populate(ul, list) {
-      ul.html('');
-      $.each(list, function() {
-        ul.html(ul.html() + '<li>' + this + '</li>');
-      });
-    }
+    update_ui: function() {
+        var msg = '';
 
-    populate($('.online-users ul'), online_users);
-    populate($('.offline-users ul'), offline_users);
-  },
+        if (conn === null || !conn.socket || !conn.socket.connected) {
+            msg = 'disconnected';
+            $('#toggle-connect').text('Connect');
+        } else {
+            msg = 'connected (' + conn.socket.transport.name + ') as ' + '<b>' + user + '</b>';
+            $('#toggle-connect').text('Disconnect');
+        }
 
-  init: function() {
-    var self= this;
-    self.connect();
+        $('#status').html(msg);
 
-    $('#toggle-connect').click(function() {
-      if (conn === null) {
+        function populate(ul, list) {
+            ul.html('');
+            $.each(list, function() {
+                ul.html(ul.html() + '<li>' + this + '</li>');
+            });
+        }
+
+        populate($('.online-users ul'), online_users);
+        populate($('.offline-users ul'), offline_users);
+    },
+
+    init: function() {
+        var self = this;
         self.connect();
-      } else {
-        self.disconnect();
-      }
-      self.update_ui();
-      return false;
-    });
 
-    $('form.#chatform').submit(function() {
-      var text = $('#public-text').val();
-      conn.emit('public_message', text);
-      $('#public-text').val('').focus();
-      return false;
-    });
+        $('#toggle-connect').click(function() {
+            if (conn === null) {
+                self.connect();
+            } else {
+                self.disconnect();
+            }
+            self.update_ui();
+            return false;
+        });
 
-    $('form.#private-chatform').submit(function() {
-      var text = $('#private-text').val();
-      
-      var selected = $('#private-chatform input:checked');
-      if (selected.length) {
-        target_user = selected[0].getAttribute('val');
-        conn.emit('private_message', target_user, text);
-      }
-      $('#private-text').val('').focus();
-      return false;
-    });
-  }
+        $('form.#chatform').submit(function() {
+            var text = $('#public-text').val();
+            conn.emit('public_message', text);
+            $('#public-text').val('').focus();
+            return false;
+        });
+
+        $('form.#private-chatform').submit(function() {
+            var text = $('#private-text').val();
+
+            var selected = $('#private-chatform input:checked');
+            if (selected.length) {
+                target_user = selected[0].getAttribute('val');
+                conn.emit('private_message', target_user, text);
+            }
+            $('#private-text').val('').focus();
+            return false;
+        });
+    }
 };

@@ -1,3 +1,17 @@
+import socket
+import os
+
+
+USE_EMBER_STYLE_ATTRS = True
+
+# TODO: This is not very safe.
+SESSION_COOKIE_HTTPONLY = False
+
+SESSION_COOKIE_SECURE = True
+
+# Workaround - Django requests pages over HTTP after logging in
+LOGIN_REDIRECT_URL = 'https://django-socketio-chat.local'
+
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 ADMINS = ()
@@ -5,8 +19,12 @@ MANAGERS = ADMINS
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'example.db',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'database',
+        'USER': 'username',
+        'PASSWORD': 'password',
+        'HOST': '',
+        'PORT': '',
     }
 }
 
@@ -25,9 +43,16 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
 )
 
-STATIC_URL = "/static/"
-ROOT_URLCONF = "urls"
-LOGIN_URL = "/admin/"
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_URL = '/static/'
+
+ROOT_URLCONF = 'urls'
+LOGIN_URL = '/admin/'
 
 INSTALLED_APPS = (
     'django.contrib.admin',
@@ -35,16 +60,7 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.staticfiles',
-    'django_socketio',
+    'templatetag_handlebars',
     'django_socketio_chat',
     'my_site',
 )
-
-INSTALLED_APPS = ('debug_toolbar',) + INSTALLED_APPS
-
-MIDDLEWARE_CLASSES = MIDDLEWARE_CLASSES + ('debug_toolbar.middleware.DebugToolbarMiddleware',)
-
-DEBUG_TOOLBAR_CONFIG = {
-    'SHOW_TOOLBAR_CALLBACK': lambda x: True,
-    'INTERCEPT_REDIRECTS': False
-}

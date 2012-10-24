@@ -2,13 +2,13 @@
 
 <div class="chat-container">
     <div id="user-tools">
-      <p>
-      {% if not user.is_active %}
-        <a href="{% url login %}">login</a> 
-      {% else %}
-        <a href="{% url logout %}">logout</a> 
-      {% endif %}
-    </p>
+        <p>
+            {% if not user.is_active %}
+                <a href="{% url login %}">login</a>
+            {% else %}
+                <a href="{% url logout %}">logout</a>
+            {% endif %}
+        </p>
     </div>
 
     <a class="btn" id="toggle-connect" href="#">Connect</a>
@@ -16,47 +16,46 @@
     <a class="btn" data-toggle="modal" data-backdrop="false" href="#log">Show chat</a>
 
     <form id="private-chatform">
-      <p>Private message</p>
-      <input id="private-text" type="text"/>
-      <input type="submit" value="send"/>
+        <p>Private message</p>
+        <input id="private-text" type="text"/>
+        <input type="submit" value="send"/>
     </form>
 
-    <div class="online-users"> 
-      <p>Online users</li>
-      <ul></ul>
+    <div class="online-users">
+        <p>Online users</p>
+        <ul></ul>
     </div>
     <div class="offline-users">
-      <p>Offline users</li>
-      <ul></li>
+        <p>Offline users</p>
+        <ul></ul>
     </div>
     {% tplhandlebars "" %}
-    <div id="accordion" class='accordion'>
-    {{#each ChatApp.PeopleView.people}}
-     <div class="accordion-group">
-        <div class="accordion-heading">
-          <a class="accordion-toggle" href="#user-{{unbound username}}" data-parent="#accordion" data-toggle="collapse">{{username}}</a>
+        <div id="accordion" class='accordion'>
+            {{#each ChatApp.PeopleView.people}}
+            <div class="accordion-group">
+                <div class="accordion-heading">
+                    <a class="accordion-toggle" href="#user-{{unbound username}}" data-parent="#accordion" data-toggle="collapse">{{username}}</a>
+                </div>
+                <div id="user-{{unbound username}}" class="accordion-body collapse">
+                    <div class="accordion-inner"></div>
+                    <input type="text" />
+                    <input type="submit" value="send" />
+                </div>
+            </div>
+            {{/each}}
         </div>
-          <div id="user-{{unbound username}}" class="accordion-body collapse">
-              <div class="accordion-inner"></div>
-              <input type="text" />
-              <input type="submit" value="send" />
-          </div>
-      </div>
-    {{/each}}
-    </div>
     {% endtplhandlebars %}
 </div>
 
 <div class="modal hide fade" id="log">
-  <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal">×</button>
-    <a href="#" class="toggle" data-toggle="collapse" data-target="#modal-collapse">_</a>
-    <h3>Group chat</h3>
-  </div>
-  <div class="modal-body collapse in" id="modal-collapse">
-  </div>
-  <form id="chatform">
-      <input id="public-text" type="text" />
-      <input type="submit" value="send" />
-  </form>
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">×</button>
+        <a href="#" class="toggle" data-toggle="collapse" data-target="#modal-collapse">_</a>
+        <h3>Group chat</h3>
+    </div>
+    <div class="modal-body collapse in" id="modal-collapse"></div>
+    <form id="chatform">
+        <input id="public-text" type="text" />
+        <input type="submit" value="send" />
+    </form>
 </div>
