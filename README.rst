@@ -1,8 +1,8 @@
-Socket.io - Django - HTTPS - websockets
-=======================================
+Django - Socket.IO - Tornadio2 - chat over HTTPS
+================================================
 
-This project is a demonstration of how to get everything socket.io has to offer, deployed over a secure connection combined with
-the goodness of Django.
+This project is a basic implementation of a Socket.IO chat application, over HTTPS,
+integrated with Django user management.
 
 The server setup is as follows:
 
