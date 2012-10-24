@@ -41,13 +41,10 @@ Follow the instructions in `server_setup/README.rst`
 
     Django==1.4.2
     MySQL-python==1.2.4b5
-    django-socketio==0.3.5
+    TornadIO2==0.0.4
     django-templatetag-handlebars==1.2.0
-    gevent==0.13.8
-    gevent-socketio==0.2.1
-    gevent-websocket==0.3.6
-    greenlet==0.4.0
-    sphinx-me==0.1.2
+    simplejson==2.6.2
+    tornado==2.4
     wsgiref==0.1.2
 
 
