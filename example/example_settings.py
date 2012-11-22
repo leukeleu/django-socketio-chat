@@ -1,16 +1,13 @@
-import socket
 import os
 
-
-USE_EMBER_STYLE_ATTRS = True
 
 # TODO: This is not very safe.
 SESSION_COOKIE_HTTPONLY = False
 
 SESSION_COOKIE_SECURE = True
 
-# Workaround - Django requests pages over HTTP after logging in
-LOGIN_REDIRECT_URL = 'https://django-socketio-chat.local'
+# let Django know that all requests are secure
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -52,7 +49,6 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATIC_URL = '/static/'
 
 ROOT_URLCONF = 'urls'
-LOGIN_URL = '/admin/'
 
 INSTALLED_APPS = (
     'django.contrib.admin',
