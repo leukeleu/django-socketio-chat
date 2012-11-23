@@ -1,6 +1,5 @@
 import os
 import sys
-
 from datetime import datetime
 
 sys.path.insert(0, '../../example')
@@ -11,13 +10,11 @@ from tornado import web
 
 from django.contrib.sessions.models import Session
 from django.contrib.auth.models import User
+from django.core.serializers import json
 from django.utils.html import strip_tags
 
-
-def get_all_logged_in_users():
-    import pdb; pdb.set_trace()
-
-    return logged_in_user_ids
+from django_socketio_chat.serializers import ChatSerializer
+from django_socketio_chat.models import Chat
 
 
 class ChatConnection(SocketConnection):
@@ -28,6 +25,8 @@ class ChatConnection(SocketConnection):
         """
         Find the Django user corresponding to this connection and send back useful chat info.
         """
+
+        # TODO: keep a list of connections and corresponding Users
 
         # get Django session
         cookie = info.get_cookie('sessionid')
@@ -42,11 +41,11 @@ class ChatConnection(SocketConnection):
                 self.connections.add(self)
 
                 for connection in self.connections:
+                    # TODO: only send this to users who can see the joined user
                     connection.emit('user_joined', self.user.username)
 
-                users = []
-
                 # find all logged in users
+                users = []
                 sessions = Session.objects.filter(expire_date__gte=datetime.now())
                 logged_in_user_ids = filter(None, list(set([ session.get_decoded().get('_auth_user_id') for session in sessions ])))
 
@@ -58,6 +57,22 @@ class ChatConnection(SocketConnection):
 
             except User.DoesNotExist:
                 pass
+
+    @event
+    def chat_start(self, usernames):
+        users = User.objects.filter(username__in=usernames)
+        chat = Chat.start(self.user, list(users))
+
+        # serialize the chat to JSON
+        serializer = ChatSerializer(chat)
+        serialized_chat = serializer.data
+
+        # Tornadio's JSON encoder is not python datetime aware
+        serialized_chat['started'] = json.simplejson.dumps(serialized_chat['started'], cls=json.DjangoJSONEncoder).strip('"')
+
+        # TODO: don't send this to all connections, just to the connection of the users of the chat
+        for connection in self.connections:
+            connection.emit('chat_start_success', serialized_chat)
 
     @event
     def message(self, message):
@@ -88,7 +103,7 @@ application = web.Application(
 )
 
 if __name__ == "__main__":
-    import logging
-    logging.getLogger().setLevel(logging.DEBUG)
+    #import logging
+    #logging.getLogger().setLevel(logging.DEBUG)
 
     SocketServer(application)
