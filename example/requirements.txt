@@ -1,4 +1,5 @@
 MySQL-python
 # django-socketio-chat (install using a .pth file in site-packages)
 tornadio2
-django-templatetag-handlebars
+djangorestframework==2.1.3
+django-uuidfield
