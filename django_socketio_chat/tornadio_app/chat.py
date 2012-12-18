@@ -8,13 +8,28 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 from tornadio2 import SocketConnection, TornadioRouter, SocketServer, event
 from tornado import web
 
-from django.contrib.sessions.models import Session
-from django.contrib.auth.models import User
-from django.core.serializers import json
+from rest_framework.renderers import JSONRenderer
+
+from django.utils import simplejson
 from django.utils.html import strip_tags
 
-from django_socketio_chat.serializers import ChatSerializer
+from django.contrib.auth.models import User
+from django.contrib.sessions.models import Session
+
 from django_socketio_chat.models import Chat
+from django_socketio_chat.serializers import UserSerializer, ChatSerializer, MessageSerializer
+
+
+def prepare_for_emit(obj):
+    """
+    prepare the object for emit() by Tornadio2's (too simple) JSON renderer
+    - render to JSON using Django REST Framework 2's JSON renderer
+    - convert back to _simple_ Python object using Django's simplejson
+    """
+
+    json = JSONRenderer().render(obj)
+
+    return simplejson.loads(json)
 
 
 class ChatConnection(SocketConnection):
@@ -23,68 +38,68 @@ class ChatConnection(SocketConnection):
 
     def on_open(self, info):
         """
-        Find the Django user corresponding to this connection and send back useful chat info.
+        Find the Django user corresponding to this connection and send back chat info.
         """
-
-        # TODO: keep a list of connections and corresponding Users
 
         # get Django session
         cookie = info.get_cookie('sessionid')
         if cookie:
             # get User for session
             session = Session.objects.get(session_key=cookie.value)
-            uid = session.get_decoded().get('_auth_user_id')
+            user_id = session.get_decoded().get('_auth_user_id')
             try:
-                self.user = User.objects.get(pk=uid)
+                # `store` user with connection
+                self.user = User.objects.get(pk=user_id)
 
                 self.emit('welcome', self.user.username)
                 self.connections.add(self)
 
+                # TODO: only send `user_join` event to visible users (as user status change)
                 for connection in self.connections:
-                    # TODO: only send this to users who can see the joined user
-                    connection.emit('user_joined', self.user.username)
+                    connection.emit('user_join', self.user.username)
 
-                # find all logged in users
-                users = []
-                sessions = Session.objects.filter(expire_date__gte=datetime.now())
-                logged_in_user_ids = filter(None, list(set([ session.get_decoded().get('_auth_user_id') for session in sessions ])))
+                # TODO: determine visible users by connection (friends, groups, etc.) with the current user
+                chat_users = User.objects.exclude(pk=self.user.pk)
+                chat_users_obj = prepare_for_emit(UserSerializer(chat_users).data)
+                self.emit('user_list', chat_users_obj)
 
-                for user in User.objects.all():
-                    users.append({
-                        'id': user.id, 'username': user.username, 'online': user.id in logged_in_user_ids
-                    })
-                self.emit('users', users)
+                # TODO: filter using model methods?
+                chats = Chat.objects.filter(users__id__contains=self.user.id)
+                chats_obj = prepare_for_emit(ChatSerializer(chats).data)
+                self.emit('chat_list', chats_obj)
 
             except User.DoesNotExist:
                 pass
 
     @event
-    def chat_start(self, usernames):
+    def chat_create(self, usernames):
         users = User.objects.filter(username__in=usernames)
+
+        # TODO: only start chat with visible users (filter)
         chat = Chat.start(self.user, list(users))
+        chat_obj = prepare_for_emit(ChatSerializer(chat).data)
 
-        # serialize the chat to JSON
-        serializer = ChatSerializer(chat)
-        serialized_chat = serializer.data
-
-        # Tornadio's JSON encoder is not python datetime aware
-        serialized_chat['started'] = json.simplejson.dumps(serialized_chat['started'], cls=json.DjangoJSONEncoder).strip('"')
-
-        # TODO: don't send this to all connections, just to the connection of the users of the chat
         for connection in self.connections:
-            connection.emit('chat_start_success', serialized_chat)
+            if connection.user in chat.users.all():
+                connection.emit('chat_create', chat_obj)
 
     @event
-    def message(self, message):
-        message = strip_tags(message)
+    def message_req_create(self, message_body, chat_uuid):
+        # TODO: only create message in visible chats
+        chat = Chat.objects.get(uuid=chat_uuid)
+        message = chat.add_message(self.user, strip_tags(message_body))
+        message_obj = prepare_for_emit(MessageSerializer(message).data)
+
         for connection in self.connections:
-            connection.emit('message', self.user.username, message)
+            if connection.user in chat.users.all():
+                connection.emit('message_create', message_obj)
 
     @event
     def leave(self):
+        # TODO: only send `user_leave` event to visible users
         self.connections.remove(self)
         for connection in self.connections:
-            connection.emit('user_left', self.user.username)
+            connection.emit('user_leave', self.user.username)
 
     def on_disconnect(self):
         self.leave()
@@ -99,11 +114,11 @@ ChatRouter = TornadioRouter(ChatConnection, user_settings={'websocket_check': Tr
 # Create application
 application = web.Application(
     ChatRouter.apply_routes([]),
-    socket_io_port = 8001,
+    socket_io_port=8001,
 )
 
 if __name__ == "__main__":
-    #import logging
-    #logging.getLogger().setLevel(logging.DEBUG)
+    # import logging
+    # logging.getLogger().setLevel(logging.DEBUG)
 
     SocketServer(application)
