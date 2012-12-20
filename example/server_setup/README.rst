@@ -22,15 +22,10 @@ Prerequisites
 SSL certificate
 ---------------
 
-Create a self-signed SSL certificate for the test domain django-socketio-chat.local.
+Create a self-signed SSL certificate for the test domain django-socketio-chat.local::
 
-::
-
-    mkdir certs && cd certs
-    openssl genrsa -out django-socketio-chat.key 1024
-    openssl req -new -key django-socketio-chat.key -out django-socketio-chat.csr  # Common Name == django-socketio-chat.local
-    openssl x509 -req -days 365 -in django-socketio-chat.csr -signkey django-socketio-chat.key -out django-socketio-chat.crt
-    chmod 600 django-socketio-chat.key
+    cd example/server_setup 
+    ./makecrts.sh
 
 
 -----------
@@ -49,15 +44,14 @@ Install HAProxy 1.5 by running the bootstrap script::
 Configuration
 -------------
 
-::
+Backup the original haproxy.cfg and link to our custom one::
 
-    sudo cp /etc/haproxy/haproxy.cfg /etc/haproxy/haproxy.cfg.orig
-    sudo nano -w /etc/haproxy/haproxy.cfg
+    sudo mv /etc/haproxy/haproxy.cfg /etc/haproxy/haproxy.cfg.orig
+    sudo ln -s haproxy.cfg /etc/haproxy/haproxy.cfg
 
-
-Copy the contents of `server_setup/haproxy.cfg` into the file for a minimal configuration.
-TODO: check with haproxy.cfg from the original article, it contains some other timeouts etc.
-
+TODO: Check with haproxy.cfg from the original article, it contains some other timeouts etc.
+TODO: What about the check command of haproxy, we don't use it with 1.5 because it gives continuos connection
+resets. 
 
 -------
 Testing
