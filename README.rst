@@ -8,12 +8,14 @@ The server setup is as follows:
 
 ::
 
-                                                   ┌─[ 8000 ]-> Django
-                                                   │
-    Internet -[ 443 ]-> stunnel -[ 81 ]-> HAProxy ─┤
-                                                   │
-                                                   └─[ 8001 ]-> Socket.io
+                                 ┌─[ 8000 ]-> Django
+                                 │
+    Internet -[ 443 ]-> HAProxy ─┤
+                                 │
+                                 └─[ 8001 ]-> Socket.io
 
+HAProxy takes care of ssl encryption and proxying. All socket.io related requests are proxied to 
+a small tornadio server.
 
 Tested with
 -----------
@@ -52,14 +54,7 @@ Also make sure the django_socketio_chat package can be found, by adding its pare
 
 ::
 
-    cdvirtualenv
-    cd lib/python2.6/site-packages/
-    nano -w django-socketio-chat.pth
-
-::
-
-    /path/to/django-socketio-chat/
-
+    echo /[path_to]/django-socketio-chat/ > $VIRTUAL_ENV/lib/python2.6/site-packages/django-socketio-chat.pth
 
 Create the d-socketio-chat database, and sync it.
 

@@ -33,100 +33,17 @@ Create a self-signed SSL certificate for the test domain django-socketio-chat.lo
     chmod 600 django-socketio-chat.key
 
 
--------
-stunnel
--------
-
-Installation
-------------
-
-::
-
-    sudo apt-get install stunnel
-
-
-Automatic startup
------------------
-
-::
-
-    sudo nano -w /etc/default/stunnel4
-
-::
-
-    ENABLED=1
-
-
-Configuration
--------------
-
-::
-
-    sudo cp /etc/stunnel/stunnel.conf /etc/stunnel/stunnel.conf.orig
-    sudo nano -w /etc/stunnel/stunnel.conf
-
-::
-
-    cert = /mnt/hgfs/aluminum/django-socketio-chat/example/certs/django-socketio-chat.crt
-    key = /mnt/hgfs/aluminum/django-socketio-chat/example/certs/django-socketio-chat.key
-
-
-And enable the https section with the correct port, see `server_setup/stunnel.conf`
-
-::
-
-    [https]
-    accept  = 443
-    connect = 81
-    TIMEOUTclose = 0
-
-
 -----------
-HAProxy 1.4
+HAProxy 1.5
 -----------
 
-Installation
-------------
+Installation (Ubuntu)
+---------------------
 
-::
+Install HAProxy 1.5 by running the bootstrap script::
 
-    sudo apt-get install haproxy
-
-
-On Ubuntu 10.04 this will install HAProxy 1.3, but we want HAProxy 1.4.
-We can, however, `compile HAProxy from source <http://www.networkinghowtos.com/howto/compile-haproxy-from-source-on-ubuntu/>`_
-and re-use the init.d script so we can run our manually compiled HAProxy as a service.
-
-::
-
-    wget http://haproxy.1wt.eu/download/1.4/src/haproxy-1.4.21.tar.gz
-    tar -xvf haproxy-1.4.21.tar.gz && cd haproxy-1.4.21
-    make TARGET=linux26
-    sudo make install
-
-
-Edit the init.d script to tell it where the newly compiled HAProxy binary is located.
-
-::
-
-    sudo cp /etc/init.d/haproxy /etc/init.d/haproxy.orig
-    sudo nano -w /etc/init.d/haproxy
-
-::
-
-    HAPROXY=/usr/local/sbin/haproxy
-
-
-Automatic startup
------------------
-
-::
-
-    sudo nano -w /etc/default/haproxy
-
-::
-
-    ENABLED=1
+    cd example/server_setup
+    sudo ./bootsrap_ubuntu.sh
 
 
 Configuration
@@ -148,7 +65,6 @@ Testing
 
 ::
 
-    sudo /etc/init.d/stunnel4 start
     sudo /etc/init.d/haproxy start
 
 
