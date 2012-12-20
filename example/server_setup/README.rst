@@ -7,7 +7,7 @@ The setup is largely based on a blog post by Graham King:
 
 The end result is something similar to this:
 
-.. image:: http://www.darkcoding.net/files/2011/12/socketio_web_same_port.png
+.. image:: http://www.gliffy.com/pubdoc/4179188/L.png
 
 
 Prerequisites
