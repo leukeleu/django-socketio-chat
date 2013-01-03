@@ -15,16 +15,6 @@ class UserList(generics.ListAPIView):
         return User.objects.all()
 
 
-class ChatDetail(generics.RetrieveUpdateDestroyAPIView):
-    model = Chat
-    serializer_class = ChatSerializer
-    slug_field = 'uuid'
-    slug_url_kwarg = 'uuid'
-
-    def get_object(self, queryset=None):
-        return super(ChatDetail, self).get_object(queryset=Chat.objects.filter(users__username__contains=self.request.user.username))
-
-
 class ChatList(generics.ListCreateAPIView):
     model = Chat
     serializer_class = ChatSerializer
