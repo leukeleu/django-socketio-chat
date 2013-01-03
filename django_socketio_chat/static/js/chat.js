@@ -160,7 +160,7 @@ Chat = {
         var self = this;
 
         var $chat_messages_el = $('#chat-list #chat-' + chat_uuid + ' .messages');
-        $chat_messages_el.append($('<div id="message-' + message.uuid + '">' + message.user__username + ': ' + message.message_body + '</div>'));
+        $chat_messages_el.append($('<div id="message-' + message.uuid + '">' + message.user_from__username + ': ' + message.message_body + '</div>'));
     },
 
     init: function() {

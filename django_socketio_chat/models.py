@@ -28,8 +28,8 @@ class Chat(models.Model):
             user_chat_status = UserChatStatus(user=user, chat=self)
             user_chat_status.save()
 
-    def add_message(self, user, message):
-        message = Message(chat=self, user=user, message_body=message)
+    def add_message(self, user_from, message):
+        message = Message(chat=self, user_from=user_from, message_body=message)
         message.save()
         return message
 
@@ -84,8 +84,25 @@ class Message(models.Model):
     uuid = UUIDField(auto=True)
     timestamp = models.DateTimeField('timestamp', editable=False, auto_now_add=True)
     chat = models.ForeignKey(Chat, related_name='messages')
-    user = models.ForeignKey(User, related_name='messages')
+    user_from = models.ForeignKey(User, related_name='messages')
     message_body = models.TextField()
 
     def __unicode__(self):
         return "{user} says \"{message}\" ({timestamp})".format(user=self.user, message=self.message, timestamp=self.timestamp)
+
+
+class UserMessageStatus(models.Model):
+    """
+    Throughtable that keeps track of the read-status of messages.
+    Upon every message being created, a record of this table must be created
+    for evey user that is listening in on the chat, excluding the user that
+    sent the message.
+    """
+    # TODO: Create a signal handler that creates records for every created
+    # message.
+    message = models.ForeignKey(Message, related_name='user_message_status')
+    user = models.ForeignKey(User, related_name='user_message_status')
+    is_read = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ('message', 'user')

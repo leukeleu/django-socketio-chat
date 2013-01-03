@@ -73,7 +73,6 @@ class ChatConnection(SocketConnection):
     @event
     def chat_create(self, usernames):
         users = User.objects.filter(username__in=usernames)
-
         # TODO: only start chat with visible users (filter)
         chat = Chat.start(self.user, list(users))
         chat_obj = prepare_for_emit(ChatSerializer(chat).data)

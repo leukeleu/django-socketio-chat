@@ -51,11 +51,11 @@ class UserChatStatusSerializer(UUIDFieldSerializerMixin, serializers.ModelSerial
 
 
 class ChatMessageSerializer(UUIDFieldSerializerMixin, serializers.ModelSerializer):
-    user__username = Field(source='user.username')
+    user_from__username = Field(source='user_from.username')
 
     class Meta:
         model = Message
-        fields = ('uuid', 'timestamp', 'user__username', 'message_body',)
+        fields = ('uuid', 'timestamp', 'user_from__username', 'message_body',)
 
 
 class ChatSerializer(UUIDFieldSerializerMixin, serializers.ModelSerializer):
@@ -72,8 +72,8 @@ class ChatSerializer(UUIDFieldSerializerMixin, serializers.ModelSerializer):
 
 class MessageSerializer(UUIDFieldSerializerMixin, serializers.ModelSerializer):
     chat__uuid = Field(source='chat.uuid')
-    user__username = Field(source='user.username')
+    user_from__username = Field(source='user_from.username')
 
     class Meta:
         model = Message
-        fields = ('uuid', 'timestamp', 'chat__uuid', 'user__username', 'message_body',)
+        fields = ('uuid', 'timestamp', 'chat__uuid', 'user_from__username', 'message_body',)
