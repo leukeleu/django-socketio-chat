@@ -1,6 +1,5 @@
 import os
 
-
 # TODO: This is not very safe.
 SESSION_COOKIE_HTTPONLY = False
 
@@ -9,21 +8,12 @@ SESSION_COOKIE_SECURE = True
 # let Django know that all requests are secure
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-DEBUG = True
+DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 ADMINS = ()
 MANAGERS = ADMINS
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'd-socketio-chat',
-        'USER': 'root',
-        'PASSWORD': 'my5q1',
-        'HOST': '',
-        'PORT': '',
-    }
-}
+DATABASES = {}
 
 SECRET_KEY = 'i_!&$f5@^%y*i_qa$*o&0$3q*1dcv^@_-l2po8-%_$_gwo+i-l'
 
