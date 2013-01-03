@@ -1,6 +1,5 @@
 import os
 import sys
-from datetime import datetime
 
 sys.path.insert(0, '../../example')
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
@@ -22,7 +21,7 @@ from django_socketio_chat.serializers import UserSerializer, ChatSerializer, Mes
 
 def prepare_for_emit(obj):
     """
-    prepare the object for emit() by Tornadio2's (too simple) JSON renderer
+    Prepare the object for emit() by Tornadio2's (too simple) JSON renderer
     - render to JSON using Django REST Framework 2's JSON renderer
     - convert back to _simple_ Python object using Django's simplejson
     """

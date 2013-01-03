@@ -29,7 +29,7 @@ class Chat(models.Model):
             user_chat_status.save()
 
     def add_message(self, user, message):
-        message = Message(chat=self, user=user, message=message)
+        message = Message(chat=self, user=user, message_body=message)
         message.save()
         return message
 
@@ -85,7 +85,7 @@ class Message(models.Model):
     timestamp = models.DateTimeField('timestamp', editable=False, auto_now_add=True)
     chat = models.ForeignKey(Chat, related_name='messages')
     user = models.ForeignKey(User, related_name='messages')
-    message = models.TextField()  # TODO: change to message_body?
+    message_body = models.TextField()
 
     def __unicode__(self):
         return "{user} says \"{message}\" ({timestamp})".format(user=self.user, message=self.message, timestamp=self.timestamp)
