@@ -8,7 +8,7 @@ openssl x509 -req -days 365 -in django-socketio-chat.csr -signkey django-socketi
 chmod 600 django-socketio-chat.key
 cd ..
 
-# haproxy wants the certificat and key in one file together
+# haproxy wants the certificate and key in one file together
 cat certs/django-socketio-chat.crt certs/django-socketio-chat.key>> haproxy.pem
 
 # cleanup 

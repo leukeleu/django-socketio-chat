@@ -60,3 +60,5 @@ INSTALLED_APPS = (
     'django_socketio_chat',
     'my_site',
 )
+
+LOGIN_REDIRECT_URL = '/'

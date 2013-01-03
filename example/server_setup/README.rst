@@ -50,7 +50,7 @@ Backup the original haproxy.cfg and link to our custom one::
     sudo ln -s haproxy.cfg /etc/haproxy/haproxy.cfg
 
 TODO: Check with haproxy.cfg from the original article, it contains some other timeouts etc.
-TODO: What about the check command of haproxy, we don't use it with 1.5 because it gives continuos connection
+TODO: What about the check command of haproxy, we don't use it with 1.5 because it gives continuous connection
 resets. 
 
 -------
