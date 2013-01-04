@@ -90,19 +90,29 @@ class Message(models.Model):
     def __unicode__(self):
         return "{user} says \"{message}\" ({timestamp})".format(user=self.user, message=self.message, timestamp=self.timestamp)
 
+    def save(self):
+        super(Message, self).save() # First save this model, so that we have an id
+        for user in self.chat.users.all().exclude(id=self.user_from.id):
+            if self.chat.user_chat_statuses.get(user=user).status == UserChatStatus.ACTIVE:
+                 UserMessageStatus.objects.create(user=user, message=self, is_read=True)
+            else:
+                 UserMessageStatus.objects.create(user=user, message=self)
+
 
 class UserMessageStatus(models.Model):
     """
-    Throughtable that keeps track of the read-status of messages.
+    Through-table that keeps track of the read-status of messages.
     Upon every message being created, a record of this table must be created
-    for evey user that is listening in on the chat, excluding the user that
+    for every user that is listening in on the chat, excluding the user that
     sent the message.
+
+    OnReceive: if chat is active: setMessageRead(message, user)
+    OnChatActivate: setAllMessagesRead(chat.messages, user)
     """
-    # TODO: Create a signal handler that creates records for every created
-    # message.
-    message = models.ForeignKey(Message, related_name='user_message_status')
-    user = models.ForeignKey(User, related_name='user_message_status')
+    user = models.ForeignKey(User, related_name='user_message_statuses')
+    message = models.ForeignKey(Message, related_name='user_message_statuses')
     is_read = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ('message', 'user')
+

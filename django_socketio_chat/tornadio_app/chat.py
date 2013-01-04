@@ -99,6 +99,16 @@ class ChatConnection(SocketConnection):
         for connection in self.connections:
             connection.emit('user_leave', self.user.username)
 
+    @event('chat_activate')
+    def handle_chat_activate(self, chat_uuid):
+        chat = Chat.objects.get(uuid=chat_uuid)
+        chat.activate(self.user)
+
+    @event('chat_deactivate')
+    def handle_chat_deactivate(self, chat_uuid):
+        chat = Chat.objects.get(uuid=chat_uuid)
+        chat.deactivate(self.user)
+
     def on_disconnect(self):
         self.leave()
 
