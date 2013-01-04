@@ -30,7 +30,7 @@ class ChatDetail(generics.RetrieveUpdateDestroyAPIView):
     slug_url_kwarg = 'uuid'
 
     def get_object(self, queryset=None):
-        return super(ChatDetail, self).get_object(queryset=Chat.objects.filter(users__username__contains=self.request.user.username))
+        return super(ChatDetail, self).get_object(queryset=Chat.objects.filter(users__in=[self.request.user]))
 
 
 class MessageList(generics.ListCreateAPIView):
