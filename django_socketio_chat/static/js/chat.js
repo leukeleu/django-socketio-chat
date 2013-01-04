@@ -7,8 +7,8 @@ Chat = {
     debug_log: function(msg) {
         var $control = $('#debug-log');
         var now = new Date();
-        var timestamp = ('0' + now.getHours()).slice(-2) + ':' + ('0' + now.getMinutes()).slice(-2) + ':' + ('0' + now.getSeconds()).slice(-2);
-        $control.append(timestamp + ': ' + msg + '<br/>');
+
+        $control.append(now.toLocaleTimeString() + ': ' + msg + '<br/>');
     },
 
     connect: function() {
