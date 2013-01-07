@@ -125,10 +125,10 @@ Chat = {
         var chat_usernames = $.map(chat.user_chat_statuses, function(user_chat_status) { return user_chat_status.user__username; }).join(', ');
 
         var $chat_el = $('<div id="chat-' + chat.uuid + '">                             \
-                         <h4>' + chat_usernames + '<a href="#" class="toggleActive"> toggle active</a></h4>\
+                         <h4>' + chat_usernames + '<a href="#" id="toggle-active"></a></h4>\
                          </div>');
         var $messages_el = $('<div class="messages"></div>');
-        var $message_input_el = $('<div class="message-input">                          \
+        var $message_input_el = $('<div class="MESSAGE-input">                          \
                                   <textarea placeholder="Type message"></textarea>      \
                                   </div>');
 
@@ -145,12 +145,16 @@ Chat = {
             }
         });
 
-        var $chat_active_toggle = $chat_el.find('.toggleActive');
+        var $chat_active_toggle = $chat_el.find('#toggle-active');
         var user_chat_status = $(chat.user_chat_statuses).filter(function() {
             return this.user__username == self.user
         })[0]
         if (user_chat_status.status == 'inactive') {
-            $chat_active_toggle.addClass('inactive');
+            $chat_active_toggle.text(' Activate');
+        }
+
+        else if (user_chat_status.status == 'active') {
+            $chat_active_toggle.text(' Deactivate');
         }
 
         $chat_active_toggle.click(function(e) {
@@ -158,12 +162,12 @@ Chat = {
             if (user_chat_status.status == 'inactive') {
                 conn.emit('chat_activate', chat.uuid);
                 user_chat_status.status = 'active';
-                $(this).removeClass('inactive');
+                $chat_active_toggle.text(' Deactivate');
             }
             else if (user_chat_status.status == 'active') {
                 conn.emit('chat_deactivate', chat.uuid);
                 user_chat_status.status = 'inactive';
-                $(this).addClass('inactive');
+                $chat_active_toggle.text(' Activate');
             }
         });
 
