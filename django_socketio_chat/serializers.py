@@ -6,7 +6,7 @@ from django.contrib.sessions.models import Session
 from rest_framework import serializers
 from rest_framework.fields import Field, CharField
 
-from .models import Chat, UserChatStatus, Message
+from .models import ChatSession, Chat, UserChatStatus, Message
 
 
 class UUIDFieldSerializerMixin(serializers.ModelSerializer):
@@ -22,6 +22,14 @@ class UUIDFieldSerializerMixin(serializers.ModelSerializer):
 
 
 # ---[ viewpoint = User ]--- #
+
+class ChatSessionSerializer(serializers.ModelSerializer):
+    username = Field(source='user.username')
+
+    class Meta:
+        model = ChatSession
+        fields = ('username', 'status')
+
 
 class UserSerializer(serializers.ModelSerializer):
     # TODO: add `availability` field / property to User (via UserProfile?): availability = Field(source='get_availability')

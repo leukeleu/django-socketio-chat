@@ -28,39 +28,29 @@ Chat = {
             self.debug_log('Connected.');
         });
 
-        // TODO: instead of the username, work with a user object from DRF2 / Tornadio2
-        conn.on('welcome', function(username) {
-            self.debug_log('Received welcome from server.');
-            self.user = username;
-        });
+        conn.on('ev_chat_session_status', function(chat_session) {
+            // Not signed in yet
+            self.user = chat_session.username;
+        })
 
-        conn.on('user_join', function(user) {
-            self.debug_log(user + ' joined the chat.');
-        });
-
-        conn.on('user_leave', function(user) {
-            self.debug_log(user + ' left the chat.');
-        });
+        conn.on('ev_data_update', function(chat_session, chat_users, chats) {
+            // You are signed in
+            self.user = chat_session.username
+            self.update_users_ui(chat_users);
+            self.update_chats_ui(chats);
+        })
 
         conn.on('disconnect', function(data) {
             self.debug_log('Disconnect');
             conn = null;
         });
 
-        conn.on('user_list', function(users) {
-            self.update_users_ui(users);
-        });
-
-        conn.on('chat_list', function(chats) {
-            self.update_chats_ui(chats);
-        });
-
-        conn.on('chat_create', function(chat) {
+        conn.on('ev_chat_created', function(chat) {
             self.update_chats_chat_ui(chat);
         });
 
-        conn.on('message_create', function(message) {
-            self.update_chats_chat_messages_message_ui(message.chat__uuid, message);
+        conn.on('ev_message_sent', function(message) {
+            self.update_chats_chat_messages_message_ui(message);
         });
     },
 
@@ -139,7 +129,7 @@ Chat = {
         $message_input_textarea.keypress(function(e) {
             if (e.which === 13) { // Enter keycode
                 e.preventDefault();
-                conn.emit('message_req_create', this.value, chat.uuid);
+                conn.emit('req_message_send', this.value, chat.uuid);
                 // TODO: show spinner, and use ack callback to hide the spinner
                 this.value = '';
             }
@@ -185,10 +175,10 @@ Chat = {
         });
     },
 
-    update_chats_chat_messages_message_ui: function(chat_uuid, message) {
+    update_chats_chat_messages_message_ui: function(message) {
         var self = this;
 
-        var $chat_messages_el = $('#chat-list #chat-' + chat_uuid + ' .messages');
+        var $chat_messages_el = $('#chat-list #chat-' + message.chat__uuid + ' .messages');
         var stamp = function(timestamp) {
             return new Date(timestamp).toLocaleTimeString().slice(0, -3);
         }

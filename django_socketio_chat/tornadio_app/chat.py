@@ -7,110 +7,118 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 from tornadio2 import SocketConnection, TornadioRouter, SocketServer, event
 from tornado import web
 
-from rest_framework.renderers import JSONRenderer
-
-from django.utils import simplejson
 from django.utils.html import strip_tags
-
 from django.contrib.auth.models import User
 from django.contrib.sessions.models import Session
 
-from django_socketio_chat.models import Chat
-from django_socketio_chat.serializers import UserSerializer, ChatSerializer, MessageSerializer
-
-
-def prepare_for_emit(obj):
-    """
-    Prepare the object for emit() by Tornadio2's (too simple) JSON renderer
-    - render to JSON using Django REST Framework 2's JSON renderer
-    - convert back to _simple_ Python object using Django's simplejson
-    """
-
-    json = JSONRenderer().render(obj)
-
-    return simplejson.loads(json)
+from django_socketio_chat.models import Chat, ChatSession
+from django_socketio_chat.serializers import ChatSessionSerializer, UserSerializer, ChatSerializer, MessageSerializer
+from django_socketio_chat.utils import prepare_for_emit
 
 
 class ChatConnection(SocketConnection):
 
-    connections = set()
+    connections = {}
+    chat_session = None
 
     def on_open(self, info):
         """
-        Find the Django user corresponding to this connection and send back chat info.
+        Send the user all the relevant chat info if the user has a valid Django session.
         """
 
         # get Django session
         cookie = info.get_cookie('sessionid')
         if cookie:
             # get User for session
-            session = Session.objects.get(session_key=cookie.value)
-            user_id = session.get_decoded().get('_auth_user_id')
             try:
+                session = Session.objects.get(session_key=cookie.value)
+                user_id = session.get_decoded().get('_auth_user_id')
                 # `store` user with connection
                 self.user = User.objects.get(pk=user_id)
+            except (User.DoesNotExist, Session.DoesNotExist):
+                return
+            else:
+                # TODO Implement a __hash__ method on this class?
+                self.connections[self.user] = self.connections.get(self.user, set())
+                self.connections[self.user].add(self)
 
-                self.emit('welcome', self.user.username)
-                self.connections.add(self)
+                self.chat_session, created = ChatSession.objects.get_or_create(user=self.user)
+                chat_session_obj = prepare_for_emit(ChatSessionSerializer(self.chat_session).data)
 
-                # TODO: only send `user_join` event to visible users (as user status change)
-                for connection in self.connections:
-                    connection.emit('user_join', self.user.username)
+                if self.chat_session.status == self.chat_session.SIGNED_OFF:
+                    self.emit('ev_chat_session_status', chat_session_obj)
+                    return
 
-                # TODO: determine visible users by connection (friends, groups, etc.) with the current user
-                chat_users = User.objects.exclude(pk=self.user.pk)
-                chat_users_obj = prepare_for_emit(UserSerializer(chat_users).data)
-                self.emit('user_list', chat_users_obj)
+                elif self.chat_session.status == self.chat_session.SIGNED_IN:
+                    chat_users = self.chat_session.users_that_i_see
+                    chat_users_obj = prepare_for_emit(UserSerializer(chat_users).data)
 
-                # TODO: filter using model methods?
-                chats = Chat.objects.filter(users__id__contains=self.user.id)
-                chats_obj = prepare_for_emit(ChatSerializer(chats).data)
-                self.emit('chat_list', chats_obj)
+                    chats = self.chat_session.chats
+                    chats_obj = prepare_for_emit(ChatSerializer(chats).data)
 
-            except User.DoesNotExist:
-                pass
+                    self.emit('ev_data_update', chat_session_obj, chat_users_obj, chats_obj)
 
-    @event
-    def chat_create(self, usernames):
-        users = User.objects.filter(username__in=usernames)
-        # TODO: only start chat with visible users (filter)
-        chat = Chat.start(self.user, list(users))
-        chat_obj = prepare_for_emit(ChatSerializer(chat).data)
 
-        for connection in self.connections:
-            if connection.user in chat.users.all():
-                connection.emit('chat_create', chat_obj)
+    @event('req_user_sign_in')
+    def sign_in(self):
+        for user in self.chat_session.users_that_see_me:
+            for connection in self.connections.get(user, []):
+                connection.emit('ev_user_signed_in', self.user.username)
 
-    @event
-    def message_req_create(self, message_body, chat_uuid):
-        # TODO: only create message in visible chats
+    @event('req_chat_create')
+    def chat_create(self, username):
+        user = User.objects.get(username=username)
+        if user in self.chat_session.users_that_i_see:
+            chat = Chat.start(self.user, list(user))
+            chat_obj = prepare_for_emit(ChatSerializer(chat).data)
+            for user in chat.users.all():
+                for connection in self.connections.get(user, []):
+                    connection.emit('ev_chat_created', chat_obj)
+
+    @event('req_chat_add_user')
+    def chat_add_user(self, chat_uuid, username):
         chat = Chat.objects.get(uuid=chat_uuid)
+        user = User.objects.get(username=username)
+        if user in self.chat_session.users_that_i_see and self.user in chat.users.all():
+            chat.add_users([user])
+            chat_obj = prepare_for_emit(ChatSerializer(chat).data)
+
+            # send chat obj to new user
+            for connection in self.connections.get(user(user, [])):
+                connection.emit('ev_you_were_added', chat_obj)
+
+            # notify all users in chat
+            for user in chat.users.all():
+                for connection in self.connections.get(user, []):
+                    connection.emit('ev_chat_user_added', chat.hex, username)
+
+    @event('req_message_send')
+    def message_send(self, message_body, chat_uuid):
+        chat = Chat.objects.get(uuid=chat_uuid)
+
+        if not self.user in chat.users.all():
+            return
+
         message = chat.add_message(self.user, strip_tags(message_body))
         message_obj = prepare_for_emit(MessageSerializer(message).data)
+        for user in chat.users.all():
+            for connection in self.connections.get(user, []):
+                connection.emit('ev_message_sent', message_obj)
 
-        for connection in self.connections:
-            if connection.user in chat.users.all():
-                connection.emit('message_create', message_obj)
-
-    @event
-    def leave(self):
-        # TODO: only send `user_leave` event to visible users
-        self.connections.remove(self)
-        for connection in self.connections:
-            connection.emit('user_leave', self.user.username)
-
-    @event('chat_activate')
-    def handle_chat_activate(self, chat_uuid):
+    @event('req_chat_activate')
+    def chat_activate(self, chat_uuid):
         chat = Chat.objects.get(uuid=chat_uuid)
-        chat.activate(self.user)
+        if self.user in chat.users.all():
+            chat.activate(self.user)
 
     @event('chat_deactivate')
-    def handle_chat_deactivate(self, chat_uuid):
+    def chat_deactivate(self, chat_uuid):
         chat = Chat.objects.get(uuid=chat_uuid)
-        chat.deactivate(self.user)
+        if self.user in chat.users.all():
+            chat.deactivate(self.user)
 
     def on_disconnect(self):
-        self.leave()
+        pass
 
     def on_close(self):
         pass

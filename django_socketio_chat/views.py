@@ -2,8 +2,8 @@ from django.contrib.auth.models import User
 
 from rest_framework import generics
 
-from .models import Chat, Message
-from .serializers import UserSerializer, ChatSerializer, MessageSerializer
+from .models import ChatSession, Chat, Message
+from .serializers import UserSerializer, ChatSessionSerializer, ChatSerializer, MessageSerializer
 
 
 class UserList(generics.ListAPIView):
@@ -13,6 +13,13 @@ class UserList(generics.ListAPIView):
     def get_queryset(self):
         # TODO: only return users that the current user can 'see'
         return User.objects.all()
+
+
+class ChatSessionDetail(generics.RetrieveUpdateDestroyAPIView):
+    model = ChatSession
+    serializer_class = ChatSessionSerializer
+    slug_field = 'user__username'
+    slug_url_kwarg = 'username'
 
 
 class ChatList(generics.ListCreateAPIView):

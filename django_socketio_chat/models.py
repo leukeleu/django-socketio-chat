@@ -5,6 +5,38 @@ from django.db import models
 from uuidfield import UUIDField
 
 
+class ChatSession(models.Model):
+    """
+    Model for storing session state (signed_in/ signed_off/ invisible)
+    """
+    SIGNED_OFF = 0
+    SIGNED_IN = 1
+    INVISBLE = 2
+
+    SESSION_STATUS_CHOICES = (
+        (SIGNED_OFF, 'Signed off'),
+        (SIGNED_IN, 'Signed in'),
+        (INVISBLE, 'Invisible')
+    )
+
+    user = models.ForeignKey(User, related_name='chat_session')
+    status = models.IntegerField(choices=SESSION_STATUS_CHOICES, default=SIGNED_OFF)
+
+    # TODO extract into separate function that can be easily overridden
+
+    @property
+    def users_that_see_me(self):
+        return User.objects.exclude(user=self.user)
+
+    @property
+    def users_that_i_see(self):
+        return User.objects.exclude(pk=self.user.pk).filter(chat_session__status=self.SIGNED_IN)
+
+    @property
+    def chats(self):
+        return [ ucs.chat for ucs in UserChatStatus.objects.filter(user=self.user).exclude(status=UserChatStatus.ARCHIVED)]
+
+
 class Chat(models.Model):
     uuid = UUIDField(auto=True)
     started = models.DateTimeField('started', editable=False, auto_now_add=True)
@@ -88,7 +120,7 @@ class Message(models.Model):
     message_body = models.TextField()
 
     def __unicode__(self):
-        return "{user} says \"{message}\" ({timestamp})".format(user=self.user, message=self.message, timestamp=self.timestamp)
+        return "{user} says \"{message}\" ({timestamp})".format(user=self.user_from, message=self.message_body, timestamp=self.timestamp)
 
     def save(self):
         super(Message, self).save() # First save this model, so that we have an id
