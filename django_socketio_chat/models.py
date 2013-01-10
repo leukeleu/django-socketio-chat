@@ -26,7 +26,7 @@ class ChatSession(models.Model):
 
     @property
     def users_that_see_me(self):
-        return User.objects.exclude(user=self.user)
+        return User.objects.exclude(pk=self.user.pk).filter(chat_session__status=self.SIGNED_IN)
 
     @property
     def users_that_i_see(self):
@@ -69,7 +69,9 @@ class Chat(models.Model):
     def __unicode__(self):
         users_str = ', '.join([user.username for user in self.users.all()])
         message_count = len(self.messages.all())
-        return "{users} - {message_count} messages (started {started})".format(users=users_str, message_count=message_count, started=self.started)
+        return "{users} - {message_count} messages (started {started})".format(users=users_str,
+                                                                               message_count=message_count,
+                                                                               started=self.started)
 
     @classmethod
     def start(cls, chat_user, users):

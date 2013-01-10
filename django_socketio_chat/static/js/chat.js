@@ -33,15 +33,14 @@ Chat = {
             // Not signed in yet
             self.chat_session = chat_session;
             if (self.chat_session.status == 0) {
-               self.ui_signed_out()
+               self.ui_signed_off()
             }
         })
 
         conn.on('ev_data_update', function(chat_session, chat_users, chats) {
             // You are signed in
             self.chat_session = chat_session
-            var $chat_window = $('#chat-window').show();
-            $chat_window.show();
+            self.ui_signed_in();
             self.update_users_ui(chat_users);
             self.update_chats_ui(chats);
         })
@@ -57,6 +56,14 @@ Chat = {
 
         conn.on('ev_message_sent', function(message) {
             self.update_chats_chat_messages_message_ui(message);
+        });
+
+        conn.on('ev_chat_activated', function(chat_uuid) {
+            self.ui_chat_activate(chat_uuid);
+        });
+
+        conn.on('ev_chat_deactivated', function(chat_uuid) {
+            self.ui_chat_deactivate(chat_uuid);
         });
     },
 
@@ -79,14 +86,26 @@ Chat = {
         // self.update_chats_ui(chats);
     },
 
-    ui_signed_out: function() {
+    ui_signed_off: function() {
          var $chat_window = $('#chat-window');
         $chat_window.hide();
         var $chat_session_state = $('#chat-session-state');
-        $chat_session_state.html('<h1>Signed out</h1><a id="sign-in" href="#">Sign in</a>');
+        $chat_session_state.html('<h1>Signed off</h1><a id="sign-in" href="#">Sign in</a>');
         $('#sign-in').click(function(e) {
             e.preventDefault();
             conn.emit('req_user_sign_in');
+        });
+
+    },
+
+    ui_signed_in: function() {
+         var $chat_window = $('#chat-window');
+        $chat_window.show();
+        var $chat_session_state = $('#chat-session-state');
+        $chat_session_state.html('<h1>Signed in</h1><a id="sign-off" href="#">Sign off</a>');
+        $('#sign-off').click(function(e) {
+            e.preventDefault();
+            conn.emit('req_user_sign_off');
         });
 
     },
@@ -106,7 +125,7 @@ Chat = {
         var self = this;
 
         var $user_list = $('#user-list');
-        var $user_el = $('<li>' + username + ' (' + (user.is_online ? 'online' : 'offline') + ')</li>');
+        var $user_el = $('<li>' + user.username + ' (' + (user.is_online ? 'online' : 'offline') + ')</li>');
         $user_list.append($user_el);
         $user_el.dblclick(function() {
             conn.emit('req_chat_create', user.username);
@@ -133,7 +152,7 @@ Chat = {
             }).join(', ');
 
         var $chat_el = $('<div id="chat-' + chat.uuid + '">                             \
-                         <h4>' + chat_usernames + '<a href="#" id="toggle-active"></a></h4>\
+                         <h4>' + chat_usernames + '<a href="#" class="toggle-active"></a></h4>\
                          </div>');
         var $messages_el = $('<div class="messages"></div>');
         var $message_input_el = $('<div class="message-input">                          \
@@ -153,36 +172,51 @@ Chat = {
             }
         });
 
-        var $chat_active_toggle = $chat_el.find('#toggle-active');
+        var $chat_active_toggle = $chat_el.find('.toggle-active');
         var user_chat_status = $(chat.user_chat_statuses).filter(function() {
-            return this.user__username == self.chat_session.user
+            return this.user__username == self.chat_session.username
         })[0]
-        if (user_chat_status.status == 'inactive') {
-            $chat_active_toggle.text(' Activate');
-        }
-
-        else if (user_chat_status.status == 'active') {
-            $chat_active_toggle.text(' Deactivate');
-        }
 
         $chat_active_toggle.click(function(e) {
             e.preventDefault();
-            if (user_chat_status.status == 'inactive') {
-                conn.emit('chat_activate', chat.uuid);
-                user_chat_status.status = 'active';
-                $chat_active_toggle.text(' Deactivate');
+            if ($chat_active_toggle.hasClass('js_active')) {
+                conn.emit('req_chat_deactivate', chat.uuid);
             }
-            else if (user_chat_status.status == 'active') {
-                conn.emit('chat_deactivate', chat.uuid);
-                user_chat_status.status = 'inactive';
-                $chat_active_toggle.text(' Activate');
+            else {
+                conn.emit('req_chat_activate', chat.uuid);
             }
         });
 
         $chat_list.append($chat_el);
+
+        if (user_chat_status.status == 'active') {
+            self.ui_chat_activate(chat.uuid);
+        }
+        else if (user_chat_status.status == 'inactive') {
+            self.ui_chat_deactivate(chat.uuid);
+        }
+
         if (chat.messages.length > 0) {
             self.update_chats_chat_messages_ui(chat.uuid, chat.messages);
         }
+    },
+
+    ui_chat_activate: function(chat_uuid) {
+        var chat = $("#chat-" + chat_uuid);
+        var toggle = chat.find(".toggle-active");
+        toggle.text(' Deactivate');
+        toggle.addClass('js_active');
+        chat.find('.messages').show();
+        chat.find('.message-input').show();
+    },
+
+    ui_chat_deactivate: function(chat_uuid) {
+        var chat = $("#chat-" + chat_uuid);
+        var toggle = chat.find(".toggle-active");
+        toggle.text(' Activate');
+        toggle.removeClass('js_active');
+        chat.find('.messages').hide();
+        chat.find('.message-input').hide();
     },
 
     update_chats_chat_messages_ui: function(chat_uuid, messages) {
