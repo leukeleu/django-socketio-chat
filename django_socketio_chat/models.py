@@ -36,6 +36,18 @@ class ChatSession(models.Model):
     def chats(self):
         return [ ucs.chat for ucs in UserChatStatus.objects.filter(user=self.user).exclude(status=UserChatStatus.ARCHIVED)]
 
+    def sign_in(self):
+        self.status = self.SIGNED_IN
+        self.save()
+
+    def sign_off(self):
+        self.status = self.SIGNED_OFF
+        self.save()
+
+    def go_invisible(self):
+        self.status = self.INVISBLE
+        self.save()
+
 
 class Chat(models.Model):
     uuid = UUIDField(auto=True)
@@ -65,20 +77,6 @@ class Chat(models.Model):
         message.save()
         return message
 
-    def activate(self, user):
-        user_chat_status = self.user_chat_statuses.get(user=user)
-        user_chat_status.status = UserChatStatus.ACTIVE
-        user_chat_status.save()
-
-    def deactivate(self, user):
-        user_chat_status = self.user_chat_statuses.get(user=user)
-        user_chat_status.status = UserChatStatus.INACTIVE
-        user_chat_status.save()
-
-    def archive(self, user):
-        user_chat_status = self.user_chat_statuses.get(user=user)
-        user_chat_status.status = UserChatStatus.ARCHIVED
-        user_chat_status.save()
 
     def leave(self, user):
         user_chat_status = self.user_chat_statuses.get(user=user)
@@ -110,6 +108,30 @@ class UserChatStatus(models.Model):
 
     def __unicode__(self):
         return "{user} in chat \"{chat}\" ({status})".format(user=self.user, chat=self.chat, status=self.status)
+
+    @property
+    def is_active(self):
+        return self.status == self.ACTIVE
+
+    @property
+    def is_inactive(self):
+        return self.status == self.INACTIVE
+
+    @property
+    def is_archived(self):
+        return self.status == self.ARCHIVED
+
+    def activate(self):
+        self.status = self.ACTIVE
+        self.save()
+
+    def deactivate(self):
+        self.status = self.INACTIVE
+        self.save()
+
+    def archive(self):
+        self.status = self.ARCHIVED
+        self.save()
 
 
 class Message(models.Model):

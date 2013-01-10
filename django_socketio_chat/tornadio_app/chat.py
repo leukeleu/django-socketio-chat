@@ -11,7 +11,7 @@ from django.utils.html import strip_tags
 from django.contrib.auth.models import User
 from django.contrib.sessions.models import Session
 
-from django_socketio_chat.models import Chat, ChatSession
+from django_socketio_chat.models import Chat, ChatSession, UserChatStatus
 from django_socketio_chat.serializers import ChatSessionSerializer, UserSerializer, ChatSerializer, MessageSerializer
 from django_socketio_chat.utils import prepare_for_emit
 
@@ -61,9 +61,24 @@ class ChatConnection(SocketConnection):
 
     @event('req_user_sign_in')
     def sign_in(self):
+        self.chat_session.sign_in()
         for user in self.chat_session.users_that_see_me:
             for connection in self.connections.get(user, []):
                 connection.emit('ev_user_signed_in', self.user.username)
+
+    @event('req_user_sign_off')
+    def sign_off(self):
+        self.chat_session.sign_off()
+        for user in self.chat_session.users_that_see_me:
+            for connection in self.connections.get(user, []):
+                connection.emit('ev_user_signed_off', self.user.username)
+
+    @event('req_user_go_invisible')
+    def go_invisible(self):
+        self.chat_session.go_invisible()
+        for user in self.chat_session.users_that_see_me:
+            for connection in self.connections.get(user, []):
+                connection.emit('ev_user_signed_off', self.user.username)
 
     @event('req_chat_create')
     def chat_create(self, username):
@@ -90,7 +105,7 @@ class ChatConnection(SocketConnection):
             # notify all users in chat
             for user in chat.users.all():
                 for connection in self.connections.get(user, []):
-                    connection.emit('ev_chat_user_added', chat.hex, username)
+                    connection.emit('ev_chat_user_added', chat.uuid.hex, username)
 
     @event('req_message_send')
     def message_send(self, message_body, chat_uuid):
@@ -105,17 +120,52 @@ class ChatConnection(SocketConnection):
             for connection in self.connections.get(user, []):
                 connection.emit('ev_message_sent', message_obj)
 
+        # Activate any archived user_chat_statusses
+        chat_obj = prepare_for_emit(ChatSerializer(chat).data)
+        for user_chat_status in chat.user_chat_statuses.all().filter(status=UserChatStatus.ARCHIVED):
+            user_chat_status.activate()
+            for connection in self.connections.get(user_chat_status.user, []):
+                connection.emit('ev_chat_created', chat_obj)
+
     @event('req_chat_activate')
     def chat_activate(self, chat_uuid):
+        """
+        Change the UI state to visible.
+        """
         chat = Chat.objects.get(uuid=chat_uuid)
         if self.user in chat.users.all():
-            chat.activate(self.user)
+            user_chat_status = chat.user_chat_statuses.get(user=self.user)
+            if user_chat_status.is_inactive:
+                user_chat_status.activate()
+                self.emit('ev_chat_activated', chat.uuid.hex)
 
-    @event('chat_deactivate')
+    @event('req_chat_deactivate')
     def chat_deactivate(self, chat_uuid):
+        """
+        Change the UI state to invisible.
+        """
         chat = Chat.objects.get(uuid=chat_uuid)
         if self.user in chat.users.all():
-            chat.deactivate(self.user)
+            user_chat_status = chat.user_chat_statuses.get(user=self.user)
+            if user_chat_status.is_active:
+                user_chat_status.deactivate()
+                self.emit('ev_chat_deactivated', chat.uuid.hex)
+
+    @event('req_chat_archive')
+    def chat_archive(self, chat_uuid):
+        """
+        Archive the chat.
+        """
+        chat = Chat.objects.get(uuid=chat_uuid)
+        if self.user in chat.users.all():
+            user_chat_status = chat.user_chat_statuses.get(user=self.user)
+            if not user_chat_status.is_archived:
+                user_chat_status.archive()
+                self.emit('ev_chat_archived', chat.uuid.hex)
+                for user in chat.users.all().exclude(pk=self.user.pk):
+                    for connection in self.connections.get(user, []):
+                        connection.emit('ev_user_left_chat', self.user.username, chat.uuid.hex)
+
 
     def on_disconnect(self):
         pass
