@@ -50,21 +50,30 @@ class ChatConnection(SocketConnection):
                     return
 
                 elif self.chat_session.status == self.chat_session.SIGNED_IN:
-                    chat_users = self.chat_session.users_that_i_see
-                    chat_users_obj = prepare_for_emit(UserSerializer(chat_users).data)
+                    self.send_all_chat_info()
 
-                    chats = self.chat_session.chats
-                    chats_obj = prepare_for_emit(ChatSerializer(chats).data)
+    def send_all_chat_info(self):
+        chat_session_obj = prepare_for_emit(ChatSessionSerializer(self.chat_session).data)
+        chat_users = self.chat_session.users_that_i_see
+        chat_users_obj = prepare_for_emit(UserSerializer(chat_users).data)
 
-                    self.emit('ev_data_update', chat_session_obj, chat_users_obj, chats_obj)
+        chats = self.chat_session.chats
+        chats_obj = prepare_for_emit(ChatSerializer(chats).data)
 
+        self.emit('ev_data_update', chat_session_obj, chat_users_obj, chats_obj)
 
     @event('req_user_sign_in')
     def sign_in(self):
+        if self.chat_session.is_signed_in:
+            return
         self.chat_session.sign_in()
+        self.send_all_chat_info()
         for user in self.chat_session.users_that_see_me:
+            chat_users = ChatSession.objects.get(user=user).users_that_i_see
+            chat_users_obj = prepare_for_emit(UserSerializer(chat_users).data)
             for connection in self.connections.get(user, []):
-                connection.emit('ev_user_signed_in', self.user.username)
+                connection.emit('ev_user_signed_in', self.user.username, chat_users_obj)
+
 
     @event('req_user_sign_off')
     def sign_off(self):

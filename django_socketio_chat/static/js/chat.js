@@ -2,6 +2,7 @@ var conn = null;
 
 // TODO: get rid of `var self = this;`
 
+
 Chat = {
 
     debug_log: function(msg) {
@@ -30,12 +31,17 @@ Chat = {
 
         conn.on('ev_chat_session_status', function(chat_session) {
             // Not signed in yet
-            self.user = chat_session.username;
+            self.chat_session = chat_session;
+            if (self.chat_session.status == 0) {
+               self.ui_signed_out()
+            }
         })
 
         conn.on('ev_data_update', function(chat_session, chat_users, chats) {
             // You are signed in
-            self.user = chat_session.username
+            self.chat_session = chat_session
+            var $chat_window = $('#chat-window').show();
+            $chat_window.show();
             self.update_users_ui(chat_users);
             self.update_chats_ui(chats);
         })
@@ -73,6 +79,18 @@ Chat = {
         // self.update_chats_ui(chats);
     },
 
+    ui_signed_out: function() {
+         var $chat_window = $('#chat-window');
+        $chat_window.hide();
+        var $chat_session_state = $('#chat-session-state');
+        $chat_session_state.html('<h1>Signed out</h1><a id="sign-in" href="#">Sign in</a>');
+        $('#sign-in').click(function(e) {
+            e.preventDefault();
+            conn.emit('req_user_sign_in');
+        });
+
+    },
+
     update_users_ui: function(users) {
         var self = this;
 
@@ -80,20 +98,18 @@ Chat = {
         $user_list.empty();
 
         $.each(users, function(i, user) {
-            if (user.username !== self.user) {
-                self.update_users_user_ui(user);
-            }
+            self.ui_add_user(user);
         });
     },
 
-    update_users_user_ui: function(user) {
+    ui_add_user: function(user) {
         var self = this;
 
         var $user_list = $('#user-list');
-        var $user_el = $('<li>' + user.username + ' (' + (user.is_online ? 'online' : 'offline') + ')</li>');
+        var $user_el = $('<li>' + username + ' (' + (user.is_online ? 'online' : 'offline') + ')</li>');
         $user_list.append($user_el);
         $user_el.dblclick(function() {
-            conn.emit('chat_create', [user.username]);
+            conn.emit('req_chat_create', user.username);
         });
     },
 
@@ -112,13 +128,15 @@ Chat = {
         var self = this;
 
         var $chat_list = $('#chat-list');
-        var chat_usernames = $.map(chat.user_chat_statuses, function(user_chat_status) { return user_chat_status.user__username; }).join(', ');
+        var chat_usernames = $.map(chat.user_chat_statuses, function(user_chat_status) {
+            return user_chat_status.user__username;
+            }).join(', ');
 
         var $chat_el = $('<div id="chat-' + chat.uuid + '">                             \
                          <h4>' + chat_usernames + '<a href="#" id="toggle-active"></a></h4>\
                          </div>');
         var $messages_el = $('<div class="messages"></div>');
-        var $message_input_el = $('<div class="MESSAGE-input">                          \
+        var $message_input_el = $('<div class="message-input">                          \
                                   <textarea placeholder="Type message"></textarea>      \
                                   </div>');
 
@@ -137,7 +155,7 @@ Chat = {
 
         var $chat_active_toggle = $chat_el.find('#toggle-active');
         var user_chat_status = $(chat.user_chat_statuses).filter(function() {
-            return this.user__username == self.user
+            return this.user__username == self.chat_session.user
         })[0]
         if (user_chat_status.status == 'inactive') {
             $chat_active_toggle.text(' Activate');

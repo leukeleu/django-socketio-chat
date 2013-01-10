@@ -40,13 +40,25 @@ class ChatSession(models.Model):
         self.status = self.SIGNED_IN
         self.save()
 
+    @property
+    def is_signed_in(self):
+        return self.status == self.SIGNED_IN
+
     def sign_off(self):
         self.status = self.SIGNED_OFF
         self.save()
 
+    @property
+    def is_signed_off(self):
+        return self.status == self.SIGNED_OFF
+
     def go_invisible(self):
         self.status = self.INVISBLE
         self.save()
+
+    @property
+    def is_invisible(self):
+        return self.status == self.INVISBLE
 
 
 class Chat(models.Model):

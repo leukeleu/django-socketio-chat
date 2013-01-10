@@ -1,29 +1,31 @@
 <div class="chat-container">
+    <div id="chat-session-state"></div>
 
-    <div id="chat-user">
-        <h3>User</h3>
-        <p>
-            {% if not user.is_authenticated %}
-                <a href="{% url login %}">login</a>
-            {% else %}
-                {{ user.username }} (<a href="{% url logout %}">logout</a>)
-            {% endif %}
-        </p>
+    <div id="chat-window">
+        <div id="chat-user">
+            <h3>User</h3>
+            <p>
+                {% if not user.is_authenticated %}
+                    <a href="{% url login %}">login</a>
+                {% else %}
+                    {{ user.username }} (<a href="{% url logout %}">logout</a>)
+                {% endif %}
+            </p>
+        </div>
+
+        <div id="chat-users">
+            <h3>Users</h3>
+            <ul id="user-list"></ul>
+        </div>
+
+        <div id="chats">
+            <h3>Chats</h3>
+            <div id="chat-list"></div>
+        </div>
+
+        <div id="debug">
+            <h3>Debug</h3>
+            <div id="debug-log"></div>
+        </div>
     </div>
-
-    <div id="chat-users">
-        <h3>Users</h3>
-        <ul id="user-list"></ul>
-    </div>
-
-    <div id="chats">
-        <h3>Chats</h3>
-        <div id="chat-list"></div>
-    </div>
-
-    <div id="debug">
-        <h3>Debug</h3>
-        <div id="debug-log"></div>
-    </div>
-
 </div>
