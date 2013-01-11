@@ -56,7 +56,7 @@ class UserChatStatusSerializer(UUIDFieldSerializerMixin, serializers.ModelSerial
 
     class Meta:
         model = UserChatStatus
-        fields = ('user__username', 'status', 'joined', 'left', 'unread_messages')
+        fields = ('user__username', 'status', 'joined', 'unread_messages')
 
 
 class ChatMessageSerializer(UUIDFieldSerializerMixin, serializers.ModelSerializer):

@@ -111,7 +111,7 @@ class ChatConnection(SocketConnection):
             chat_obj = prepare_for_emit(serializers.ChatSerializer(chat).data)
 
             # send chat obj to new user
-            for connection in self.connections.get(user(user, [])):
+            for connection in self.connections.get(user, []):
                 connection.emit('ev_you_were_added', chat_obj)
 
             # notify all users in chat

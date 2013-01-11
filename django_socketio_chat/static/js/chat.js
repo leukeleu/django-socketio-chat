@@ -14,7 +14,7 @@ Chat = {
     connect: function() {
         io.j = [];
         io.sockets = [];
-
+        users = [];
         var self = this;
 
         conn = io.connect('https://' + window.location.host, {
@@ -41,6 +41,7 @@ Chat = {
             // You are signed in
             self.chat_session = chat_session
             self.ui_signed_in();
+            self.chat_users = chat_users;
             self.update_users_ui(chat_users);
             self.update_chats_ui(chats);
         })
@@ -52,15 +53,21 @@ Chat = {
 
         conn.on('ev_user_signed_in', function(username, chat_users) {
             self.debug_log(username + ' signed in.')
+            self.chat_users = chat_users;
             self.update_users_ui(chat_users);
         });
 
         conn.on('ev_user_signed_off', function(username, chat_users) {
             self.debug_log(username + ' signed off.')
+            self.chat_users = chat_users;
             self.update_users_ui(chat_users);
         });
 
         conn.on('ev_chat_created', function(chat) {
+            self.update_chats_chat_ui(chat);
+        });
+
+        conn.on('ev_you_were_added', function(chat) {
             self.update_chats_chat_ui(chat);
         });
 
@@ -167,13 +174,16 @@ Chat = {
             return user_chat_status.user__username;
             }).join(', ');
 
-        var $chat_el = $('<div id="chat-' + chat.uuid + '">                             \
-                         <h4>' + chat_usernames + '<a href="#" class="toggle-active"></a>\
-                         <a href="#" class="archive">Archive</a><span class="unread-messages"></span></h4>\
+        var $chat_el = $('<div id="chat-' + chat.uuid + '">                                 \
+                         <h4>' + chat_usernames + '<a href="#" class="toggle-active"></a>   \
+                         <a href="#" class="archive">Archive</a>                            \
+                         <a href="#" class="list-users">+</a>                               \
+                         <span class="unread-messages"></span></h4>                         \
+                         <ul class="chat-user-list"></ul>                                   \
                          </div>');
         var $messages_el = $('<div class="messages"></div>');
-        var $message_input_el = $('<div class="message-input">                          \
-                                  <textarea placeholder="Type message"></textarea>      \
+        var $message_input_el = $('<div class="message-input">                              \
+                                  <textarea placeholder="Type message"></textarea>          \
                                   </div>');
 
         $chat_el.append($messages_el);
@@ -199,6 +209,11 @@ Chat = {
             else {
                 conn.emit('req_chat_activate', chat.uuid);
             }
+        });
+
+        $chat_el.find('.list-users').click( function(e) {
+            e.preventDefault();
+            self.list_users(chat.uuid);
         });
 
         $chat_el.find('.archive').click( function(e) {
@@ -284,6 +299,23 @@ Chat = {
         var s = '<div id="message-' + message.uuid + '">' + stamp(message.timestamp) + '    \
         ' + message.user_from__username + ': ' + message.message_body +'</div>';
         $chat_messages_el.append($(s));
+    },
+
+    list_users: function(chat_uuid) {
+        var self = this;
+        var chat = $("#chat-" + chat_uuid);
+        $chat_user_list = chat.find('.chat-user-list')
+        $chat_user_list.empty();
+        $.each(self.chat_users, function(i, user) {
+            $chat_user_list.append('<li>                                                    \
+                <a href="#" class="user-add" data-username="'+ user.username + '">          \
+                '+ user.username + '</a>  \
+                </li>');
+        });
+        $chat_user_list.on('click', '.user-add', function(e) {
+            e.preventDefault();
+            conn.emit('req_chat_add_user', chat_uuid, $(e.target).data('username'));
+        });
     },
 
     init: function() {
