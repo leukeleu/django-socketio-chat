@@ -52,10 +52,11 @@ class UserSerializer(serializers.ModelSerializer):
 
 class UserChatStatusSerializer(UUIDFieldSerializerMixin, serializers.ModelSerializer):
     user__username = Field(source='user.username')
+    unread_messages = Field(source='unread_messages')
 
     class Meta:
         model = UserChatStatus
-        fields = ('user__username', 'status', 'joined', 'left', 'unseen_message_count')
+        fields = ('user__username', 'status', 'joined', 'left', 'unread_messages')
 
 
 class ChatMessageSerializer(UUIDFieldSerializerMixin, serializers.ModelSerializer):

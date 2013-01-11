@@ -26,7 +26,7 @@ class ChatSession(models.Model):
 
     @property
     def users_that_see_me(self):
-        return User.objects.exclude(pk=self.user.pk).filter(chat_session__status=SIGNED_IN)
+        return User.objects.exclude(pk=self.user.pk).filter(chat_session__status=self.SIGNED_IN)
 
     @property
     def users_that_i_see(self):
@@ -92,13 +92,6 @@ class Chat(models.Model):
         return message
 
 
-    def leave(self, user):
-        user_chat_status = self.user_chat_statuses.get(user=user)
-        user_chat_status.left = datetime.now()
-        user_chat_status.status = UserChatStatus.INACTIVE
-        user_chat_status.save()
-
-
 class UserChatStatus(models.Model):
     INACTIVE = 'inactive'
     ACTIVE = 'active'
@@ -114,7 +107,6 @@ class UserChatStatus(models.Model):
     status = models.CharField(max_length=8, choices=CHAT_STATUS_CHOICES, default=ACTIVE)
     joined = models.DateTimeField('joined_timestamp', editable=False, auto_now_add=True)
     left = models.DateTimeField('left_timestamp', editable=False, blank=True, null=True)
-    unseen_message_count = models.IntegerField(default=0)
 
     class Meta:
         unique_together = (('user', 'chat'),)
@@ -146,6 +138,10 @@ class UserChatStatus(models.Model):
     def archive(self):
         self.status = self.ARCHIVED
         self.save()
+
+    @property
+    def unread_messages(self):
+        return UserMessageStatus.objects.filter(user=self.user, message__chat=self.chat, is_read=False).count
 
 
 class Message(models.Model):
