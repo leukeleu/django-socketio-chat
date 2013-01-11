@@ -14,7 +14,7 @@ The server setup is as follows:
                                  │
                                  └─[ 8001 ]-> Socket.io
 
-HAProxy takes care of ssl encryption and proxying. All socket.io related requests are proxied to 
+HAProxy takes care of ssl encryption and proxying. All socket.io related requests are proxied to
 a small tornadio server.
 
 Tested with
@@ -31,6 +31,7 @@ Example project
 ::
 
     cd example
+
 
 Follow the instructions in `server_setup/README.rst`
 
@@ -77,5 +78,5 @@ Running
 
 ::
 
-    cd tornadio_app
+    cd django_socketio_chat/tornadio_app
     python chat.py
