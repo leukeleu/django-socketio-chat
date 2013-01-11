@@ -72,14 +72,16 @@ class ChatConnection(SocketConnection):
             chat_users = ChatSession.objects.get(user=user).users_that_i_see
             chat_users_obj = prepare_for_emit(UserSerializer(chat_users).data)
             for connection in self.connections.get(user, []):
-                connection.emit('ev_user_signed_in', self.user.username, chat_users_obj)
+                connection.emit('ev_user_signed_in', self.user.username, chat_users_obj);
 
     @event('req_user_sign_off')
     def sign_off(self):
         self.chat_session.sign_off()
         for user in self.chat_session.users_that_see_me:
+            chat_users = ChatSession.objects.get(user=user).users_that_i_see
+            chat_users_obj = prepare_for_emit(UserSerializer(chat_users).data)
             for connection in self.connections.get(user, []):
-                connection.emit('ev_user_signed_off', self.user.username)
+                connection.emit('ev_user_signed_off', self.user.username, chat_users_obj);
         chat_session_obj = prepare_for_emit(ChatSessionSerializer(self.chat_session).data)
         self.emit('ev_chat_session_status', chat_session_obj)
 

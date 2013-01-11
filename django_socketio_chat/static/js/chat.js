@@ -50,6 +50,16 @@ Chat = {
             conn = null;
         });
 
+        conn.on('ev_user_signed_in', function(username, chat_users) {
+            self.debug_log(username + ' signed in.')
+            self.update_users_ui(chat_users);
+        });
+
+        conn.on('ev_user_signed_off', function(username, chat_users) {
+            self.debug_log(username + ' signed off.')
+            self.update_users_ui(chat_users);
+        });
+
         conn.on('ev_chat_created', function(chat) {
             self.update_chats_chat_ui(chat);
         });
@@ -195,9 +205,8 @@ Chat = {
         else if (user_chat_status.status == 'inactive') {
             self.ui_chat_deactivate(chat.uuid);
         }
-
         if (chat.messages.length > 0) {
-            self.update_chats_chat_messages_ui(chat.uuid, chat.messages);
+            self.update_chats_chat_messages_ui(chat.messages);
         }
     },
 
@@ -219,17 +228,16 @@ Chat = {
         chat.find('.message-input').hide();
     },
 
-    update_chats_chat_messages_ui: function(chat_uuid, messages) {
+    update_chats_chat_messages_ui: function(messages) {
         var self = this;
 
         $.each(messages, function(i, message) {
-            self.update_chats_chat_messages_message_ui(chat_uuid, message);
+            self.update_chats_chat_messages_message_ui(message);
         });
     },
 
     update_chats_chat_messages_message_ui: function(message) {
         var self = this;
-
         var $chat_messages_el = $('#chat-list #chat-' + message.chat__uuid + ' .messages');
         var stamp = function(timestamp) {
             return new Date(timestamp).toLocaleTimeString().slice(0, -3);

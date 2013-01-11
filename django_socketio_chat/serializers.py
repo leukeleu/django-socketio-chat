@@ -60,10 +60,11 @@ class UserChatStatusSerializer(UUIDFieldSerializerMixin, serializers.ModelSerial
 
 class ChatMessageSerializer(UUIDFieldSerializerMixin, serializers.ModelSerializer):
     user_from__username = Field(source='user_from.username')
+    chat__uuid = Field(source='chat.uuid')
 
     class Meta:
         model = Message
-        fields = ('uuid', 'timestamp', 'user_from__username', 'message_body',)
+        fields = ('uuid', 'chat__uuid', 'timestamp', 'user_from__username', 'message_body',)
 
 
 class ChatSerializer(UUIDFieldSerializerMixin, serializers.ModelSerializer):
