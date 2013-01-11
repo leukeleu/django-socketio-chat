@@ -14,7 +14,7 @@ Both messages may contain data that is relevant for the receiving party to prope
 | `req_user_sign_in`                             |                 |                                |
 | `ev_user_signed_in(username, users)`           | all 'friends'   | users[username] = user         |
 | `req_user_sign_off`                            |                 |                                |
-| `ev_user_signed_off(user, users)`              | all 'friends'   | users.pop(username)            |
+| `ev_user_signed_off(username, users)`          | all 'friends'   | users.pop(username)            |
 | `req_user_invisible` **TODO**                  |                 |                                |
 | `ev_data_update(chat_session, chats, users)`   | signed in user  | build or update entire UI      |
 | `ev_chat_session_status(chat_session)`         | connected user  | show sign-in button            |
@@ -29,20 +29,30 @@ Both messages may contain data that is relevant for the receiving party to prope
 | `ev_chat_deactivated(chat_uuid)`               | chatstatus.user | collapse(chat)                 |
 | `req_chat_archive(chat_uuid)`                  |                 |                                |
 | `ev_chat_archived(chat_uuid)`                  | chatstatus.user | chats.pop(chat)                |
-| `ev_user_left_chat(user)`                      | other users     | chats[chat].users.pop(user)    |
 | `req_message_send(message, chat_uuid)`         |                 |                                |
 | `ev_message_sent(message, user_chat_statuses)` | chat.users      | chats.messages.append(message) |
 
 
 ## REQ: Sign in `req_user_sign_in`
 
-Sign a user in. This makes the user visible to other users, that have permission to `see` the other user.
+Sign a user in. This makes the user visible to other users, that have permission to *see* the other user.
 The server filters the users that others will see, and thus which clients will be notified.
+
+## EV: Signed in `ev_user_signed_in(username, users)`
+
+This  message is sent to any clients that can *see* this user indicating that this user has become available.
+The server can send this message after it received `req_sign_in`.
+`users` is a new list of all the users that the client receiving this message can see.
 
 ## REQ: Sign off `req_user_sign_off`
 
-Sign a user off. This makes the user `unavailable` to other users that have permission to `see` this user.
+Sign a user off. This makes the user `unavailable` to other users that have permission to *see* this user.
 The user can no longer see chats, nor can he see the availablity of others.
+
+## EV: Signed off `ev_user_signed_off(username, users)`
+
+Sent to all users that can *see* user when this user signs off or goes invisible.
+`users` is a new list of all the users that the client receiving this message can see.
 
 ## REQ: Go invisible `req_user_invisible`
 
@@ -51,58 +61,52 @@ The user can no longer see chats, nor can he see the availablity of others.
 The same as when signed in, but others will not see this user as available.
 This user can still start chats and will also receive new messages.
 
-## EV: Signed in `ev_user_signed_in(user)`
-
-This is a message sent to any clients that can `see` this user indicating that this user has become available.
-The server can send this message after it received `req_sign_in`, but it is not an answer nor an acknowledgement.
-
-## EV: Data update `ev_data_update(chats, users)`
+## EV: Data update `ev_data_update(chat_session, chats, users)`
 
 Reloads all data. Typically sent when a client connects. Server may also decide to resend all data at any time,
 the client should build or update the entire UI based on the data.
+`chat_session` contains state information about the signed in state of the user.
+`chats` are all the non-archived chats for this users including their messages 
+`users` are all the users that this user can see.
 
-## EV: Signed off `ev_user_signed_off(user)`
+## EV: Chat session status `ev_chat_session_statusz(chat_session)`
+Only sent when a user is logged in , but nog signed in to chat.
 
-Sent to all users that can `see` user when this user signs off or goes invisible.
-
-## REQ: Create chat `req_chat_create(user)`
+## REQ: Create chat `req_chat_create(username)`
 
 Start a new chat with user.
-
-Server checks if the user sending the request `sees` `user`. If not, the `req` is ignored.
 A chat is intially between two users, but others can be invited once the chat is started.
 
 ## EV: Chat created `ev_chat_created(chat)`
 
 Sent to all particiapnts in the chat session.
+The `chat` is added to the UI by the client.
 
-## REQ Activate chat `req_chat_activate(chat)`
+## REQ Activate chat `req_chat_activate(chat_uuid)`
 
 Activate a chat. Activating can mean, depending on the UI implementation, that a chat is unfolded in the UI and 
 messages become visible. This is UI related state stored server-side.
 
-## EV: Chat activated `ev_chat_activated(chat)`
+## EV: Chat activated `ev_chat_activated(chat_uuid)`
 
 Sent by server to indicate a chat was activated. The UI may uncollapse the chat.
 
-## REQ: Deactivate chat `req_chat_deactivate(chat)`
+## REQ: Deactivate chat `req_chat_deactivate(chat_uuid)`
 
 Deactivate a chat. This is the inverse of `req_activate`.
 
-## EV: Chat deactivated `ev_chat_deactivated(chat)`
+## EV: Chat deactivated `ev_chat_deactivated(chat_uuid)`
 
 Sent by server to indicate a chat was deactivated. The UI may collapse the chat.
 
-## REQ: Archive chat `req_chat_archive(chat)`
+## REQ: Archive chat `req_chat_archive(chat_uuid)`
 
 Archive a chat.
 
 Typically the UI will remove the chat from the window. 
 
-Other users will be notified with an event `ev_user_left_chat(chat, user)`
-
-Other users can still send messages to this chat.If they do, the chat will become inactive, resulting in 
-the server sending `ev_chat_deactivated(chat)`.
+Other users can still send messages to this chat. If they do, the chat will become active, resulting in 
+the server sending `ev_chat_created(chat)` to all the user that had archived the chat.
 
 The following statediagram applies:
 
@@ -111,18 +115,16 @@ The following statediagram applies:
 If *A*, *B* and *C* are in a chat. *A* leaves and *B* sends a message. *A* gets notified in the same way as he would have been
 in case of a new chat, but in this case there's a backlog.
 
-## EV: Chat archived `ev_chat_archived(chat)`
+## EV: Chat archived `ev_chat_archived(chat_uuid)`
 
-Sent to the user for which this chat is archived. Server must send `ev_user_left_chat` to other users in the chat.
+Sent to the user for which this chat is archived. Other users are not notified of this.
 
-## EV: User left chat `ev_user_left_chat(user)`
-
-Sent to notify other users that a user archived a chat.
-
-## REQ: send `req_message_send(chat, message)`
+## REQ: send `req_message_send(message_body, chat_uuid)`
 
 The actual chat-message sending.
 
-## EV: message sent `ev_message_sent(chat, message)`
+## EV: message sent `ev_message_sent(message, user_chat_statuses)`
 
-Sent by server to users in the chat. Sent in response to `req_send`. Server must check sendig user is actually in the chat.
+Broadcast to all users in the chat. Sent in response to `req_send`.
+`user_chat_statuses` contains chat-window related state info, like the amount of unread messags and active/inactive/archived
+state.
