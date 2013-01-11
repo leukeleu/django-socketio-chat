@@ -65,6 +65,40 @@ Testing
 Add django-socketio-chat.local to your local /etc/hosts file.
 
 
+---------------
+Development mac
+---------------
+
+
+Mysql
+-----
+
+You can't use your Mac's Mysql server unfortuenately for now. It will do some misterious caching when connecting to 
+it via tornadio.
+
+You must allow access to your ubuntu machine from your mac:
+
+    sudo mysql -p 
+
+    mysql> GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY "PASSWORD";
+    mysql> flush privileges;
+    mysql> quit
+
+
+Make sure /etc/mysql/my.cnf has the bind-address of your ubuntu's ip-address.
+
+
+HAProxy
+-------
+
+    $ brew install haproxy --devel # this will give you 1.5 which supprts ssl
+
+
+Start haproxy:
+
+    $ cd server_setup
+    $ haproxy -f haproxy.cfg
+
 -------------
 Other sources
 -------------
