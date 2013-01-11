@@ -133,9 +133,9 @@ class ChatConnection(SocketConnection):
                 connection.emit('ev_message_sent', message_obj)
 
         # Activate any archived user_chat_statusses
-        chat_obj = prepare_for_emit(ChatSerializer(chat).data)
         for user_chat_status in chat.user_chat_statuses.all().filter(status=UserChatStatus.ARCHIVED):
             user_chat_status.activate()
+            chat_obj = prepare_for_emit(ChatSerializer(chat).data)
             for connection in self.connections.get(user_chat_status.user, []):
                 connection.emit('ev_chat_created', chat_obj)
 

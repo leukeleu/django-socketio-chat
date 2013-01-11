@@ -208,7 +208,6 @@ Chat = {
         });
 
         $chat_list.append($chat_el);
-
         if (user_chat_status.status == 'active') {
             self.ui_chat_activate(chat.uuid);
         }

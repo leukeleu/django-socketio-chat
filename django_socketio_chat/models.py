@@ -26,7 +26,7 @@ class ChatSession(models.Model):
 
     @property
     def users_that_see_me(self):
-        return User.objects.exclude(pk=self.user.pk).filter(chat_session__status=self.SIGNED_IN)
+        return User.objects.exclude(pk=self.user.pk).filter(chat_session__status=SIGNED_IN)
 
     @property
     def users_that_i_see(self):
@@ -111,7 +111,7 @@ class UserChatStatus(models.Model):
 
     user = models.ForeignKey(User, related_name='user_chat_statuses')
     chat = models.ForeignKey(Chat, related_name='user_chat_statuses')
-    status = models.CharField(max_length=8, choices=CHAT_STATUS_CHOICES, default=INACTIVE)
+    status = models.CharField(max_length=8, choices=CHAT_STATUS_CHOICES, default=ACTIVE)
     joined = models.DateTimeField('joined_timestamp', editable=False, auto_now_add=True)
     left = models.DateTimeField('left_timestamp', editable=False, blank=True, null=True)
     unseen_message_count = models.IntegerField(default=0)
