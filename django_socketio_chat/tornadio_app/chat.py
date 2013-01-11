@@ -12,7 +12,7 @@ from django.contrib.auth.models import User
 from django.contrib.sessions.models import Session
 
 from django_socketio_chat.models import Chat, ChatSession, UserChatStatus
-from django_socketio_chat.serializers import ChatSessionSerializer, UserSerializer, ChatSerializer, MessageSerializer
+from django_socketio_chat import serializers
 from django_socketio_chat.utils import prepare_for_emit
 
 
@@ -43,7 +43,7 @@ class ChatConnection(SocketConnection):
                 self.connections[self.user].add(self)
 
                 self.chat_session, created = ChatSession.objects.get_or_create(user=self.user)
-                chat_session_obj = prepare_for_emit(ChatSessionSerializer(self.chat_session).data)
+                chat_session_obj = prepare_for_emit(serializers.ChatSessionSerializer(self.chat_session).data)
 
                 if self.chat_session.status == self.chat_session.SIGNED_OFF:
                     self.emit('ev_chat_session_status', chat_session_obj)
@@ -53,12 +53,12 @@ class ChatConnection(SocketConnection):
                     self.send_all_chat_info()
 
     def send_all_chat_info(self):
-        chat_session_obj = prepare_for_emit(ChatSessionSerializer(self.chat_session).data)
+        chat_session_obj = prepare_for_emit(serializers.ChatSessionSerializer(self.chat_session).data)
         chat_users = self.chat_session.users_that_i_see
-        chat_users_obj = prepare_for_emit(UserSerializer(chat_users).data)
+        chat_users_obj = prepare_for_emit(serializers.UserSerializer(chat_users).data)
 
         chats = self.chat_session.chats
-        chats_obj = prepare_for_emit(ChatSerializer(chats).data)
+        chats_obj = prepare_for_emit(serializers.ChatSerializer(chats).data)
 
         self.emit('ev_data_update', chat_session_obj, chat_users_obj, chats_obj)
 
@@ -70,7 +70,7 @@ class ChatConnection(SocketConnection):
         self.send_all_chat_info()
         for user in self.chat_session.users_that_see_me:
             chat_users = ChatSession.objects.get(user=user).users_that_i_see
-            chat_users_obj = prepare_for_emit(UserSerializer(chat_users).data)
+            chat_users_obj = prepare_for_emit(serializers.UserSerializer(chat_users).data)
             for connection in self.connections.get(user, []):
                 connection.emit('ev_user_signed_in', self.user.username, chat_users_obj);
 
@@ -79,10 +79,10 @@ class ChatConnection(SocketConnection):
         self.chat_session.sign_off()
         for user in self.chat_session.users_that_see_me:
             chat_users = ChatSession.objects.get(user=user).users_that_i_see
-            chat_users_obj = prepare_for_emit(UserSerializer(chat_users).data)
+            chat_users_obj = prepare_for_emit(serializers.UserSerializer(chat_users).data)
             for connection in self.connections.get(user, []):
                 connection.emit('ev_user_signed_off', self.user.username, chat_users_obj);
-        chat_session_obj = prepare_for_emit(ChatSessionSerializer(self.chat_session).data)
+        chat_session_obj = prepare_for_emit(serializers.ChatSessionSerializer(self.chat_session).data)
         self.emit('ev_chat_session_status', chat_session_obj)
 
     @event('req_user_go_invisible')
@@ -97,7 +97,7 @@ class ChatConnection(SocketConnection):
         user = User.objects.get(username=username)
         if user in self.chat_session.users_that_i_see:
             chat = Chat.start(self.user, [user])
-            chat_obj = prepare_for_emit(ChatSerializer(chat).data)
+            chat_obj = prepare_for_emit(serializers.ChatSerializer(chat).data)
             for user in chat.users.all():
                 for connection in self.connections.get(user, []):
                     connection.emit('ev_chat_created', chat_obj)
@@ -108,7 +108,7 @@ class ChatConnection(SocketConnection):
         user = User.objects.get(username=username)
         if user in self.chat_session.users_that_i_see and self.user in chat.users.all():
             chat.add_users([user])
-            chat_obj = prepare_for_emit(ChatSerializer(chat).data)
+            chat_obj = prepare_for_emit(serializers.ChatSerializer(chat).data)
 
             # send chat obj to new user
             for connection in self.connections.get(user(user, [])):
@@ -126,16 +126,19 @@ class ChatConnection(SocketConnection):
         if not self.user in chat.users.all():
             return
 
-        message = chat.add_message(self.user, strip_tags(message_body))
-        message_obj = prepare_for_emit(MessageSerializer(message).data)
+        message = chat.add_message(self.user, strip_tags(message_body));
+        message_obj = prepare_for_emit(serializers.MessageSerializer(message).data)
+        user_chat_statuses = chat.user_chat_statuses
+        user_chat_statuses_obj = prepare_for_emit([serializers.UserChatStatusSerializer(ucs).data for ucs in user_chat_statuses.all()])
+
         for user in chat.users.all():
             for connection in self.connections.get(user, []):
-                connection.emit('ev_message_sent', message_obj)
+                connection.emit('ev_message_sent', message_obj, user_chat_statuses_obj)
 
         # Activate any archived user_chat_statusses
         for user_chat_status in chat.user_chat_statuses.all().filter(status=UserChatStatus.ARCHIVED):
             user_chat_status.activate()
-            chat_obj = prepare_for_emit(ChatSerializer(chat).data)
+            chat_obj = prepare_for_emit(serializers.ChatSerializer(chat).data)
             for connection in self.connections.get(user_chat_status.user, []):
                 connection.emit('ev_chat_created', chat_obj)
 
@@ -174,9 +177,6 @@ class ChatConnection(SocketConnection):
             if not user_chat_status.is_archived:
                 user_chat_status.archive()
                 self.emit('ev_chat_archived', chat.uuid.hex)
-                for user in chat.users.all().exclude(pk=self.user.pk):
-                    for connection in self.connections.get(user, []):
-                        connection.emit('ev_user_left_chat', self.user.username, chat.uuid.hex)
 
 
     def on_disconnect(self):

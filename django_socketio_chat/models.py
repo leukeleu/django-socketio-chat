@@ -1,4 +1,3 @@
-from datetime import datetime
 from django.contrib.auth.models import User
 from django.db import models
 
@@ -130,6 +129,7 @@ class UserChatStatus(models.Model):
     def activate(self):
         self.status = self.ACTIVE
         self.save()
+        UserMessageStatus.objects.filter(message__chat=self.chat, user=self.user).update(is_read=True)
 
     def deactivate(self):
         self.status = self.INACTIVE

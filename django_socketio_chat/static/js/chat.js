@@ -64,8 +64,10 @@ Chat = {
             self.update_chats_chat_ui(chat);
         });
 
-        conn.on('ev_message_sent', function(message) {
+        conn.on('ev_message_sent', function(message, user_chat_statuses) {
             self.update_chats_chat_messages_message_ui(message);
+            var user_chat_status = self.get_user_chat_status(user_chat_statuses);
+            self.ui_chat_set_unread_messages(message.chat__uuid, user_chat_status.unread_messages);
         });
 
         conn.on('ev_chat_activated', function(chat_uuid) {
@@ -167,7 +169,7 @@ Chat = {
 
         var $chat_el = $('<div id="chat-' + chat.uuid + '">                             \
                          <h4>' + chat_usernames + '<a href="#" class="toggle-active"></a>\
-                         <a href="#" class="archive">Archive</a></h4>\
+                         <a href="#" class="archive">Archive</a><span class="unread-messages"></span></h4>\
                          </div>');
         var $messages_el = $('<div class="messages"></div>');
         var $message_input_el = $('<div class="message-input">                          \
@@ -188,10 +190,7 @@ Chat = {
         });
 
         var $chat_active_toggle = $chat_el.find('.toggle-active');
-        var user_chat_status = $(chat.user_chat_statuses).filter(function() {
-            return this.user__username == self.chat_session.username
-        })[0]
-
+        var user_chat_status = self.get_user_chat_status(chat.user_chat_statuses);
         $chat_active_toggle.click(function(e) {
             e.preventDefault();
             if ($chat_active_toggle.hasClass('js_active')) {
@@ -213,22 +212,33 @@ Chat = {
         }
         else if (user_chat_status.status == 'inactive') {
             self.ui_chat_deactivate(chat.uuid);
+            self.ui_chat_set_unread_messages(chat.uuid, user_chat_status.unread_messages);
         }
         if (chat.messages.length > 0) {
             self.update_chats_chat_messages_ui(chat.messages);
         }
     },
 
+    get_user_chat_status: function(user_chat_statuses) {
+        var self = this;
+        return  $(user_chat_statuses).filter(function() {
+            return this.user__username == self.chat_session.username
+        })[0]
+    },
+
     ui_chat_activate: function(chat_uuid) {
+        var self = this;
         var chat = $("#chat-" + chat_uuid);
         var toggle = chat.find(".toggle-active");
         toggle.text(' Deactivate');
         toggle.addClass('js_active');
         chat.find('.messages').show();
         chat.find('.message-input').show();
+        self.ui_chat_clear_unread_messages(chat_uuid);
     },
 
     ui_chat_deactivate: function(chat_uuid) {
+        var self = this;
         var chat = $("#chat-" + chat_uuid);
         var toggle = chat.find(".toggle-active");
         toggle.text(' Activate');
@@ -237,7 +247,22 @@ Chat = {
         chat.find('.message-input').hide();
     },
 
+    ui_chat_set_unread_messages: function(chat_uuid, count) {
+        var self = this;
+        var chat = $("#chat-" + chat_uuid);
+        if (count > 0) {
+            chat.find('.unread-messages').html(count)
+        }
+    },
+
+    ui_chat_clear_unread_messages: function(chat_uuid) {
+        var self = this;
+        var chat = $("#chat-" + chat_uuid);
+        chat.find('.unread-messages').html('')
+    },
+
     ui_chat_archive: function(chat_uuid) {
+        var self = this;
         var chat = $("#chat-" + chat_uuid)
         chat.remove();
     },

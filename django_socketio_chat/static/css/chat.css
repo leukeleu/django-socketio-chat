@@ -8,3 +8,7 @@
     background-color: #eee;
 }
 
+.unread-messages {
+    float: right;
+    margin-right: 20px;
+}
