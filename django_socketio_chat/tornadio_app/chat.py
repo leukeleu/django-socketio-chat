@@ -72,7 +72,7 @@ class ChatConnection(SocketConnection):
             chat_users = ChatSession.objects.get(user=user).users_that_i_see
             chat_users_obj = prepare_for_emit(serializers.UserSerializer(chat_users).data)
             for connection in self.connections.get(user, []):
-                connection.emit('ev_user_signed_in', self.user.username, chat_users_obj);
+                connection.emit('ev_user_signed_in', self.user.username, chat_users_obj)
 
     @event('req_user_sign_off')
     def sign_off(self):
@@ -128,7 +128,7 @@ class ChatConnection(SocketConnection):
         if not self.user in chat.users.all():
             return
 
-        message = chat.add_message(self.user, strip_tags(message_body));
+        message = chat.add_message(self.user, strip_tags(message_body))
         message_obj = prepare_for_emit(serializers.MessageSerializer(message).data)
         user_chat_statuses = chat.user_chat_statuses
         user_chat_statuses_obj = prepare_for_emit(
@@ -180,7 +180,6 @@ class ChatConnection(SocketConnection):
             if not user_chat_status.is_archived:
                 user_chat_status.archive()
                 self.emit('ev_chat_archived', chat.uuid.hex)
-
 
     def on_disconnect(self):
         pass
