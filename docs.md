@@ -10,7 +10,7 @@ Both messages may contain data that is relevant for the receiving party to prope
 ## Summary
 
 | Events / requests                              | Sent to         | UI (pseudo-code)               |
-| :-------                                       | ---             | :-------                       |
+| :----------------                              | :------         | :---------------               |
 | `req_user_sign_in`                             |                 |                                |
 | `ev_user_signed_in(username, users)`           | all 'friends'   | users[username] = user         |
 | `req_user_sign_off`                            |                 |                                |
