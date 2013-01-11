@@ -105,7 +105,6 @@ class UserChatStatus(models.Model):
     chat = models.ForeignKey(Chat, related_name='user_chat_statuses')
     status = models.CharField(max_length=8, choices=CHAT_STATUS_CHOICES, default=ACTIVE)
     joined = models.DateTimeField('joined_timestamp', editable=False, auto_now_add=True)
-    left = models.DateTimeField('left_timestamp', editable=False, blank=True, null=True)
 
     class Meta:
         unique_together = (('user', 'chat'),)
