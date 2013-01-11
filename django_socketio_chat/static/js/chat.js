@@ -148,9 +148,10 @@ Chat = {
         var self = this;
 
         var $user_list = $('#user-list');
-        var $user_el = $('<li>' + user.username + ' (' + (user.is_online ? 'online' : 'offline') + ')</li>');
+        var $user_el = $('<li><a href="#">' + user.username + ' (' + (user.is_online ? 'online' : 'offline') + ')</a></li>');
         $user_list.append($user_el);
-        $user_el.dblclick(function() {
+        $user_el.on('click', function(e) {
+            e.preventDefault();
             conn.emit('req_chat_create', user.username);
         });
     },
