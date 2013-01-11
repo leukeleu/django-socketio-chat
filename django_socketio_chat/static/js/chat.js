@@ -178,7 +178,7 @@ Chat = {
             }).join(', ');
 
         var $chat_el = $('<div id="chat-' + chat.uuid + '">\
-                          <h4>' + chat_usernames + '<a href="#" class="toggle-active"></a>\
+                          <h4>' + chat_usernames + ' <a href="#" class="toggle-active"></a>\
                           <a href="#" class="archive">Archive</a>\
                           <a href="#" class="list-users">+</a>\
                           <span class="unread-messages"></span></h4>\
