@@ -1,3 +1,5 @@
+/*jshint multistr:true */
+
 var conn = null;
 
 // TODO: get rid of `var self = this;`
@@ -32,19 +34,19 @@ Chat = {
         conn.on('ev_chat_session_status', function(chat_session) {
             // Not signed in yet
             self.chat_session = chat_session;
-            if (self.chat_session.status == 0) {
-               self.ui_signed_off()
+            if (self.chat_session.status === 0) {
+               self.ui_signed_off();
             }
-        })
+        });
 
         conn.on('ev_data_update', function(chat_session, chat_users, chats) {
             // You are signed in
-            self.chat_session = chat_session
+            self.chat_session = chat_session;
             self.ui_signed_in();
             self.chat_users = chat_users;
             self.update_users_ui(chat_users);
             self.update_chats_ui(chats);
-        })
+        });
 
         conn.on('disconnect', function(data) {
             self.debug_log('Disconnect');
@@ -52,13 +54,13 @@ Chat = {
         });
 
         conn.on('ev_user_signed_in', function(username, chat_users) {
-            self.debug_log(username + ' signed in.')
+            self.debug_log(username + ' signed in.');
             self.chat_users = chat_users;
             self.update_users_ui(chat_users);
         });
 
         conn.on('ev_user_signed_off', function(username, chat_users) {
-            self.debug_log(username + ' signed off.')
+            self.debug_log(username + ' signed off.');
             self.chat_users = chat_users;
             self.update_users_ui(chat_users);
         });
@@ -175,17 +177,17 @@ Chat = {
             return user_chat_status.user__username;
             }).join(', ');
 
-        var $chat_el = $('<div id="chat-' + chat.uuid + '">                                 \
-                         <h4>' + chat_usernames + '<a href="#" class="toggle-active"></a>   \
-                         <a href="#" class="archive">Archive</a>                            \
-                         <a href="#" class="list-users">+</a>                               \
-                         <span class="unread-messages"></span></h4>                         \
-                         <ul class="chat-user-list"></ul>                                   \
-                         </div>');
+        var $chat_el = $('<div id="chat-' + chat.uuid + '">\
+                          <h4>' + chat_usernames + '<a href="#" class="toggle-active"></a>\
+                          <a href="#" class="archive">Archive</a>\
+                          <a href="#" class="list-users">+</a>\
+                          <span class="unread-messages"></span></h4>\
+                          <ul class="chat-user-list"></ul>\
+                          </div>');
         var $messages_el = $('<div class="messages"></div>');
-        var $message_input_el = $('<div class="message-input">                              \
-                                  <textarea placeholder="Type message"></textarea>          \
-                                  </div>');
+        var $message_input_el = $('<div class="message-input">\
+                                   <textarea placeholder="Type message"></textarea>\
+                                   </div>');
 
         $chat_el.append($messages_el);
         $chat_el.append($message_input_el);
@@ -237,16 +239,16 @@ Chat = {
 
     get_user_chat_status: function(user_chat_statuses) {
         var self = this;
-        return  $(user_chat_statuses).filter(function() {
-            return this.user__username == self.chat_session.username
-        })[0]
+        return $(user_chat_statuses).filter(function() {
+            return this.user__username == self.chat_session.username;
+        })[0];
     },
 
     ui_chat_activate: function(chat_uuid) {
         var self = this;
         var chat = $("#chat-" + chat_uuid);
         var toggle = chat.find(".toggle-active");
-        toggle.text(' Deactivate');
+        toggle.text('Deactivate');
         toggle.addClass('js_active');
         chat.find('.messages').show();
         chat.find('.message-input').show();
@@ -267,19 +269,19 @@ Chat = {
         var self = this;
         var chat = $("#chat-" + chat_uuid);
         if (count > 0) {
-            chat.find('.unread-messages').html(count)
+            chat.find('.unread-messages').html(count);
         }
     },
 
     ui_chat_clear_unread_messages: function(chat_uuid) {
         var self = this;
         var chat = $("#chat-" + chat_uuid);
-        chat.find('.unread-messages').html('')
+        chat.find('.unread-messages').html('');
     },
 
     ui_chat_archive: function(chat_uuid) {
         var self = this;
-        var chat = $("#chat-" + chat_uuid)
+        var chat = $("#chat-" + chat_uuid);
         chat.remove();
     },
 
@@ -296,22 +298,18 @@ Chat = {
         var $chat_messages_el = $('#chat-list #chat-' + message.chat__uuid + ' .messages');
         var stamp = function(timestamp) {
             return new Date(timestamp).toLocaleTimeString().slice(0, -3);
-        }
-        var s = '<div id="message-' + message.uuid + '">' + stamp(message.timestamp) + '    \
-        ' + message.user_from__username + ': ' + message.message_body +'</div>';
+        };
+        var s = '<div id="message-' + message.uuid + '">' + stamp(message.timestamp) + message.user_from__username + ': ' + message.message_body +'</div>';
         $chat_messages_el.append($(s));
     },
 
     list_users: function(chat_uuid) {
         var self = this;
         var chat = $("#chat-" + chat_uuid);
-        $chat_user_list = chat.find('.chat-user-list')
+        $chat_user_list = chat.find('.chat-user-list');
         $chat_user_list.empty();
         $.each(self.chat_users, function(i, user) {
-            $chat_user_list.append('<li>                                                    \
-                <a href="#" class="user-add" data-username="'+ user.username + '">          \
-                '+ user.username + '</a>  \
-                </li>');
+            $chat_user_list.append('<li><a href="#" class="user-add" data-username="' + user.username + '">'+ user.username + '</a></li>');
         });
         $chat_user_list.on('click', '.user-add', function(e) {
             e.preventDefault();
