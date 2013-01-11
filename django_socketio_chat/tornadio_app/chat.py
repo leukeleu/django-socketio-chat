@@ -81,7 +81,7 @@ class ChatConnection(SocketConnection):
             chat_users = ChatSession.objects.get(user=user).users_that_i_see
             chat_users_obj = prepare_for_emit(serializers.UserSerializer(chat_users).data)
             for connection in self.connections.get(user, []):
-                connection.emit('ev_user_signed_off', self.user.username, chat_users_obj);
+                connection.emit('ev_user_signed_off', self.user.username, chat_users_obj)
         chat_session_obj = prepare_for_emit(serializers.ChatSessionSerializer(self.chat_session).data)
         self.emit('ev_chat_session_status', chat_session_obj)
 
@@ -89,8 +89,10 @@ class ChatConnection(SocketConnection):
     def go_invisible(self):
         self.chat_session.go_invisible()
         for user in self.chat_session.users_that_see_me:
+            chat_users = ChatSession.objects.get(user=user).users_that_i_see
+            chat_users_obj = prepare_for_emit(serializers.UserSerializer(chat_users).data)
             for connection in self.connections.get(user, []):
-                connection.emit('ev_user_signed_off', self.user.username)
+                connection.emit('ev_user_signed_off', self.user.username, chat_users_obj)
 
     @event('req_chat_create')
     def chat_create(self, username):

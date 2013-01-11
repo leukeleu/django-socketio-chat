@@ -96,7 +96,6 @@ Chat = {
         var self = this;
 
         if (conn !== null) {
-            conn.emit('leave');
             conn.disconnect();
             self.debug_log('Disconnected.');
             self.update_ui();

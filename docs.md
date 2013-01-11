@@ -9,28 +9,29 @@ Both messages may contain data that is relevant for the receiving party to prope
 
 ## Summary
 
-| Events                                | Sent to         | Requests                          | UI (pseudo-code)               |
-| :-------                              | ---             | :-------                          | -----------                    |
-|                                       |                 | `req_user_sign_in`                |                                |
-|                                       |                 | `req_user_sign_off`               |                                |
-|                                       |                 | `req_user_invisible`              |                                |
-| `ev_user_signed_in(user)`             | all 'friends'   |                                   | users[username] = user         |
-| `ev_data_update(chats, users)`        | signed in user  |                                   | build or update entire UI      |
-| `ev_user_signed_off(user)`            | all 'friends'   |                                   | users.pop(username)            |
-|                                       |                 | `req_chat_create(user)`           |                                |
-| `ev_chat_created(chat)`               | chat.users      |                                   | chats.append(chat)             |
-|                                       |                 | `req_chat_add_user(chat, user)`   |                                |
-| `ev_chat_you_were_added(chat)`        | new_user        |                                   | chats.append(chat)             |
-| `ev_chat_user_added(chat_uuid, user)` | chat.users      |                                   | chats[chat].append(user)       |
-|                                       |                 | `req_chat_activate(chat)`         |                                |
-| `ev_chat_activated(chat)`             | chatstatus.user |                                   | uncollapse(chat)               |
-|                                       |                 | `req_chat_deactivate(chat)`         |                                |
-| `ev_chat_deactivated(chat)`           | chatstatus.user |                                   | collapse(chat)                 |
-|                                       |                 | `req_chat_archive(chat)`          |                                |
-| `ev_chat_archived(chat)`              | chatstatus.user |                                   | chats.pop(chat)                |
-| `ev_user_left_chat(user)`             | other users     |                                   | chats[chat].users.pop(user)    |
-|                                       |                 | `req_message_send(chat_uuid, message)` |                                |
-| `ev_message_sent(chat_uuid, message)`      | chat.users      |                                   | chats.messages.append(message) |
+| Events / requests                              | Sent to         | UI (pseudo-code)               |
+| :-------                                       | ---             | :-------                       |
+| `req_user_sign_in`                             |                 |                                |
+| `ev_user_signed_in(username, users)`           | all 'friends'   | users[username] = user         |
+| `req_user_sign_off`                            |                 |                                |
+| `ev_user_signed_off(user, users)`              | all 'friends'   | users.pop(username)            |
+| `req_user_invisible` **TODO**                  |                 |                                |
+| `ev_data_update(chat_session, chats, users)`   | signed in user  | build or update entire UI      |
+| `ev_chat_session_status(chat_session)`         | connected user  | show sign-in button            |
+| `req_chat_create(username)`                    |                 |                                |
+| `ev_chat_created(chat)`                        | chat.users      | chats.append(chat)             |
+| `req_chat_add_user(chat_uuid, username)`       |                 |                                |
+| `ev_chat_you_were_added(chat)`                 | invitee         | chats.append(chat)             |
+| `ev_chat_user_added(chat_uuid, username)`      | chat.users      | chats[chat].append(user)       |
+| `req_chat_activate(chat_uuid)`                 |                 |                                |
+| `ev_chat_activated(chat_uuid)`                 | chatstatus.user | uncollapse(chat)               |
+| `req_chat_deactivate(chat_uuid)`               |                 |                                |
+| `ev_chat_deactivated(chat_uuid)`               | chatstatus.user | collapse(chat)                 |
+| `req_chat_archive(chat_uuid)`                  |                 |                                |
+| `ev_chat_archived(chat_uuid)`                  | chatstatus.user | chats.pop(chat)                |
+| `ev_user_left_chat(user)`                      | other users     | chats[chat].users.pop(user)    |
+| `req_message_send(message, chat_uuid)`         |                 |                                |
+| `ev_message_sent(message, user_chat_statuses)` | chat.users      | chats.messages.append(message) |
 
 
 ## REQ: Sign in `req_user_sign_in`
