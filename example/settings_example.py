@@ -6,12 +6,11 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'd-socketio-chat',
-        'USER': 'root',
-        'PASSWORD': 'my5q1',
+        'USER': 'user',
+        'PASSWORD': 'pass',
         'HOST': '',
         'PORT': '',
     }
 }
 
 LOGIN_REDIRECT_URL = '/'
-
