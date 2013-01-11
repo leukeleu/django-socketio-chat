@@ -75,6 +75,10 @@ Chat = {
         conn.on('ev_chat_deactivated', function(chat_uuid) {
             self.ui_chat_deactivate(chat_uuid);
         });
+
+        conn.on('ev_chat_archived', function(chat_uuid) {
+            self.ui_chat_archive(chat_uuid);
+        });
     },
 
     disconnect: function() {
@@ -162,7 +166,8 @@ Chat = {
             }).join(', ');
 
         var $chat_el = $('<div id="chat-' + chat.uuid + '">                             \
-                         <h4>' + chat_usernames + '<a href="#" class="toggle-active"></a></h4>\
+                         <h4>' + chat_usernames + '<a href="#" class="toggle-active"></a>\
+                         <a href="#" class="archive">Archive</a></h4>\
                          </div>');
         var $messages_el = $('<div class="messages"></div>');
         var $message_input_el = $('<div class="message-input">                          \
@@ -197,6 +202,11 @@ Chat = {
             }
         });
 
+        $chat_el.find('.archive').click( function(e) {
+            e.preventDefault();
+            conn.emit('req_chat_archive', chat.uuid);
+        });
+
         $chat_list.append($chat_el);
 
         if (user_chat_status.status == 'active') {
@@ -226,6 +236,11 @@ Chat = {
         toggle.removeClass('js_active');
         chat.find('.messages').hide();
         chat.find('.message-input').hide();
+    },
+
+    ui_chat_archive: function(chat_uuid) {
+        var chat = $("#chat-" + chat_uuid)
+        chat.remove();
     },
 
     update_chats_chat_messages_ui: function(messages) {
