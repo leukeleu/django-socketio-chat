@@ -108,7 +108,7 @@ class ChatConnection(SocketConnection):
     def chat_add_user(self, chat_uuid, username):
         chat = Chat.objects.get(uuid=chat_uuid)
         user = User.objects.get(username=username)
-        if user in self.chat_session.users_that_i_see and self.user in chat.users.all():
+        if user in self.chat_session.users_that_i_see and self.user in chat.users.all() and user not in chat.users.all():
             chat.add_users([user])
             chat_obj = prepare_for_emit(serializers.ChatSerializer(chat).data)
 
