@@ -194,6 +194,9 @@ Chat = (function() {
     $message_input_textarea.keypress(function(e) {
       if (e.which === 13) {
         e.preventDefault();
+        if (this.value === '') {
+          return;
+        }
         self.conn.emit('req_message_send', this.value, chat.uuid);
         return this.value = '';
       }

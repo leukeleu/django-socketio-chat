@@ -115,6 +115,8 @@ class Chat
         $message_input_textarea.keypress (e) ->
             if (e.which == 13) # Enter keycode
                 e.preventDefault()
+                if (this.value == '')
+                    return
                 self.conn.emit('req_message_send', this.value, chat.uuid)
                 # TODO: show spinner, and use ack callback to hide the spinner
                 this.value = ''
