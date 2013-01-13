@@ -11,7 +11,7 @@ class Chat
         control.append(now.toLocaleTimeString() + ': ' + msg + '<br/>')
 
     connect: ->
-        @conn = io.connect 'https://' + window.location.host, 
+        @conn = io.connect 'https://' + window.location.host,
         'force_new_connection': false
         'rememberTransport': true
         'resource': 'chat/socket.io'
@@ -25,7 +25,7 @@ class Chat
             #  Not signed in yet
             @chat_session = chat_session
             if (@chat_session.status == 0)
-               @ui_signed_off()
+                @ui_signed_off()
 
         @conn.on 'ev_data_update', (chat_session, chat_users, chats) =>
             # You are signed in
@@ -111,7 +111,7 @@ class Chat
         $chat_el.append($message_input_el)
 
         $message_input_textarea = $message_input_el.find('textarea')
-        self = this # can't use ''=>'' here, TODO find a better soulution 
+        self = this # can't use ''=>'' here, TODO find a better soulution
         $message_input_textarea.keypress (e) ->
             if (e.which == 13) # Enter keycode
                 e.preventDefault()
