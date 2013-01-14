@@ -9,6 +9,8 @@
     function Chat() {
       this.list_users = __bind(this.list_users, this);
 
+      this.ui_animate_new_message = __bind(this.ui_animate_new_message, this);
+
       this.update_chats_chat_messages_message_ui = __bind(this.update_chats_chat_messages_message_ui, this);
 
       this.update_chats_chat_messages_ui = __bind(this.update_chats_chat_messages_ui, this);
@@ -99,6 +101,7 @@
       this.conn.on('ev_message_sent', function(message, user_chat_statuses) {
         var user_chat_status;
         _this.update_chats_chat_messages_message_ui(message);
+        _this.ui_animate_new_message(message.chat__uuid);
         user_chat_status = _this.get_user_chat_status(user_chat_statuses);
         return _this.ui_chat_set_unread_messages(message.chat__uuid, user_chat_status.unread_messages);
       });
@@ -170,21 +173,23 @@
     };
 
     Chat.prototype.update_chats_chat_ui = function(chat) {
-      var $chat_active_toggle, $chat_el, $chat_list, $message_input_el, $message_input_textarea, $messages_el, chat_usernames, self, ucs, user_chat_status,
+      var $chat_active_toggle, $chat_el, $chat_list, $message_input_el, $message_input_textarea, $messages_el, chat_users, self, ucs, user_chat_status,
         _this = this;
       $chat_list = $('#chat-list');
-      chat_usernames = ((function() {
+      chat_users = '<ul class="chat-users">';
+      chat_users = "" + chat_users + (((function() {
         var _i, _len, _ref, _results;
         _ref = chat.user_chat_statuses;
         _results = [];
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           ucs = _ref[_i];
-          _results.push(ucs.user__username);
+          _results.push("<li>" + ucs.user__username + "</li>");
         }
         return _results;
-      })()).join(', ');
-      $chat_el = $("<div id=\"chat-" + chat.uuid + "\">\n    <h4>\n        " + chat_usernames + " \n        <a href=\"#\" class=\"toggle-active\"></a>\n        <a href=\"#\" class=\"archive\">Archive</a> \n        <a href=\"#\" class=\"list-users\">+</a> \n        <span class=\"unread-messages\"></span>\n    </h4> \n    <ul class=\"chat-user-list\"></ul> \n</div>");
-      $messages_el = $('<div class="messages"></div>');
+      })()).join(''));
+      chat_users = "" + chat_users + "</ul>";
+      $chat_el = $("<div id=\"chat-" + chat.uuid + "\">\n    <h4>\n        " + chat_users + "\n        <a href=\"#\" class=\"toggle-active\"></a>\n        <a href=\"#\" class=\"archive\">Archive</a> \n        <a href=\"#\" class=\"list-users\">+</a> \n        <span class=\"unread-messages\"></span>\n    </h4> \n    <ul class=\"chat-user-list\"></ul> \n</div>");
+      $messages_el = $('<div class="wpr-messages"><div class="messages"></div></div>');
       $message_input_el = $('<div class="message-input"> <textarea placeholder="Type message"></textarea> </div>');
       $chat_el.append($messages_el);
       $chat_el.append($message_input_el);
@@ -288,13 +293,14 @@
     };
 
     Chat.prototype.update_chats_chat_messages_ui = function(messages) {
-      var message, _i, _len, _results;
-      _results = [];
+      var $wpr, chat_uuid, message, _i, _len;
       for (_i = 0, _len = messages.length; _i < _len; _i++) {
         message = messages[_i];
-        _results.push(this.update_chats_chat_messages_message_ui(message));
+        this.update_chats_chat_messages_message_ui(message);
       }
-      return _results;
+      chat_uuid = messages[0].chat__uuid;
+      $wpr = $("#chat-list #chat-" + chat_uuid + " .wpr-messages");
+      return $wpr.scrollTop($wpr.find('.messages').outerHeight());
     };
 
     Chat.prototype.update_chats_chat_messages_message_ui = function(message) {
@@ -304,8 +310,16 @@
       stamp = function(timestamp) {
         return new Date(timestamp).toLocaleTimeString().slice(0, -3);
       };
-      s = "<div id=\"message- " + message.uuid + " \"> " + (stamp(message.timestamp)) + " " + message.user_from__username + ": " + message.message_body + "</div>";
+      s = "\"\n<div id=\"message-" + message.uuid + "\" class=\"message\n    " + (message.user_from__username === this.chat_session.username ? ' mine\"' : '\"') + ">\n    <div class=\"message_body\">" + message.message_body + "</div>\n    <div class=\"timestamp\">" + (stamp(message.timestamp)) + "</div>\n    <div class=\"sender\">" + message.user_from__username + ":</div>\n</div>";
       return $chat_messages_el.append($(s));
+    };
+
+    Chat.prototype.ui_animate_new_message = function(chat_uuid) {
+      var $wpr;
+      $wpr = $("#chat-list #chat-" + chat_uuid + " .wpr-messages");
+      return $wpr.animate({
+        scrollTop: $("#chat-list #chat-" + chat_uuid + " .messages").outerHeight()
+      }, 1000);
     };
 
     Chat.prototype.list_users = function(chat_uuid) {

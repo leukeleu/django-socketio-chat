@@ -12,3 +12,52 @@
     float: right;
     margin-right: 20px;
 }
+
+.wpr-messages {
+    max-height: 128px;
+    overflow-y: scroll;
+}
+
+.messages {
+    position: relative;
+    margin-bottom: 5px;
+}
+
+.chat-users {
+    float: left;
+    margin-left: 0;
+    width:175px;
+    white-space: nowrap;
+    overflow: hidden;
+    margin-right: 3px;
+}
+
+.chat-users li {
+    display: inline-block;
+}
+
+.chat-users li:before {
+    content: ', ';
+}
+
+.chat-users li:first-child:before {
+    content: '';
+}
+
+.timestamp {
+    float: left;
+    margin-right: 3px;
+    margin-bottom: 3px;
+    color: #999;
+}
+
+.message {
+    margin: 3px;
+    width: 210px;
+    border: 1px dashed #999;
+    padding: 5px;
+}
+
+.message.mine {
+    margin-left: 30px;
+}

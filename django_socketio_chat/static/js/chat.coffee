@@ -57,6 +57,7 @@ class Chat
 
         @conn.on 'ev_message_sent', (message, user_chat_statuses) =>
             @update_chats_chat_messages_message_ui(message)
+            @ui_animate_new_message(message.chat__uuid)
             user_chat_status = @get_user_chat_status(user_chat_statuses)
             @ui_chat_set_unread_messages(message.chat__uuid, user_chat_status.unread_messages)
 
@@ -102,11 +103,15 @@ class Chat
 
     update_chats_chat_ui: (chat) =>
         $chat_list = $('#chat-list')
-        chat_usernames = (ucs.user__username for ucs in chat.user_chat_statuses).join(', ')
+
+        chat_users = '<ul class="chat-users">'
+        chat_users = "#{chat_users}#{("<li>#{ucs.user__username}</li>" for ucs in chat.user_chat_statuses).join('')}"
+        chat_users = "#{chat_users}</ul>"
+
         $chat_el = $("""
         <div id=\"chat-#{chat.uuid}\">
             <h4>
-                #{chat_usernames} 
+                #{chat_users}
                 <a href=\"#\" class=\"toggle-active\"></a>
                 <a href=\"#\" class=\"archive\">Archive</a> 
                 <a href=\"#\" class=\"list-users\">+</a> 
@@ -114,7 +119,8 @@ class Chat
             </h4> 
             <ul class=\"chat-user-list\"></ul> 
         </div>""")
-        $messages_el = $('<div class="messages"></div>')
+
+        $messages_el = $('<div class="wpr-messages"><div class="messages"></div></div>')
         $message_input_el = $('<div class="message-input"> <textarea placeholder="Type message"></textarea> </div>')
 
         $chat_el.append($messages_el)
@@ -194,13 +200,28 @@ class Chat
 
     update_chats_chat_messages_ui: (messages) =>
         (@update_chats_chat_messages_message_ui(message) for message in messages)
+        chat_uuid = messages[0].chat__uuid
+        $wpr = $("#chat-list #chat-#{chat_uuid} .wpr-messages")
+        $wpr.scrollTop($wpr.find('.messages').outerHeight())
 
     update_chats_chat_messages_message_ui: (message) =>
-        $chat_messages_el = $("#chat-list #chat-#{ message.chat__uuid } .messages")
+        $chat_messages_el = $("#chat-list #chat-#{message.chat__uuid} .messages")
         stamp = (timestamp) =>
             new Date(timestamp).toLocaleTimeString()[0...-3]
-        s = "<div id=\"message- #{message.uuid} \"> #{stamp(message.timestamp)} #{message.user_from__username}: #{message.message_body}</div>"
+        s = """"
+        <div id=\"message-#{message.uuid}\" class="message
+            #{if message.user_from__username == @chat_session.username then ' mine\"' else '\"'}>
+            <div class=\"message_body\">#{message.message_body}</div>
+            <div class=\"timestamp\">#{stamp(message.timestamp)}</div>
+            <div class=\"sender\">#{message.user_from__username}:</div>
+        </div>"""
+
         $chat_messages_el.append($(s))
+
+    ui_animate_new_message: (chat_uuid) =>
+        $wpr = $("#chat-list #chat-#{chat_uuid} .wpr-messages")
+        $wpr.animate
+            scrollTop: $("#chat-list #chat-#{chat_uuid} .messages").outerHeight(), 1000
 
     list_users: (chat_uuid) =>
         chat = $("#chat-#{chat_uuid}")
