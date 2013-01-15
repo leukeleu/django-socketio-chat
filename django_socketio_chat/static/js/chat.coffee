@@ -239,12 +239,11 @@ class Chat
             timestamp = new Date(timestamp)
             return ('0' + timestamp.getHours()).slice(-2) + ':' + ('0' + timestamp.getMinutes()).slice(-2)
         s = """
-        <div id=\"message-#{message.uuid}\" class="message well well-small
-            #{if message.user_from__username == @chat_session.username then ' mine\"' else '\"'}>
-            <div class=\"message_body\">#{message.message_body}</div>
-            <div class=\"sender\">#{message.user_from__username} - </div>
-            <div class=\"timestamp\">#{stamp(message.timestamp)}</div>
-        </div>"""
+        <blockquote id=\"message-#{message.uuid}\" class="message
+            #{if message.user_from__username == @chat_session.username then ' pull-right\"' else '\"'}>
+            <p class="msg-body">#{message.message_body}</p>
+            <small class="msg-sender-timestamp">#{message.user_from__username} - #{stamp(message.timestamp)}</small>
+        </blockquote>"""
         $chat_messages_el.append($(s))
 
     ui_chat_scroll_down: (chat_uuid, animate=false) =>

@@ -359,7 +359,7 @@
         timestamp = new Date(timestamp);
         return ('0' + timestamp.getHours()).slice(-2) + ':' + ('0' + timestamp.getMinutes()).slice(-2);
       };
-      s = "<div id=\"message-" + message.uuid + "\" class=\"message well well-small\n    " + (message.user_from__username === this.chat_session.username ? ' mine\"' : '\"') + ">\n    <div class=\"message_body\">" + message.message_body + "</div>\n    <div class=\"sender\">" + message.user_from__username + " - </div>\n    <div class=\"timestamp\">" + (stamp(message.timestamp)) + "</div>\n</div>";
+      s = "<blockquote id=\"message-" + message.uuid + "\" class=\"message\n    " + (message.user_from__username === this.chat_session.username ? ' pull-right\"' : '\"') + ">\n    <p class=\"msg-body\">" + message.message_body + "</p>\n    <small class=\"msg-sender-timestamp\">" + message.user_from__username + " - " + (stamp(message.timestamp)) + "</small>\n</blockquote>";
       return $chat_messages_el.append($(s));
     };
 

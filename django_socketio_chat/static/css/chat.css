@@ -38,21 +38,6 @@
     margin-bottom: 5px;
 }
 
-/* chat message */
-
-.chat .message {
-    float: left;
-    width: 80%;
-}
-
-.chat .message.mine {
-    float: right;
-    background-color: #fff;
-}
-
-.chat .sender,
-.chat .timestamp {
-    display: inline;
-    font-size: 12px;
-    color: #999;
+.chat .messages .message {
+    clear: both;
 }
