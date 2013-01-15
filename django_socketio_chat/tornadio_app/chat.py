@@ -2,6 +2,7 @@ import os
 import sys
 
 sys.path.insert(0, '../../example')
+sys.path.insert(0, '../../example/example')
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 
 from tornadio2 import SocketConnection, TornadioRouter, SocketServer, event
