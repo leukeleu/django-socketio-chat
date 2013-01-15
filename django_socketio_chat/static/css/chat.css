@@ -41,7 +41,7 @@
 }
 
 .chat .wpr-messages {
-    max-height: 128px;
+    max-height: 200px;
     overflow-y: scroll;
 }
 
