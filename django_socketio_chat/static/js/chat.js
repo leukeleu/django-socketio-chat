@@ -209,7 +209,7 @@
       var $user_el, $user_list,
         _this = this;
       $user_list = $('.user-list');
-      $user_el = $("<li class=\"(" + (user.is_online ? 'online' : 'offline') + ")\"><i class=\"icon-user\"></i> <a href=\"#\">" + user.username + "</a></li>");
+      $user_el = $("<li class=\"(" + (user.is_online ? 'online' : 'offline') + ")\"><a href=\"#\"><i class=\"icon-user\"></i> " + user.username + "</a></li>");
       $user_list.append($user_el);
       return $user_el.on('click', function(e) {
         e.preventDefault();
@@ -233,7 +233,7 @@
         _this = this;
       chat_user_list = new ChatUserList(chat.user_chat_statuses);
       this.chat_users_lists[chat.uuid] = chat_user_list;
-      $chat_el = $("<div id=\"chat-" + chat.uuid + "\" class=\"chat well well-small\">\n    <div class=\"chat-header clearfix\">\n        " + (chat_user_list.render()) + "\n        <div class=\"chat-controls\">\n            <a href=\"#\" class=\"toggle-active btn btn-small\"></a>\n            <a href=\"#\" class=\"archive btn btn-small\">Archive</a>\n            <div class=\"btn-group\">\n                <a class=\"btn list-users dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">\n                    <i class=\"icon-user\"></i>\n                    <span class=\"caret\"></span>\n                </a>\n                <ul class=\"dropdown-menu chat-user-list unstyled\"></ul>\n            </div>\n            <span class=\"unread-messages badge\"></span>\n        </div>\n    </div>\n</div>");
+      $chat_el = $("<div id=\"chat-" + chat.uuid + "\" class=\"chat well well-small\">\n    <div class=\"chat-header clearfix\">\n        <span class=\"unread-messages badge\"></span>\n        " + (chat_user_list.render()) + "\n        <div class=\"chat-controls\">\n            <a href=\"#\" class=\"toggle-active btn btn-small\"></a>\n            <a href=\"#\" class=\"archive btn btn-small\">Archive</a>\n            <div class=\"btn-group\">\n                <a class=\"btn btn-small list-users dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">\n                    <i class=\"icon-user\"></i>\n                    <span class=\"caret\"></span>\n                </a>\n                <ul class=\"dropdown-menu chat-user-list unstyled\"></ul>\n            </div>\n        </div>\n    </div>\n</div>");
       $messages_el = $('<div class="messages"><div class="messages-inner clearfix"></div></div>');
       $message_input_el = $("<div class=\"message-input input-prepend\">\n    <div class=\"add-on\"><i class=\"icon-user\"></i></div>\n    <input type=\"text\" placeholder=\"Type message\">\n</div>");
       $chat_el.append($messages_el);
@@ -393,7 +393,7 @@
       _ref = this.chat_users;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         user = _ref[_i];
-        $chat_user_list.append("<li><i class=\"icon-user\"></> <a href=\"#\" class=\"user-add\" data-username=\"" + user.username + "\">" + user.username + "</a></li>");
+        $chat_user_list.append("<li><a href=\"#\" class=\"user-add\" data-username=\"" + user.username + "\"><i class=\"icon-user\"></i> " + user.username + "</a></li>");
       }
       return $chat_user_list.on('click', '.user-add', function(e) {
         e.preventDefault();

@@ -113,7 +113,7 @@ class Chat
 
     ui_add_user: (user) =>
         $user_list = $('.user-list')
-        $user_el = $("<li class=\"(#{if user.is_online then 'online' else 'offline'})\"><i class=\"icon-user\"></i> <a href=\"#\">#{user.username}</a></li>")
+        $user_el = $("<li class=\"(#{if user.is_online then 'online' else 'offline'})\"><a href=\"#\"><i class=\"icon-user\"></i> #{user.username}</a></li>")
         $user_list.append($user_el)
         $user_el.on 'click', (e) =>
             e.preventDefault()
@@ -129,18 +129,18 @@ class Chat
         $chat_el = $("""
         <div id=\"chat-#{chat.uuid}\" class="chat well well-small">
             <div class="chat-header clearfix">
+                <span class=\"unread-messages badge\"></span>
                 #{chat_user_list.render()}
                 <div class="chat-controls">
                     <a href=\"#\" class=\"toggle-active btn btn-small\"></a>
                     <a href=\"#\" class=\"archive btn btn-small\">Archive</a>
                     <div class="btn-group">
-                        <a class="btn list-users dropdown-toggle" data-toggle="dropdown" href="#">
+                        <a class="btn btn-small list-users dropdown-toggle" data-toggle="dropdown" href="#">
                             <i class="icon-user"></i>
                             <span class="caret"></span>
                         </a>
                         <ul class=\"dropdown-menu chat-user-list unstyled\"></ul>
                     </div>
-                    <span class=\"unread-messages badge\"></span>
                 </div>
             </div>
         </div>""")
@@ -267,7 +267,7 @@ class Chat
         chat = $("#chat-#{chat_uuid}")
         $chat_user_list = chat.find('.chat-user-list')
         $chat_user_list.empty()
-        ($chat_user_list.append("<li><i class=\"icon-user\"></> <a href=\"#\" class=\"user-add\" data-username=\"#{user.username}\">#{user.username}</a></li>") for user in @chat_users)
+        ($chat_user_list.append("<li><a href=\"#\" class=\"user-add\" data-username=\"#{user.username}\"><i class=\"icon-user\"></i> #{user.username}</a></li>") for user in @chat_users)
         $chat_user_list.on 'click', '.user-add', (e) =>
             e.preventDefault()
             @conn.emit('req_chat_add_user', chat_uuid, $(e.target).data('username'))
