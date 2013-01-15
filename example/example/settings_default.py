@@ -38,7 +38,8 @@ MEDIA_URL = '/media/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATIC_URL = '/static/'
 
-ROOT_URLCONF = 'urls'
+ROOT_URLCONF = 'example.urls'
+WSGI_APPLICATION = 'example.wsgi.application'
 
 INSTALLED_APPS = (
     'django.contrib.admin',
