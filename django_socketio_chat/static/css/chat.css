@@ -3,9 +3,9 @@
 }
 
 .chat-container h3 {
-    font-size: 14px;
     padding: 0 4px;
     background-color: #eee;
+    font-size: 14px;
 }
 
 .unread-messages {
@@ -44,6 +44,12 @@
     content: '';
 }
 
+/* chat box */
+
+.chat h4 {
+    background-color: #999;
+}
+
 .timestamp {
     float: left;
     margin-right: 3px;
@@ -52,12 +58,19 @@
 }
 
 .message {
-    margin: 3px;
+    float: left;
+    margin: 5px;
     width: 210px;
-    border: 1px dashed #999;
+    border: 1px solid #eee;
     padding: 5px;
 }
 
 .message.mine {
-    margin-left: 30px;
+    float: right;
+}
+
+.message-input textarea {
+    margin: 0;
+    padding: 5px;
+    width: 308px;
 }

@@ -127,7 +127,7 @@ class Chat
         chat_user_list = new ChatUserList(chat.user_chat_statuses)
         @chat_users_lists[chat.uuid] = chat_user_list
         $chat_el = $("""
-        <div id=\"chat-#{chat.uuid}\">
+        <div id=\"chat-#{chat.uuid}\" class="chat">
             <h4>
                 #{chat_user_list.render()}
                 <a href=\"#\" class=\"toggle-active\"></a>
