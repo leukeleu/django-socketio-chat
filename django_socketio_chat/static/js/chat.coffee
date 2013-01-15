@@ -113,7 +113,7 @@ class Chat
 
     ui_add_user: (user) =>
         $user_list = $('.user-list')
-        $user_el = $("<li class=\"(#{if user.is_online then 'online' else 'offline'})\"><i class=\"icon-user\"></i><a href=\"#\">#{user.username}</a></li>")
+        $user_el = $("<li class=\"(#{if user.is_online then 'online' else 'offline'})\"><i class=\"icon-user\"></i> <a href=\"#\">#{user.username}</a></li>")
         $user_list.append($user_el)
         $user_el.on 'click', (e) =>
             e.preventDefault()
@@ -262,7 +262,7 @@ class Chat
         chat = $("#chat-#{chat_uuid}")
         $chat_user_list = chat.find('.chat-user-list')
         $chat_user_list.empty()
-        ($chat_user_list.append("<li><i class=\"icon-user\"></i><a href=\"#\" class=\"user-add\" data-username=\"#{user.username}\">#{user.username}</a></li>") for user in @chat_users)
+        ($chat_user_list.append("<li><i class=\"icon-user\"></> <a href=\"#\" class=\"user-add\" data-username=\"#{user.username}\">#{user.username}</a></li>") for user in @chat_users)
         $chat_user_list.on 'click', '.user-add', (e) =>
             e.preventDefault()
             @conn.emit('req_chat_add_user', chat_uuid, $(e.target).data('username'))

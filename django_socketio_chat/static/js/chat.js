@@ -209,7 +209,7 @@
       var $user_el, $user_list,
         _this = this;
       $user_list = $('.user-list');
-      $user_el = $("<li class=\"(" + (user.is_online ? 'online' : 'offline') + ")\"><i class=\"icon-user\"></i><a href=\"#\">" + user.username + "</a></li>");
+      $user_el = $("<li class=\"(" + (user.is_online ? 'online' : 'offline') + ")\"><i class=\"icon-user\"></i> <a href=\"#\">" + user.username + "</a></li>");
       $user_list.append($user_el);
       return $user_el.on('click', function(e) {
         e.preventDefault();
@@ -393,7 +393,7 @@
       _ref = this.chat_users;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         user = _ref[_i];
-        $chat_user_list.append("<li><i class=\"icon-user\"></i><a href=\"#\" class=\"user-add\" data-username=\"" + user.username + "\">" + user.username + "</a></li>");
+        $chat_user_list.append("<li><i class=\"icon-user\"></> <a href=\"#\" class=\"user-add\" data-username=\"" + user.username + "\">" + user.username + "</a></li>");
       }
       return $chat_user_list.on('click', '.user-add', function(e) {
         e.preventDefault();
