@@ -235,7 +235,7 @@
       this.chat_users_lists[chat.uuid] = chat_user_list;
       $chat_el = $("<div id=\"chat-" + chat.uuid + "\" class=\"chat\">\n    <div class=\"clearfix\">\n        " + (chat_user_list.render()) + "\n        <div class=\"chat-controls\">\n            <a href=\"#\" class=\"toggle-active btn btn-small\"></a>\n            <a href=\"#\" class=\"archive btn btn-small\">Archive</a>\n            <a href=\"#\" class=\"list-users btn btn-small\">+</a>\n            <span class=\"unread-messages badge\"></span>\n        </div>\n    </div>\n    <ul class=\"chat-user-list\"></ul>\n</div>");
       $messages_el = $('<div class="wpr-messages"><div class="messages clearfix"></div></div>');
-      $message_input_el = $("<div class=\"input-prepend\">\n    <div class=\"add-on\"><i class=\"icon-user\"></i></div>\n    <input id=\"prependedInput\" type=\"text\" placeholder=\"Type message\">\n</div>");
+      $message_input_el = $("<div class=\"message-input input-prepend\">\n    <div class=\"add-on\"><i class=\"icon-user\"></i></div>\n    <input id=\"prependedInput\" type=\"text\" placeholder=\"Type message\">\n</div>");
       $chat_el.append($messages_el);
       $chat_el.append($message_input_el);
       $message_input = $message_input_el.find('input');

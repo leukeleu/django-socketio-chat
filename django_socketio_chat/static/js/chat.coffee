@@ -142,7 +142,7 @@ class Chat
 
         $messages_el = $('<div class="wpr-messages"><div class="messages clearfix"></div></div>')
         $message_input_el = $("""
-        <div class="input-prepend">
+        <div class="message-input input-prepend">
             <div class="add-on"><i class="icon-user"></i></div>
             <input id="prependedInput" type="text" placeholder="Type message">
         </div>""")
