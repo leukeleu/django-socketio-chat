@@ -209,7 +209,7 @@
       var $user_el, $user_list,
         _this = this;
       $user_list = $('.user-list');
-      $user_el = $("<li class=\"(" + (user.is_online ? 'online' : 'offline') + ")\"><a href=\"#\">" + user.username + "</a></li>");
+      $user_el = $("<li class=\"(" + (user.is_online ? 'online' : 'offline') + ")\"><i class=\"icon-user\"></i><a href=\"#\">" + user.username + "</a></li>");
       $user_list.append($user_el);
       return $user_el.on('click', function(e) {
         e.preventDefault();
@@ -229,18 +229,18 @@
     };
 
     Chat.prototype.update_chats_chat_ui = function(chat) {
-      var $chat_active_toggle, $chat_el, $chat_list, $message_input_el, $message_input_textarea, $messages_el, chat_user_list, self, user_chat_status,
+      var $chat_active_toggle, $chat_el, $chat_list, $message_input, $message_input_el, $messages_el, chat_user_list, self, user_chat_status,
         _this = this;
       chat_user_list = new ChatUserList(chat.user_chat_statuses);
       this.chat_users_lists[chat.uuid] = chat_user_list;
-      $chat_el = $("<div id=\"chat-" + chat.uuid + "\" class=\"chat\">\n    <div class=\"heading clearfix\">\n        " + (chat_user_list.render()) + "\n        <div class=\"chat-controls\">\n            <a href=\"#\" class=\"toggle-active\"></a>\n            <a href=\"#\" class=\"archive\">Archive</a>\n            <a href=\"#\" class=\"list-users\">+</a>\n            <span class=\"unread-messages\"></span>\n        </div>\n    </div>\n    <ul class=\"chat-user-list\"></ul>\n</div>");
+      $chat_el = $("<div id=\"chat-" + chat.uuid + "\" class=\"chat\">\n    <div class=\"clearfix\">\n        " + (chat_user_list.render()) + "\n        <div class=\"chat-controls\">\n            <a href=\"#\" class=\"toggle-active btn btn-small\"></a>\n            <a href=\"#\" class=\"archive btn btn-small\">Archive</a>\n            <a href=\"#\" class=\"list-users btn btn-small\">+</a>\n            <span class=\"unread-messages badge\"></span>\n        </div>\n    </div>\n    <ul class=\"chat-user-list\"></ul>\n</div>");
       $messages_el = $('<div class="wpr-messages"><div class="messages clearfix"></div></div>');
-      $message_input_el = $('<div class="message-input"> <textarea placeholder="Type message"></textarea> </div>');
+      $message_input_el = $("<div class=\"input-prepend\">\n    <div class=\"add-on\"><i class=\"icon-user\"></i></div>\n    <input id=\"prependedInput\" type=\"text\" placeholder=\"Type message\">\n</div>");
       $chat_el.append($messages_el);
       $chat_el.append($message_input_el);
-      $message_input_textarea = $message_input_el.find('textarea');
+      $message_input = $message_input_el.find('input');
       self = this;
-      $message_input_textarea.keypress(function(e) {
+      $message_input.keypress(function(e) {
         if (e.which === 13) {
           e.preventDefault();
           if (this.value === '') {
@@ -354,12 +354,12 @@
     Chat.prototype.update_chats_chat_messages_message_ui = function(message) {
       var $chat_messages_el, s, stamp,
         _this = this;
-      $chat_messages_el = $(".chat-list #chat-" + message.chat__uuid + " .messages");
+      $chat_messages_el = $("#chat-" + message.chat__uuid + " .messages");
       stamp = function(timestamp) {
         timestamp = new Date(timestamp);
         return ('0' + timestamp.getHours()).slice(-2) + ':' + ('0' + timestamp.getMinutes()).slice(-2);
       };
-      s = "<div id=\"message-" + message.uuid + "\" class=\"message\n    " + (message.user_from__username === this.chat_session.username ? ' mine\"' : '\"') + ">\n    <div class=\"message_body\">" + message.message_body + "</div>\n    <div class=\"sender\">" + message.user_from__username + " - </div>\n    <div class=\"timestamp\">" + (stamp(message.timestamp)) + "</div>\n</div>";
+      s = "<div id=\"message-" + message.uuid + "\" class=\"message well well-small\n    " + (message.user_from__username === this.chat_session.username ? ' mine\"' : '\"') + ">\n    <div class=\"message_body\">" + message.message_body + "</div>\n    <div class=\"sender\">" + message.user_from__username + " - </div>\n    <div class=\"timestamp\">" + (stamp(message.timestamp)) + "</div>\n</div>";
       return $chat_messages_el.append($(s));
     };
 
@@ -393,7 +393,7 @@
       _ref = this.chat_users;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         user = _ref[_i];
-        $chat_user_list.append("<li><a href=\"#\" class=\"user-add\" data-username=\"" + user.username + "\">" + user.username + "</a></li>");
+        $chat_user_list.append("<li><i class=\"icon-user\"></i><a href=\"#\" class=\"user-add\" data-username=\"" + user.username + "\">" + user.username + "</a></li>");
       }
       return $chat_user_list.on('click', '.user-add', function(e) {
         e.preventDefault();

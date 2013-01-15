@@ -113,7 +113,7 @@ class Chat
 
     ui_add_user: (user) =>
         $user_list = $('.user-list')
-        $user_el = $("<li class=\"(#{if user.is_online then 'online' else 'offline'})\"><a href=\"#\">#{user.username}</a></li>")
+        $user_el = $("<li class=\"(#{if user.is_online then 'online' else 'offline'})\"><i class=\"icon-user\"></i><a href=\"#\">#{user.username}</a></li>")
         $user_list.append($user_el)
         $user_el.on 'click', (e) =>
             e.preventDefault()
@@ -128,27 +128,31 @@ class Chat
         @chat_users_lists[chat.uuid] = chat_user_list
         $chat_el = $("""
         <div id=\"chat-#{chat.uuid}\" class="chat">
-            <div class="heading clearfix">
+            <div class="clearfix">
                 #{chat_user_list.render()}
                 <div class="chat-controls">
-                    <a href=\"#\" class=\"toggle-active\"></a>
-                    <a href=\"#\" class=\"archive\">Archive</a>
-                    <a href=\"#\" class=\"list-users\">+</a>
-                    <span class=\"unread-messages\"></span>
+                    <a href=\"#\" class=\"toggle-active btn btn-small\"></a>
+                    <a href=\"#\" class=\"archive btn btn-small\">Archive</a>
+                    <a href=\"#\" class=\"list-users btn btn-small\">+</a>
+                    <span class=\"unread-messages badge\"></span>
                 </div>
             </div>
             <ul class=\"chat-user-list\"></ul>
         </div>""")
 
         $messages_el = $('<div class="wpr-messages"><div class="messages clearfix"></div></div>')
-        $message_input_el = $('<div class="message-input"> <textarea placeholder="Type message"></textarea> </div>')
+        $message_input_el = $("""
+        <div class="input-prepend">
+            <div class="add-on"><i class="icon-user"></i></div>
+            <input id="prependedInput" type="text" placeholder="Type message">
+        </div>""")
 
         $chat_el.append($messages_el)
         $chat_el.append($message_input_el)
 
-        $message_input_textarea = $message_input_el.find('textarea')
+        $message_input = $message_input_el.find('input')
         self = this # can't use ''=>'' here, TODO find a better soulution
-        $message_input_textarea.keypress (e) ->
+        $message_input.keypress (e) ->
             if e.which == 13 # Enter keycode
                 e.preventDefault()
                 if this.value == ''
@@ -230,12 +234,12 @@ class Chat
         @ui_chat_scroll_down(messages[0].chat__uuid)
 
     update_chats_chat_messages_message_ui: (message) =>
-        $chat_messages_el = $(".chat-list #chat-#{message.chat__uuid} .messages")
+        $chat_messages_el = $("#chat-#{message.chat__uuid} .messages")
         stamp = (timestamp) =>
             timestamp = new Date(timestamp)
             return ('0' + timestamp.getHours()).slice(-2) + ':' + ('0' + timestamp.getMinutes()).slice(-2)
         s = """
-        <div id=\"message-#{message.uuid}\" class="message
+        <div id=\"message-#{message.uuid}\" class="message well well-small
             #{if message.user_from__username == @chat_session.username then ' mine\"' else '\"'}>
             <div class=\"message_body\">#{message.message_body}</div>
             <div class=\"sender\">#{message.user_from__username} - </div>
@@ -259,7 +263,7 @@ class Chat
         chat = $("#chat-#{chat_uuid}")
         $chat_user_list = chat.find('.chat-user-list')
         $chat_user_list.empty()
-        ($chat_user_list.append("<li><a href=\"#\" class=\"user-add\" data-username=\"#{user.username}\">#{user.username}</a></li>") for user in @chat_users)
+        ($chat_user_list.append("<li><i class=\"icon-user\"></i><a href=\"#\" class=\"user-add\" data-username=\"#{user.username}\">#{user.username}</a></li>") for user in @chat_users)
         $chat_user_list.on 'click', '.user-add', (e) =>
             e.preventDefault()
             @conn.emit('req_chat_add_user', chat_uuid, $(e.target).data('username'))

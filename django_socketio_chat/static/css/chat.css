@@ -5,22 +5,10 @@
     min-width: 320px;
 }
 
-.heading {
-    padding: 0 4px;
-    background-color: #eee;
-    line-height: 2;
-}
-
 /* chat box */
-
-.chat {
-    margin-top: 5px;
-}
 
 .chat .chat-users {
     float: left;
-    margin: 0;
-    padding: 0;
     white-space: nowrap;
 }
 
@@ -40,16 +28,6 @@
     float: right;
 }
 
-.chat .unread-messages {
-    display: none;
-    padding: 0 3px;
-    background-color: #ccc;
-}
-
-.chat .unread-messages.active {
-    display: inline;
-}
-
 .chat .wpr-messages {
     max-height: 200px;
     overflow-y: scroll;
@@ -64,29 +42,17 @@
 
 .chat .message {
     float: left;
-    margin: 5px 0;
-    border: 1px solid #ccc;
-    padding: 5px;
     width: 80%;
 }
 
 .chat .message.mine {
     float: right;
-    background-color: #eee;
+    background-color: #fff;
 }
 
 .chat .sender,
 .chat .timestamp {
-    display: inline-block;
+    display: inline;
     font-size: 12px;
     color: #999;
-}
-
-/* new message form */
-
-.chat .message-input textarea {
-    margin: 0;
-    border: 1px solid #ccc;
-    padding: 5px;
-    width: 308px;
 }
