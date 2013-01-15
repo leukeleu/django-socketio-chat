@@ -113,11 +113,11 @@ class Chat
             <h4>
                 #{chat_users}
                 <a href=\"#\" class=\"toggle-active\"></a>
-                <a href=\"#\" class=\"archive\">Archive</a> 
-                <a href=\"#\" class=\"list-users\">+</a> 
+                <a href=\"#\" class=\"archive\">Archive</a>
+                <a href=\"#\" class=\"list-users\">+</a>
                 <span class=\"unread-messages\"></span>
-            </h4> 
-            <ul class=\"chat-user-list\"></ul> 
+            </h4>
+            <ul class=\"chat-user-list\"></ul>
         </div>""")
 
         $messages_el = $('<div class="wpr-messages"><div class="messages"></div></div>')
@@ -176,6 +176,7 @@ class Chat
         chat.find('.messages').show()
         chat.find('.message-input').show()
         @ui_chat_clear_unread_messages(chat_uuid)
+        @ui_chat_scroll_down(chat_uuid)
 
     ui_chat_deactivate: (chat_uuid) =>
         chat = $("#chat-#{chat_uuid}")
@@ -200,9 +201,7 @@ class Chat
 
     update_chats_chat_messages_ui: (messages) =>
         (@update_chats_chat_messages_message_ui(message) for message in messages)
-        chat_uuid = messages[0].chat__uuid
-        $wpr = $("#chat-list #chat-#{chat_uuid} .wpr-messages")
-        $wpr.scrollTop($wpr.find('.messages').outerHeight())
+        @ui_chat_scroll_down(messages[0].chat__uuid)
 
     update_chats_chat_messages_message_ui: (message) =>
         $chat_messages_el = $("#chat-list #chat-#{message.chat__uuid} .messages")
@@ -215,13 +214,19 @@ class Chat
             <div class=\"timestamp\">#{stamp(message.timestamp)}</div>
             <div class=\"sender\">#{message.user_from__username}:</div>
         </div>"""
-
         $chat_messages_el.append($(s))
 
-    ui_animate_new_message: (chat_uuid) =>
+    ui_chat_scroll_down: (chat_uuid, animate=false) =>
         $wpr = $("#chat-list #chat-#{chat_uuid} .wpr-messages")
-        $wpr.animate
-            scrollTop: $("#chat-list #chat-#{chat_uuid} .messages").outerHeight(), 1000
+        $msgs = $wpr.find('.messages')
+        if not animate
+            $wpr.scrollTop($msgs.outerHeight())
+        else
+            $wpr.animate
+                scrollTop: $msgs.outerHeight(), 1000
+
+    ui_animate_new_message: (chat_uuid) =>
+        @ui_chat_scroll_down(chat_uuid, animate=true)
 
     list_users: (chat_uuid) =>
         chat = $("#chat-#{chat_uuid}")
