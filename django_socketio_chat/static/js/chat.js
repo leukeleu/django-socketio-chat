@@ -233,7 +233,7 @@
         _this = this;
       chat_user_list = new ChatUserList(chat.user_chat_statuses);
       this.chat_users_lists[chat.uuid] = chat_user_list;
-      $chat_el = $("<div id=\"chat-" + chat.uuid + "\" class=\"chat\">\n    <h4>\n        " + (chat_user_list.render()) + "\n        <a href=\"#\" class=\"toggle-active\"></a>\n        <a href=\"#\" class=\"archive\">Archive</a>\n        <a href=\"#\" class=\"list-users\">+</a>\n        <span class=\"unread-messages\"></span>\n    </h4>\n    <ul class=\"chat-user-list\"></ul>\n</div>");
+      $chat_el = $("<div id=\"chat-" + chat.uuid + "\" class=\"chat\">\n    <div class=\"chat-heading\">\n        " + (chat_user_list.render()) + "\n        <a href=\"#\" class=\"toggle-active\"></a>\n        <a href=\"#\" class=\"archive\">Archive</a>\n        <a href=\"#\" class=\"list-users\">+</a>\n        <span class=\"unread-messages\"></span>\n    </div>\n    <ul class=\"chat-user-list\"></ul>\n</div>");
       $messages_el = $('<div class="wpr-messages"><div class="messages"></div></div>');
       $message_input_el = $('<div class="message-input"> <textarea placeholder="Type message"></textarea> </div>');
       $chat_el.append($messages_el);
@@ -355,7 +355,7 @@
       stamp = function(timestamp) {
         return new Date(timestamp).toLocaleTimeString().slice(0, -3);
       };
-      s = "\"\n<div id=\"message-" + message.uuid + "\" class=\"message\n    " + (message.user_from__username === this.chat_session.username ? ' mine\"' : '\"') + ">\n    <div class=\"message_body\">" + message.message_body + "</div>\n    <div class=\"timestamp\">" + (stamp(message.timestamp)) + "</div>\n    <div class=\"sender\">" + message.user_from__username + ":</div>\n</div>";
+      s = "<div id=\"message-" + message.uuid + "\" class=\"message\n    " + (message.user_from__username === this.chat_session.username ? ' mine\"' : '\"') + ">\n    <div class=\"message_body\">" + message.message_body + "</div>\n    <div class=\"timestamp\">" + (stamp(message.timestamp)) + "</div>\n    <div class=\"sender\">" + message.user_from__username + ":</div>\n</div>";
       return $chat_messages_el.append($(s));
     };
 
@@ -364,7 +364,7 @@
       if (animate == null) {
         animate = false;
       }
-      $wpr = $(".chat-list #chat-" + chat_uuid + " .wpr-messages");
+      $wpr = $("#chat-" + chat_uuid + " .wpr-messages");
       $msgs = $wpr.find('.messages');
       if (!animate) {
         return $wpr.scrollTop($msgs.outerHeight());

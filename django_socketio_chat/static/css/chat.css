@@ -1,6 +1,7 @@
 /* chat container */
 
 .chat-container {
+    width: 320px;
     min-width: 320px;
 }
 
@@ -15,33 +16,21 @@
     margin-top: 5px;
 }
 
-.chat h4 {
-    padding: 0 4px;
+.chat .chat-heading {
     background-color: #eee;
+}
+
+.chat .chat-users {
+    display: inline-block;
+    margin: 0;
+    padding: 0 4px;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 .chat .unread-messages {
     float: right;
     margin-right: 20px;
-}
-
-.chat .wpr-messages {
-    max-height: 128px;
-    overflow-y: scroll;
-}
-
-.chat .messages {
-    position: relative;
-    margin-bottom: 5px;
-}
-
-.chat .chat-users {
-    float: left;
-    margin-left: 0;
-    width:175px;
-    white-space: nowrap;
-    overflow: hidden;
-    margin-right: 3px;
 }
 
 .chat .chat-users li {
@@ -56,11 +45,14 @@
     content: '';
 }
 
-.chat .timestamp {
-    float: left;
-    margin-right: 3px;
-    margin-bottom: 3px;
-    color: #999;
+.chat .wpr-messages {
+    max-height: 128px;
+    overflow-y: scroll;
+}
+
+.chat .messages {
+    position: relative;
+    margin-bottom: 5px;
 }
 
 .chat .message {
@@ -75,8 +67,30 @@
     float: right;
 }
 
+.chat .timestamp {
+    float: left;
+    margin-right: 3px;
+    margin-bottom: 3px;
+    color: #999;
+}
+
 .chat .message-input textarea {
     margin: 0;
     padding: 5px;
     width: 308px;
+}
+
+/* clearfix */
+
+.chat .messages:before, .chat .messages:after {
+    content: "";
+    display: table;
+}
+
+.chat .messages:after {
+    clear: both;
+}
+
+.chat .messages {
+    *zoom: 1;
 }

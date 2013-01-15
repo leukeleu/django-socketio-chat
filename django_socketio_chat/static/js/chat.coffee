@@ -128,13 +128,13 @@ class Chat
         @chat_users_lists[chat.uuid] = chat_user_list
         $chat_el = $("""
         <div id=\"chat-#{chat.uuid}\" class="chat">
-            <h4>
+            <div class="chat-heading">
                 #{chat_user_list.render()}
                 <a href=\"#\" class=\"toggle-active\"></a>
                 <a href=\"#\" class=\"archive\">Archive</a>
                 <a href=\"#\" class=\"list-users\">+</a>
                 <span class=\"unread-messages\"></span>
-            </h4>
+            </div>
             <ul class=\"chat-user-list\"></ul>
         </div>""")
 
@@ -226,7 +226,7 @@ class Chat
         $chat_messages_el = $(".chat-list #chat-#{message.chat__uuid} .messages")
         stamp = (timestamp) =>
             new Date(timestamp).toLocaleTimeString()[0...-3]
-        s = """"
+        s = """
         <div id=\"message-#{message.uuid}\" class="message
             #{if message.user_from__username == @chat_session.username then ' mine\"' else '\"'}>
             <div class=\"message_body\">#{message.message_body}</div>
@@ -236,7 +236,7 @@ class Chat
         $chat_messages_el.append($(s))
 
     ui_chat_scroll_down: (chat_uuid, animate=false) =>
-        $wpr = $(".chat-list #chat-#{chat_uuid} .wpr-messages")
+        $wpr = $("#chat-#{chat_uuid} .wpr-messages")
         $msgs = $wpr.find('.messages')
         if not animate
             $wpr.scrollTop($msgs.outerHeight())
