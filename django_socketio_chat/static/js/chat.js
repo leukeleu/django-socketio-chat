@@ -320,10 +320,13 @@
     };
 
     Chat.prototype.ui_chat_set_unread_messages = function(chat_uuid, count) {
-      var chat;
+      var chat, unread_messages;
       chat = $("#chat-" + chat_uuid);
+      unread_messages = chat.find('.unread-messages');
       if (count > 0) {
-        return chat.find('.unread-messages').html(count);
+        return unread_messages.html(count).addClass('active');
+      } else {
+        return unread_messages.removeClass('active');
       }
     };
 

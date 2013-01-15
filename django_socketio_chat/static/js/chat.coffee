@@ -209,8 +209,13 @@ class Chat
 
     ui_chat_set_unread_messages: (chat_uuid, count) =>
         chat = $("#chat-#{chat_uuid}")
+        unread_messages = chat.find('.unread-messages')
         if count > 0
-            chat.find('.unread-messages').html(count)
+            unread_messages
+                .html(count)
+                .addClass('active')
+        else
+            unread_messages.removeClass('active')
 
     ui_chat_clear_unread_messages:(chat_uuid) =>
         chat = $("#chat-#{chat_uuid}")
