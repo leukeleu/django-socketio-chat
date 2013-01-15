@@ -3,7 +3,7 @@
 
     <div class="chat-window">
         <div class="chat-user">
-            <h3>User</h3>
+            <h3 class="heading">User</h3>
             <p>
                 {% if not user.is_authenticated %}
                     <a href="{% url login %}">login</a>
@@ -14,17 +14,17 @@
         </div>
 
         <div class="chat-users">
-            <h3>Users</h3>
+            <h3 class="heading">Users</h3>
             <ul class="user-list"></ul>
         </div>
 
         <div class="chats">
-            <h3>Chats</h3>
+            <h3 class="heading">Chats</h3>
             <div class="chat-list"></div>
         </div>
 
         <div class="debug">
-            <h3>Debug</h3>
+            <h3 class="heading">Debug</h3>
             <div class="debug-log"></div>
         </div>
     </div>

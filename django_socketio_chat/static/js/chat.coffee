@@ -128,7 +128,7 @@ class Chat
         @chat_users_lists[chat.uuid] = chat_user_list
         $chat_el = $("""
         <div id=\"chat-#{chat.uuid}\" class="chat">
-            <div class="chat-heading clearfix">
+            <div class="heading clearfix">
                 #{chat_user_list.render()}
                 <div class="chat-controls">
                     <a href=\"#\" class=\"toggle-active\"></a>
