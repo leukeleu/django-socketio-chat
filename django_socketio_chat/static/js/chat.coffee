@@ -128,7 +128,7 @@ class Chat
         @chat_users_lists[chat.uuid] = chat_user_list
         $chat_el = $("""
         <div id=\"chat-#{chat.uuid}\" class="chat well well-small">
-            <div class="clearfix">
+            <div class="chat-header clearfix">
                 #{chat_user_list.render()}
                 <div class="chat-controls">
                     <a href=\"#\" class=\"toggle-active btn btn-small\"></a>
@@ -145,11 +145,11 @@ class Chat
             </div>
         </div>""")
 
-        $messages_el = $('<div class="wpr-messages"><div class="messages clearfix"></div></div>')
+        $messages_el = $('<div class="messages"><div class="messages-inner clearfix"></div></div>')
         $message_input_el = $("""
         <div class="message-input input-prepend">
             <div class="add-on"><i class="icon-user"></i></div>
-            <input id="prependedInput" type="text" placeholder="Type message">
+            <input type="text" placeholder="Type message">
         </div>""")
 
         $chat_el.append($messages_el)
@@ -239,7 +239,7 @@ class Chat
         @ui_chat_scroll_down(messages[0].chat__uuid)
 
     update_chats_chat_messages_message_ui: (message) =>
-        $chat_messages_el = $("#chat-#{message.chat__uuid} .messages")
+        $chat_messages_el = $("#chat-#{message.chat__uuid} .messages-inner")
         stamp = (timestamp) =>
             timestamp = new Date(timestamp)
             return ('0' + timestamp.getHours()).slice(-2) + ':' + ('0' + timestamp.getMinutes()).slice(-2)
@@ -252,8 +252,8 @@ class Chat
         $chat_messages_el.append($(s))
 
     ui_chat_scroll_down: (chat_uuid, animate=false) =>
-        $wpr = $("#chat-#{chat_uuid} .wpr-messages")
-        $msgs = $wpr.find('.messages')
+        $wpr = $("#chat-#{chat_uuid} .messages")
+        $msgs = $wpr.find('.messages-inner')
         if not animate
             $wpr.scrollTop($msgs.outerHeight())
         else

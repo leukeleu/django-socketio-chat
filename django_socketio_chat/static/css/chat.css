@@ -1,19 +1,11 @@
-/* chat container */
-
 .chat-container {
     width: 320px;
     min-width: 320px;
 }
 
-/* chat box */
-
 .chat .chat-users {
-    float: left;
+    overflow: hidden;
     white-space: nowrap;
-}
-
-.chat .chat-controls {
-    float: right;
 }
 
 .chat .chat-users li {
@@ -28,15 +20,22 @@
     content: '';
 }
 
-.chat .wpr-messages {
-    max-height: 200px;
+.chat .messages {
+    margin: 10px 0;
+    border-top: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
+    max-height: 300px;
     overflow-y: scroll;
 }
 
-.chat .messages {
+.chat .messages-inner {
     position: relative;
 }
 
 .chat .messages .message {
     clear: both;
+}
+
+.message-input input {
+    width: 259px;
 }

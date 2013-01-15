@@ -233,9 +233,9 @@
         _this = this;
       chat_user_list = new ChatUserList(chat.user_chat_statuses);
       this.chat_users_lists[chat.uuid] = chat_user_list;
-      $chat_el = $("<div id=\"chat-" + chat.uuid + "\" class=\"chat well well-small\">\n    <div class=\"clearfix\">\n        " + (chat_user_list.render()) + "\n        <div class=\"chat-controls\">\n            <a href=\"#\" class=\"toggle-active btn btn-small\"></a>\n            <a href=\"#\" class=\"archive btn btn-small\">Archive</a>\n            <div class=\"btn-group\">\n                <a class=\"btn list-users dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">\n                    <i class=\"icon-user\"></i>\n                    <span class=\"caret\"></span>\n                </a>\n                <ul class=\"dropdown-menu chat-user-list unstyled\"></ul>\n            </div>\n            <span class=\"unread-messages badge\"></span>\n        </div>\n    </div>\n</div>");
-      $messages_el = $('<div class="wpr-messages"><div class="messages clearfix"></div></div>');
-      $message_input_el = $("<div class=\"message-input input-prepend\">\n    <div class=\"add-on\"><i class=\"icon-user\"></i></div>\n    <input id=\"prependedInput\" type=\"text\" placeholder=\"Type message\">\n</div>");
+      $chat_el = $("<div id=\"chat-" + chat.uuid + "\" class=\"chat well well-small\">\n    <div class=\"chat-header clearfix\">\n        " + (chat_user_list.render()) + "\n        <div class=\"chat-controls\">\n            <a href=\"#\" class=\"toggle-active btn btn-small\"></a>\n            <a href=\"#\" class=\"archive btn btn-small\">Archive</a>\n            <div class=\"btn-group\">\n                <a class=\"btn list-users dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">\n                    <i class=\"icon-user\"></i>\n                    <span class=\"caret\"></span>\n                </a>\n                <ul class=\"dropdown-menu chat-user-list unstyled\"></ul>\n            </div>\n            <span class=\"unread-messages badge\"></span>\n        </div>\n    </div>\n</div>");
+      $messages_el = $('<div class="messages"><div class="messages-inner clearfix"></div></div>');
+      $message_input_el = $("<div class=\"message-input input-prepend\">\n    <div class=\"add-on\"><i class=\"icon-user\"></i></div>\n    <input type=\"text\" placeholder=\"Type message\">\n</div>");
       $chat_el.append($messages_el);
       $chat_el.append($message_input_el);
       $message_input = $message_input_el.find('input');
@@ -354,7 +354,7 @@
     Chat.prototype.update_chats_chat_messages_message_ui = function(message) {
       var $chat_messages_el, s, stamp,
         _this = this;
-      $chat_messages_el = $("#chat-" + message.chat__uuid + " .messages");
+      $chat_messages_el = $("#chat-" + message.chat__uuid + " .messages-inner");
       stamp = function(timestamp) {
         timestamp = new Date(timestamp);
         return ('0' + timestamp.getHours()).slice(-2) + ':' + ('0' + timestamp.getMinutes()).slice(-2);
@@ -368,8 +368,8 @@
       if (animate == null) {
         animate = false;
       }
-      $wpr = $("#chat-" + chat_uuid + " .wpr-messages");
-      $msgs = $wpr.find('.messages');
+      $wpr = $("#chat-" + chat_uuid + " .messages");
+      $msgs = $wpr.find('.messages-inner');
       if (!animate) {
         return $wpr.scrollTop($msgs.outerHeight());
       } else {
