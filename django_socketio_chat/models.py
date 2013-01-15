@@ -14,18 +14,18 @@ class ChatSession(models.Model):
 
     # session states
     AVAILABLE = 0
-    INVISBLE = 1
+    INVISIBLE = 1
     BUSY = 2
 
     SIGNED_IN_STATES = (
-        (SIGNED_OFF, 'Signed off'),
-        (SIGNED_IN, 'Signed in')
+        (SIGNED_OFF, 'signed off'),
+        (SIGNED_IN, 'signed in')
     )
 
     CHAT_SESSION_STATES = (
-        (AVAILABLE, 'Available'),
-        (INVISBLE, 'Invisible'),
-        (BUSY, 'Busy')
+        (AVAILABLE, 'available'),
+        (INVISIBLE, 'invisible'),
+        (BUSY, 'busy')
     )
 
     user = models.ForeignKey(User, related_name='chat_session')
@@ -38,7 +38,7 @@ class ChatSession(models.Model):
 
     @property
     def users_that_i_see(self):
-        return User.objects.exclude(pk=self.user.pk).filter(chat_session__status=self.SIGNED_IN)
+        return User.objects.exclude(pk=self.user.pk, chat_session__status=self.INVISIBLE)
 
     @property
     def chats(self):
@@ -61,12 +61,15 @@ class ChatSession(models.Model):
         return self.signed_in_state == self.SIGNED_OFF
 
     def go_invisible(self):
-        self.status = self.INVISBLE
+        self.status = self.INVISIBLE
         self.save()
 
     @property
     def is_invisible(self):
-        return self.status == self.INVISBLE
+        return self.status == self.INVISIBLE
+
+    def get_status(self):
+        return self.CHAT_SESSION_STATES[self.status][1]
 
 
 class Chat(models.Model):

@@ -16,10 +16,15 @@ from django_socketio_chat.models import Chat, ChatSession, UserChatStatus
 from django_socketio_chat import serializers
 from django_socketio_chat.utils import prepare_for_emit
 
+# Connection states (not persisted in db)
+DISCONNECTED = 0
+CONNECTED  = 1
+
 
 class ChatConnection(SocketConnection):
 
     connections = {}
+    connection_states = {}
     chat_session = None
 
     def on_open(self, info):
@@ -42,21 +47,34 @@ class ChatConnection(SocketConnection):
                 # TODO Implement a __hash__ method on this class?
                 self.connections[self.user] = self.connections.get(self.user, set())
                 self.connections[self.user].add(self)
+                self.connection_states[self.user] = True
 
                 self.chat_session, created = ChatSession.objects.get_or_create(user=self.user)
                 chat_session_obj = prepare_for_emit(serializers.ChatSessionSerializer(self.chat_session).data)
 
-                if self.chat_session.status == self.chat_session.SIGNED_OFF:
+                if self.chat_session.is_signed_off:
                     self.emit('ev_chat_session_status', chat_session_obj)
                     return
 
-                elif self.chat_session.status == self.chat_session.SIGNED_IN:
+                elif self.chat_session.is_signed_in:
                     self.send_all_chat_info()
 
     def send_all_chat_info(self):
+        class CustomUserSerializer(serializers.UserSerializer):
+
+            def get_status(self, obj):
+                online = ChatConnection.connection_states.get(obj, False)
+                if not online:
+                    return 'offline'
+                if obj.chat_session.all()[0].is_invisible:
+                    return 'offline'
+                else:
+                    return obj.chat_session.all()[0].get_status()
+
+
         chat_session_obj = prepare_for_emit(serializers.ChatSessionSerializer(self.chat_session).data)
         chat_users = self.chat_session.users_that_i_see
-        chat_users_obj = prepare_for_emit(serializers.UserSerializer(chat_users).data)
+        chat_users_obj = prepare_for_emit(CustomUserSerializer(chat_users).data)
 
         chats = self.chat_session.chats
         chats_obj = prepare_for_emit(serializers.ChatSerializer(chats).data)
@@ -183,11 +201,10 @@ class ChatConnection(SocketConnection):
                 self.emit('ev_chat_archived', chat.uuid.hex)
 
     def on_disconnect(self):
-        pass
+        print 'disconnecting'
 
     def on_close(self):
-        pass
-
+        self.connection_states[self.user] = False
 
 # Create chat router
 ChatRouter = TornadioRouter(ChatConnection, user_settings={'websocket_check': True}, namespace='chat/socket.io')

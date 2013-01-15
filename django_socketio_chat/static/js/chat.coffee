@@ -40,7 +40,7 @@ class Chat
         @conn.on 'ev_chat_session_status', (chat_session) =>
             #  Not signed in yet
             @chat_session = chat_session
-            if @chat_session.status == 0
+            if @chat_session.signed_in_state == 0
                 @ui_signed_off()
 
         @conn.on 'ev_data_update', (chat_session, chat_users, chats) =>
@@ -113,7 +113,7 @@ class Chat
 
     ui_add_user: (user) =>
         $user_list = $('.user-list')
-        $user_el = $("<li class=\"(#{if user.is_online then 'online' else 'offline'})\"><a href=\"#\"><i class=\"icon-user\"></i> #{user.username}</a></li>")
+        $user_el = $("<li class=\"#{user.status}\"><i class=\"icon-user\"></i><a href=\"#\">#{user.username}</a></li>")
         $user_list.append($user_el)
         $user_el.on 'click', (e) =>
             e.preventDefault()

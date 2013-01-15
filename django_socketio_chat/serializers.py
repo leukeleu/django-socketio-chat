@@ -1,7 +1,4 @@
-from datetime import datetime
-
 from django.contrib.auth.models import User
-from django.contrib.sessions.models import Session
 
 from rest_framework import serializers
 from rest_framework.fields import Field, CharField
@@ -28,25 +25,20 @@ class ChatSessionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ChatSession
-        fields = ('username', 'status')
+        fields = ('username', 'status', 'signed_in_state')
 
 
 class UserSerializer(serializers.ModelSerializer):
     # TODO: add `availability` field / property to User (via UserProfile?): availability = Field(source='get_availability')
 
-    is_online = serializers.SerializerMethodField('get_is_online')
+    status = serializers.SerializerMethodField('get_status')
 
     class Meta:
         model = User
-        fields = ('username', 'is_online')
+        fields = ('username', 'status')
 
-    def get_is_online(self, obj):
-        # TODO: cache decoded session lookups
-        sessions = Session.objects.filter(expire_date__gte=datetime.now())
-        online_user_ids = filter(None, list(set([session.get_decoded().get('_auth_user_id') for session in sessions])))
-
-        return obj.id in online_user_ids
-
+    def get_status(self, obj):
+        pass
 
 # ---[ viewpoint = Chat ]--- #
 

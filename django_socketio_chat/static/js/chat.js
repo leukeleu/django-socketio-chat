@@ -116,7 +116,7 @@
       });
       this.conn.on('ev_chat_session_status', function(chat_session) {
         _this.chat_session = chat_session;
-        if (_this.chat_session.status === 0) {
+        if (_this.chat_session.signed_in_state === 0) {
           return _this.ui_signed_off();
         }
       });
@@ -209,7 +209,7 @@
       var $user_el, $user_list,
         _this = this;
       $user_list = $('.user-list');
-      $user_el = $("<li class=\"(" + (user.is_online ? 'online' : 'offline') + ")\"><a href=\"#\"><i class=\"icon-user\"></i> " + user.username + "</a></li>");
+      $user_el = $("<li class=\"" + user.status + "\"><i class=\"icon-user\"></i><a href=\"#\">" + user.username + "</a></li>");
       $user_list.append($user_el);
       return $user_el.on('click', function(e) {
         e.preventDefault();
