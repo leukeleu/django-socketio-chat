@@ -4,7 +4,7 @@ class ChatUserList
         @user_list = (ucs.user__username for ucs in user_chat_statuses)
 
     render: =>
-        chat_users_el = '<ul class="chat-users">'
+        chat_users_el = "<ul class=\"chat-users unstyled\">"
         chat_users_el = "#{chat_users_el}#{("<li>#{username}</li>" for username in @user_list).join('')}"
         chat_users_el = "#{chat_users_el}</ul>"
         return chat_users_el
@@ -127,17 +127,22 @@ class Chat
         chat_user_list = new ChatUserList(chat.user_chat_statuses)
         @chat_users_lists[chat.uuid] = chat_user_list
         $chat_el = $("""
-        <div id=\"chat-#{chat.uuid}\" class="chat">
+        <div id=\"chat-#{chat.uuid}\" class="chat well well-small">
             <div class="clearfix">
                 #{chat_user_list.render()}
                 <div class="chat-controls">
                     <a href=\"#\" class=\"toggle-active btn btn-small\"></a>
                     <a href=\"#\" class=\"archive btn btn-small\">Archive</a>
-                    <a href=\"#\" class=\"list-users btn btn-small\">+</a>
+                    <div class="btn-group">
+                        <a class="btn list-users dropdown-toggle" data-toggle="dropdown" href="#">
+                            <i class="icon-user"></i>
+                            <span class="caret"></span>
+                        </a>
+                        <ul class=\"dropdown-menu chat-user-list unstyled\"></ul>
+                    </div>
                     <span class=\"unread-messages badge\"></span>
                 </div>
             </div>
-            <ul class=\"chat-user-list\"></ul>
         </div>""")
 
         $messages_el = $('<div class="wpr-messages"><div class="messages clearfix"></div></div>')

@@ -24,7 +24,7 @@
 
     ChatUserList.prototype.render = function() {
       var chat_users_el, username;
-      chat_users_el = '<ul class="chat-users">';
+      chat_users_el = "<ul class=\"chat-users unstyled\">";
       chat_users_el = "" + chat_users_el + (((function() {
         var _i, _len, _ref, _results;
         _ref = this.user_list;
@@ -233,7 +233,7 @@
         _this = this;
       chat_user_list = new ChatUserList(chat.user_chat_statuses);
       this.chat_users_lists[chat.uuid] = chat_user_list;
-      $chat_el = $("<div id=\"chat-" + chat.uuid + "\" class=\"chat\">\n    <div class=\"clearfix\">\n        " + (chat_user_list.render()) + "\n        <div class=\"chat-controls\">\n            <a href=\"#\" class=\"toggle-active btn btn-small\"></a>\n            <a href=\"#\" class=\"archive btn btn-small\">Archive</a>\n            <a href=\"#\" class=\"list-users btn btn-small\">+</a>\n            <span class=\"unread-messages badge\"></span>\n        </div>\n    </div>\n    <ul class=\"chat-user-list\"></ul>\n</div>");
+      $chat_el = $("<div id=\"chat-" + chat.uuid + "\" class=\"chat well well-small\">\n    <div class=\"clearfix\">\n        " + (chat_user_list.render()) + "\n        <div class=\"chat-controls\">\n            <a href=\"#\" class=\"toggle-active btn btn-small\"></a>\n            <a href=\"#\" class=\"archive btn btn-small\">Archive</a>\n            <div class=\"btn-group\">\n                <a class=\"btn list-users dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">\n                    <i class=\"icon-user\"></i>\n                    <span class=\"caret\"></span>\n                </a>\n                <ul class=\"dropdown-menu chat-user-list unstyled\"></ul>\n            </div>\n            <span class=\"unread-messages badge\"></span>\n        </div>\n    </div>\n</div>");
       $messages_el = $('<div class="wpr-messages"><div class="messages clearfix"></div></div>');
       $message_input_el = $("<div class=\"message-input input-prepend\">\n    <div class=\"add-on\"><i class=\"icon-user\"></i></div>\n    <input id=\"prependedInput\" type=\"text\" placeholder=\"Type message\">\n</div>");
       $chat_el.append($messages_el);

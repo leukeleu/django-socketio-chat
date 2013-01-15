@@ -12,8 +12,12 @@
     white-space: nowrap;
 }
 
+.chat .chat-controls {
+    float: right;
+}
+
 .chat .chat-users li {
-    display: inline-block;
+    display: inline;
 }
 
 .chat .chat-users li:before {
@@ -24,10 +28,6 @@
     content: '';
 }
 
-.chat .chat-controls {
-    float: right;
-}
-
 .chat .wpr-messages {
     max-height: 200px;
     overflow-y: scroll;
@@ -35,7 +35,6 @@
 
 .chat .messages {
     position: relative;
-    margin-bottom: 5px;
 }
 
 .chat .messages .message {
