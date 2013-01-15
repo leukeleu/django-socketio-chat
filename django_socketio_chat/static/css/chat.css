@@ -8,22 +8,32 @@
     font-size: 14px;
 }
 
-.unread-messages {
+/* chat box */
+
+.chat {
+    margin-top: 5px;
+}
+
+.chat h4 {
+    background-color: #eee;
+}
+
+.chat .unread-messages {
     float: right;
     margin-right: 20px;
 }
 
-.wpr-messages {
+.chat .wpr-messages {
     max-height: 128px;
     overflow-y: scroll;
 }
 
-.messages {
+.chat .messages {
     position: relative;
     margin-bottom: 5px;
 }
 
-.chat-users {
+.chat .chat-users {
     float: left;
     margin-left: 0;
     width:175px;
@@ -32,32 +42,26 @@
     margin-right: 3px;
 }
 
-.chat-users li {
+.chat .chat-users li {
     display: inline-block;
 }
 
-.chat-users li:before {
+.chat .chat-users li:before {
     content: ', ';
 }
 
-.chat-users li:first-child:before {
+.chat .chat-users li:first-child:before {
     content: '';
 }
 
-/* chat box */
-
-.chat h4 {
-    background-color: #999;
-}
-
-.timestamp {
+.chat .timestamp {
     float: left;
     margin-right: 3px;
     margin-bottom: 3px;
     color: #999;
 }
 
-.message {
+.chat .message {
     float: left;
     margin: 5px;
     width: 210px;
@@ -65,11 +69,11 @@
     padding: 5px;
 }
 
-.message.mine {
+.chat .message.mine {
     float: right;
 }
 
-.message-input textarea {
+.chat .message-input textarea {
     margin: 0;
     padding: 5px;
     width: 308px;

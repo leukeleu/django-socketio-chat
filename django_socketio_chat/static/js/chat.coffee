@@ -93,26 +93,26 @@ class Chat
             @ui_chat_archive(chat_uuid)
 
     ui_signed_off: ->
-        $('#chat-window').hide()
-        $('#chat-session-state').html('<h1>Signed off</h1><a id="sign-in" href="#">Sign in</a>')
-        $('#sign-in').click (e) =>
+        $('.chat-window').hide()
+        $('.chat-session-state').html('<h1>Signed off</h1><a class="sign-in" href="#">Sign in</a>')
+        $('.sign-in').click (e) =>
             e.preventDefault()
             @conn.emit('req_user_sign_in')
 
     ui_signed_in: =>
-        $chat_window = $('#chat-window')
+        $chat_window = $('.chat-window')
         $chat_window.show()
-        $('#chat-session-state').html('<h1>Signed in</h1><a id="sign-off" href="#">Sign off</a>')
-        $('#sign-off').click (e) =>
+        $('.chat-session-state').html('<h1>Signed in</h1><a class="sign-off" href="#">Sign off</a>')
+        $('.sign-off').click (e) =>
             e.preventDefault()
             @conn.emit('req_user_sign_off')
 
     update_users_ui: (users) =>
-        $('#user-list').empty()
+        $('.user-list').empty()
         (@ui_add_user(user) for user in users)
 
     ui_add_user: (user) =>
-        $user_list = $('#user-list')
+        $user_list = $('.user-list')
         $user_el = $("<li><a href=\"#\"> #{user.username} (#{if user.is_online then 'online' else 'offline'})</a></li>")
         $user_list.append($user_el)
         $user_el.on 'click', (e) =>
@@ -120,7 +120,7 @@ class Chat
             @conn.emit('req_chat_create', user.username)
 
     update_chats_ui: (chats) =>
-        $('#chat-list').empty()
+        $('.chat-list').empty()
         (@update_chats_chat_ui(chat) for chat in chats)
 
     update_chats_chat_ui: (chat) =>
@@ -223,7 +223,7 @@ class Chat
         @ui_chat_scroll_down(messages[0].chat__uuid)
 
     update_chats_chat_messages_message_ui: (message) =>
-        $chat_messages_el = $("#chat-list #chat-#{message.chat__uuid} .messages")
+        $chat_messages_el = $(".chat-list #chat-#{message.chat__uuid} .messages")
         stamp = (timestamp) =>
             new Date(timestamp).toLocaleTimeString()[0...-3]
         s = """"
@@ -236,7 +236,7 @@ class Chat
         $chat_messages_el.append($(s))
 
     ui_chat_scroll_down: (chat_uuid, animate=false) =>
-        $wpr = $("#chat-list #chat-#{chat_uuid} .wpr-messages")
+        $wpr = $(".chat-list #chat-#{chat_uuid} .wpr-messages")
         $msgs = $wpr.find('.messages')
         if not animate
             $wpr.scrollTop($msgs.outerHeight())

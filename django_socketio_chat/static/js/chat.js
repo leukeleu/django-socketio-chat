@@ -174,9 +174,9 @@
 
     Chat.prototype.ui_signed_off = function() {
       var _this = this;
-      $('#chat-window').hide();
-      $('#chat-session-state').html('<h1>Signed off</h1><a id="sign-in" href="#">Sign in</a>');
-      return $('#sign-in').click(function(e) {
+      $('.chat-window').hide();
+      $('.chat-session-state').html('<h1>Signed off</h1><a class="sign-in" href="#">Sign in</a>');
+      return $('.sign-in').click(function(e) {
         e.preventDefault();
         return _this.conn.emit('req_user_sign_in');
       });
@@ -185,10 +185,10 @@
     Chat.prototype.ui_signed_in = function() {
       var $chat_window,
         _this = this;
-      $chat_window = $('#chat-window');
+      $chat_window = $('.chat-window');
       $chat_window.show();
-      $('#chat-session-state').html('<h1>Signed in</h1><a id="sign-off" href="#">Sign off</a>');
-      return $('#sign-off').click(function(e) {
+      $('.chat-session-state').html('<h1>Signed in</h1><a class="sign-off" href="#">Sign off</a>');
+      return $('.sign-off').click(function(e) {
         e.preventDefault();
         return _this.conn.emit('req_user_sign_off');
       });
@@ -196,7 +196,7 @@
 
     Chat.prototype.update_users_ui = function(users) {
       var user, _i, _len, _results;
-      $('#user-list').empty();
+      $('.user-list').empty();
       _results = [];
       for (_i = 0, _len = users.length; _i < _len; _i++) {
         user = users[_i];
@@ -208,7 +208,7 @@
     Chat.prototype.ui_add_user = function(user) {
       var $user_el, $user_list,
         _this = this;
-      $user_list = $('#user-list');
+      $user_list = $('.user-list');
       $user_el = $("<li><a href=\"#\"> " + user.username + " (" + (user.is_online ? 'online' : 'offline') + ")</a></li>");
       $user_list.append($user_el);
       return $user_el.on('click', function(e) {
@@ -219,7 +219,7 @@
 
     Chat.prototype.update_chats_ui = function(chats) {
       var chat, _i, _len, _results;
-      $('#chat-list').empty();
+      $('.chat-list').empty();
       _results = [];
       for (_i = 0, _len = chats.length; _i < _len; _i++) {
         chat = chats[_i];
@@ -351,7 +351,7 @@
     Chat.prototype.update_chats_chat_messages_message_ui = function(message) {
       var $chat_messages_el, s, stamp,
         _this = this;
-      $chat_messages_el = $("#chat-list #chat-" + message.chat__uuid + " .messages");
+      $chat_messages_el = $(".chat-list #chat-" + message.chat__uuid + " .messages");
       stamp = function(timestamp) {
         return new Date(timestamp).toLocaleTimeString().slice(0, -3);
       };
@@ -364,7 +364,7 @@
       if (animate == null) {
         animate = false;
       }
-      $wpr = $("#chat-list #chat-" + chat_uuid + " .wpr-messages");
+      $wpr = $(".chat-list #chat-" + chat_uuid + " .wpr-messages");
       $msgs = $wpr.find('.messages');
       if (!animate) {
         return $wpr.scrollTop($msgs.outerHeight());
