@@ -113,7 +113,7 @@ class Chat
 
     ui_add_user: (user) =>
         $user_list = $('.user-list')
-        $user_el = $("<li><a href=\"#\"> #{user.username} (#{if user.is_online then 'online' else 'offline'})</a></li>")
+        $user_el = $("<li class=\"(#{if user.is_online then 'online' else 'offline'})\"><a href=\"#\">#{user.username}</a></li>")
         $user_list.append($user_el)
         $user_el.on 'click', (e) =>
             e.preventDefault()

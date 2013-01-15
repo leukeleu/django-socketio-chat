@@ -209,7 +209,7 @@
       var $user_el, $user_list,
         _this = this;
       $user_list = $('.user-list');
-      $user_el = $("<li><a href=\"#\"> " + user.username + " (" + (user.is_online ? 'online' : 'offline') + ")</a></li>");
+      $user_el = $("<li class=\"(" + (user.is_online ? 'online' : 'offline') + ")\"><a href=\"#\">" + user.username + "</a></li>");
       $user_list.append($user_el);
       return $user_el.on('click', function(e) {
         e.preventDefault();
