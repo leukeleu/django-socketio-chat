@@ -22,7 +22,7 @@ class Chat
         @chat_users_lists = {}
 
     debug_log: (msg) ->
-        control = $('#debug-log')
+        control = $('.debug-log')
         now = new Date()
         control.append(now.toLocaleTimeString() + ': ' + msg + '<br/>')
 

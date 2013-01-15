@@ -98,7 +98,7 @@
 
     Chat.prototype.debug_log = function(msg) {
       var control, now;
-      control = $('#debug-log');
+      control = $('.debug-log');
       now = new Date();
       return control.append(now.toLocaleTimeString() + ': ' + msg + '<br/>');
     };
