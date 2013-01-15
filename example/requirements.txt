@@ -1,5 +1,7 @@
-MySQL-python
+django==1.4.3
+mysql-python==1.2.3
+tornadio2==2.4.1
+djangorestframework==2.1.16
+django-uuidfield==0.4.0
+
 # django-socketio-chat (install using a .pth file in site-packages)
-tornadio2
-djangorestframework==2.1.10
-django-uuidfield

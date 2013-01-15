@@ -1,13 +1,12 @@
 /* chat container */
 
 .chat-container {
-    width: 320px;
+    min-width: 320px;
 }
 
 .chat-container h3 {
     padding: 0 4px;
     background-color: #eee;
-    font-size: 14px;
 }
 
 /* chat box */
@@ -19,7 +18,6 @@
 .chat h4 {
     padding: 0 4px;
     background-color: #eee;
-    line-height: 27px;
 }
 
 .chat .unread-messages {
