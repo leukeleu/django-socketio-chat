@@ -128,17 +128,19 @@ class Chat
         @chat_users_lists[chat.uuid] = chat_user_list
         $chat_el = $("""
         <div id=\"chat-#{chat.uuid}\" class="chat">
-            <div class="chat-heading">
+            <div class="chat-heading clearfix">
                 #{chat_user_list.render()}
-                <a href=\"#\" class=\"toggle-active\"></a>
-                <a href=\"#\" class=\"archive\">Archive</a>
-                <a href=\"#\" class=\"list-users\">+</a>
-                <span class=\"unread-messages\"></span>
+                <div class="chat-controls">
+                    <a href=\"#\" class=\"toggle-active\"></a>
+                    <a href=\"#\" class=\"archive\">Archive</a>
+                    <a href=\"#\" class=\"list-users\">+</a>
+                    <span class=\"unread-messages\"></span>
+                </div>
             </div>
             <ul class=\"chat-user-list\"></ul>
         </div>""")
 
-        $messages_el = $('<div class="wpr-messages"><div class="messages"></div></div>')
+        $messages_el = $('<div class="wpr-messages"><div class="messages clearfix"></div></div>')
         $message_input_el = $('<div class="message-input"> <textarea placeholder="Type message"></textarea> </div>')
 
         $chat_el.append($messages_el)

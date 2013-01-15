@@ -17,20 +17,19 @@
 }
 
 .chat .chat-heading {
+    padding: 0 4px;
     background-color: #eee;
 }
 
 .chat .chat-users {
-    display: inline-block;
+    float: left;
     margin: 0;
-    padding: 0 4px;
     white-space: nowrap;
     overflow: hidden;
 }
 
-.chat .unread-messages {
+.chat .chat-controls {
     float: right;
-    margin-right: 20px;
 }
 
 .chat .chat-users li {
@@ -78,19 +77,4 @@
     margin: 0;
     padding: 5px;
     width: 308px;
-}
-
-/* clearfix */
-
-.chat .messages:before, .chat .messages:after {
-    content: "";
-    display: table;
-}
-
-.chat .messages:after {
-    clear: both;
-}
-
-.chat .messages {
-    *zoom: 1;
 }

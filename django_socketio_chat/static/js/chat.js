@@ -233,8 +233,8 @@
         _this = this;
       chat_user_list = new ChatUserList(chat.user_chat_statuses);
       this.chat_users_lists[chat.uuid] = chat_user_list;
-      $chat_el = $("<div id=\"chat-" + chat.uuid + "\" class=\"chat\">\n    <div class=\"chat-heading\">\n        " + (chat_user_list.render()) + "\n        <a href=\"#\" class=\"toggle-active\"></a>\n        <a href=\"#\" class=\"archive\">Archive</a>\n        <a href=\"#\" class=\"list-users\">+</a>\n        <span class=\"unread-messages\"></span>\n    </div>\n    <ul class=\"chat-user-list\"></ul>\n</div>");
-      $messages_el = $('<div class="wpr-messages"><div class="messages"></div></div>');
+      $chat_el = $("<div id=\"chat-" + chat.uuid + "\" class=\"chat\">\n    <div class=\"chat-heading clearfix\">\n        " + (chat_user_list.render()) + "\n        <div class=\"chat-controls\">\n            <a href=\"#\" class=\"toggle-active\"></a>\n            <a href=\"#\" class=\"archive\">Archive</a>\n            <a href=\"#\" class=\"list-users\">+</a>\n            <span class=\"unread-messages\"></span>\n        </div>\n    </div>\n    <ul class=\"chat-user-list\"></ul>\n</div>");
+      $messages_el = $('<div class="wpr-messages"><div class="messages clearfix"></div></div>');
       $message_input_el = $('<div class="message-input"> <textarea placeholder="Type message"></textarea> </div>');
       $chat_el.append($messages_el);
       $chat_el.append($message_input_el);
