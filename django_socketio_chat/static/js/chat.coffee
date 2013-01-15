@@ -1,9 +1,25 @@
+class ChatUserList
+
+    constructor: (user_chat_statuses) ->
+        @user_list = (ucs.user__username for ucs in user_chat_statuses)
+
+    render: =>
+        chat_users_el = '<ul class="chat-users">'
+        chat_users_el = "#{chat_users_el}#{("<li>#{username}</li>" for username in @user_list).join('')}"
+        chat_users_el = "#{chat_users_el}</ul>"
+        return chat_users_el
+
+    append: (username) =>
+        @user_list.push(username)
+
+
 class Chat
     chat_session = null
     conn = null
 
-    init: ->
+    init: =>
         @connect()
+        @chat_users_lists = {}
 
     debug_log: (msg) ->
         control = $('#debug-log')
@@ -55,6 +71,12 @@ class Chat
         @conn.on 'ev_you_were_added', (chat) =>
             @update_chats_chat_ui(chat)
 
+        @conn.on 'ev_chat_user_added', (chat_uuid, username) =>
+            chat_user_list = @chat_users_lists[chat_uuid]
+            chat_user_list.append(username)
+            chat = $("#chat-#{chat_uuid}")
+            chat.find('.chat-users').html(chat_user_list.render())
+
         @conn.on 'ev_message_sent', (message, user_chat_statuses) =>
             @update_chats_chat_messages_message_ui(message)
             @ui_animate_new_message(message.chat__uuid)
@@ -102,16 +124,12 @@ class Chat
         (@update_chats_chat_ui(chat) for chat in chats)
 
     update_chats_chat_ui: (chat) =>
-        $chat_list = $('#chat-list')
-
-        chat_users = '<ul class="chat-users">'
-        chat_users = "#{chat_users}#{("<li>#{ucs.user__username}</li>" for ucs in chat.user_chat_statuses).join('')}"
-        chat_users = "#{chat_users}</ul>"
-
+        chat_user_list = new ChatUserList(chat.user_chat_statuses)
+        @chat_users_lists[chat.uuid] = chat_user_list
         $chat_el = $("""
         <div id=\"chat-#{chat.uuid}\">
             <h4>
-                #{chat_users}
+                #{chat_user_list.render()}
                 <a href=\"#\" class=\"toggle-active\"></a>
                 <a href=\"#\" class=\"archive\">Archive</a>
                 <a href=\"#\" class=\"list-users\">+</a>
@@ -154,6 +172,7 @@ class Chat
             e.preventDefault()
             @conn.emit('req_chat_archive', chat.uuid)
 
+        $chat_list = $('#chat-list')
         $chat_list.append($chat_el)
 
         if user_chat_status.status == 'active'
