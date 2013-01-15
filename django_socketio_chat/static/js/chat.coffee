@@ -227,13 +227,14 @@ class Chat
     update_chats_chat_messages_message_ui: (message) =>
         $chat_messages_el = $(".chat-list #chat-#{message.chat__uuid} .messages")
         stamp = (timestamp) =>
-            new Date(timestamp).toLocaleTimeString()[0...-3]
+            timestamp = new Date(timestamp)
+            return ('0' + timestamp.getHours()).slice(-2) + ':' + ('0' + timestamp.getMinutes()).slice(-2)
         s = """
         <div id=\"message-#{message.uuid}\" class="message
             #{if message.user_from__username == @chat_session.username then ' mine\"' else '\"'}>
             <div class=\"message_body\">#{message.message_body}</div>
+            <div class=\"sender\">#{message.user_from__username} - </div>
             <div class=\"timestamp\">#{stamp(message.timestamp)}</div>
-            <div class=\"sender\">#{message.user_from__username}:</div>
         </div>"""
         $chat_messages_el.append($(s))
 

@@ -353,9 +353,10 @@
         _this = this;
       $chat_messages_el = $(".chat-list #chat-" + message.chat__uuid + " .messages");
       stamp = function(timestamp) {
-        return new Date(timestamp).toLocaleTimeString().slice(0, -3);
+        timestamp = new Date(timestamp);
+        return ('0' + timestamp.getHours()).slice(-2) + ':' + ('0' + timestamp.getMinutes()).slice(-2);
       };
-      s = "<div id=\"message-" + message.uuid + "\" class=\"message\n    " + (message.user_from__username === this.chat_session.username ? ' mine\"' : '\"') + ">\n    <div class=\"message_body\">" + message.message_body + "</div>\n    <div class=\"timestamp\">" + (stamp(message.timestamp)) + "</div>\n    <div class=\"sender\">" + message.user_from__username + ":</div>\n</div>";
+      s = "<div id=\"message-" + message.uuid + "\" class=\"message\n    " + (message.user_from__username === this.chat_session.username ? ' mine\"' : '\"') + ">\n    <div class=\"message_body\">" + message.message_body + "</div>\n    <div class=\"sender\">" + message.user_from__username + " - </div>\n    <div class=\"timestamp\">" + (stamp(message.timestamp)) + "</div>\n</div>";
       return $chat_messages_el.append($(s));
     };
 

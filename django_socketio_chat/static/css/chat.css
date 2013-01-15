@@ -63,10 +63,10 @@
     background-color: #eee;
 }
 
+.chat .sender,
 .chat .timestamp {
-    float: left;
-    margin-right: 3px;
-    margin-bottom: 3px;
+    display: inline-block;
+    font-size: 12px;
     color: #999;
 }
 
