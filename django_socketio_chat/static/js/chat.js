@@ -268,7 +268,7 @@
         e.preventDefault();
         return _this.conn.emit('req_chat_archive', chat.uuid);
       });
-      $chat_list = $('#chat-list');
+      $chat_list = $('.chat-list');
       $chat_list.append($chat_el);
       if (user_chat_status.status === 'active') {
         this.ui_chat_activate(chat.uuid);
