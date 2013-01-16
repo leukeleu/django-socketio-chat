@@ -21,6 +21,26 @@ DISCONNECTED = 0
 CONNECTED  = 1
 
 
+class CustomUserSerializer(serializers.UserSerializer):
+
+    def __init__(self, connection, *args, **kwargs):
+        self.connection = connection
+        super(CustomUserSerializer, self).__init__(*args, **kwargs)
+
+    def get_status(self, obj):
+        online = self.connection.connection_states.get(obj, False)
+        if not online:
+            return 'offline'
+        if obj.chat_session.all()[0].is_invisible:
+            return 'offline'
+        else:
+            status =  obj.chat_session.all()[0].get_status()
+            if status == 'signed_off':
+                return 'offline'
+            else:
+                return status
+
+
 class ChatConnection(SocketConnection):
 
     connections = {}
@@ -60,25 +80,9 @@ class ChatConnection(SocketConnection):
                     self.send_all_chat_info()
 
     def send_all_chat_info(self):
-        class CustomUserSerializer(serializers.UserSerializer):
-
-            def get_status(self, obj):
-                online = ChatConnection.connection_states.get(obj, False)
-                if not online:
-                    return 'offline'
-                if obj.chat_session.all()[0].is_invisible:
-                    return 'offline'
-                else:
-                    status =  obj.chat_session.all()[0].get_status()
-                    if status == 'signed_off':
-                        return 'offline'
-                    else:
-                        return status
-
-
         chat_session_obj = prepare_for_emit(serializers.ChatSessionSerializer(self.chat_session).data)
         chat_users = self.chat_session.users_that_i_see
-        chat_users_obj = prepare_for_emit(CustomUserSerializer(chat_users).data)
+        chat_users_obj = prepare_for_emit(CustomUserSerializer(self, chat_users).data)
 
         chats = self.chat_session.chats
         chats_obj = prepare_for_emit(serializers.ChatSerializer(chats).data)
@@ -89,7 +93,7 @@ class ChatConnection(SocketConnection):
         for user in self.chat_session.users_that_see_me:
             try:
                 chat_users = ChatSession.objects.get(user=user).users_that_i_see
-                chat_users_obj = prepare_for_emit(serializers.UserSerializer(chat_users).data)
+                chat_users_obj = prepare_for_emit(CustomUserSerializer(self, chat_users).data)
                 for connection in self.connections.get(user, []):
                     connection.emit(event, self.user.username, chat_users_obj)
             except ChatSession.DoesNotExist:

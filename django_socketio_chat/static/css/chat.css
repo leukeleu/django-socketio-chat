@@ -67,12 +67,15 @@
 
 .users .user-list .offline a:after {
    content: 'offline';
+   color: lightgrey;
 }
 
 .users .user-list .available a:after {
    content: 'available';
+   color: green;
 }
 
 .users .user-list .busy a:after {
    content: 'busy';
+   color: red;
 }
