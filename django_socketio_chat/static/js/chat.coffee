@@ -40,13 +40,18 @@ class Chat
         @conn.on 'ev_chat_session_status', (chat_session) =>
             #  Not signed in yet
             @chat_session = chat_session
-            if @chat_session.signed_in_state == 0
+            if @chat_session.status == 0
                 @ui_signed_off()
 
         @conn.on 'ev_data_update', (chat_session, chat_users, chats) =>
             # You are signed in
             @chat_session = chat_session
-            @ui_signed_in()
+            if @chat_session.status == 1
+                @ui_available()
+            if @chat_session.status == 2
+                @ui_invisible()
+            if @chat_session.status == 3
+                @ui_busy()
             @chat_users = chat_users
             @update_user_list_ui(chat_users)
             @update_chat_list_ui(chats)
@@ -55,8 +60,13 @@ class Chat
             @debug_log('Disconnect')
             @conn = null
 
-        @conn.on 'ev_user_signed_in', (username, chat_users) =>
-            @debug_log("#{username} signed in.")
+        @conn.on 'ev_user_became_available', (username, chat_users) =>
+            @debug_log("#{username} became available.")
+            @chat_users = chat_users
+            @update_user_list_ui(chat_users)
+
+        @conn.on 'ev_user_became_busy', (username, chat_users) =>
+            @debug_log("#{username} became busy.")
             @chat_users = chat_users
             @update_user_list_ui(chat_users)
 
@@ -92,20 +102,49 @@ class Chat
         @conn.on 'ev_chat_archived', (chat_uuid) =>
             @ui_chat_archive(chat_uuid)
 
-    ui_signed_off: ->
-        $('.chat-window').hide()
-        $('.session-state').html('<h1>Signed off</h1><a class="sign-in" href="#">Sign in</a>')
-        $('.sign-in').click (e) =>
+    update_session_state_ui: (state) =>
+        session_states = """
+            <ul>
+                <li><a class="become-available" href="#">Available</a></li>
+                <li><a class="become-busy" href="#">Busy</a></li>
+                <li><a class="become-invisible" href="#">Invisible</a></li>
+                <li><a class="sign-off" href="#">Sign off</a></li>
+            </ul>
+            <div class="current-state"></div>
+            """
+        $('.session-state').html(session_states)
+        $('.session-state .become-available').click (e) =>
             e.preventDefault()
-            @conn.emit('req_user_sign_in')
-
-    ui_signed_in: =>
-        $chat_window = $('.chat-window')
-        $chat_window.show()
-        $('.session-state').html('<h1>Signed in</h1><a class="sign-off" href="#">Sign off</a>')
-        $('.sign-off').click (e) =>
+            @conn.emit('req_user_become_available')
+        $('.session-state .become-busy').click (e) =>
+            e.preventDefault()
+            @conn.emit('req_user_become_busy')
+        $('.session-state .become-invisible').click (e) =>
+            e.preventDefault()
+            @conn.emit('req_user_become_invisible')
+        $('.session-state .sign-off').click (e) =>
             e.preventDefault()
             @conn.emit('req_user_sign_off')
+        $('.session-state .current-state').html(state)
+
+    ui_signed_off: ->
+        $('.chat-window').hide()
+        @update_session_state_ui('Signed off')
+
+    ui_available: =>
+        $chat_window = $('.chat-window')
+        $chat_window.show()
+        @update_session_state_ui('available')
+
+    ui_busy: =>
+        $chat_window = $('.chat-window')
+        $chat_window.show()
+        @update_session_state_ui('busy')
+
+    ui_invisible: =>
+        $chat_window = $('.chat-window')
+        $chat_window.show()
+        @update_session_state_ui('invisible')
 
     update_user_list_ui: (users) =>
         $('.users .user-list').empty()

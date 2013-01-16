@@ -25,7 +25,7 @@ class ChatSessionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ChatSession
-        fields = ('username', 'status', 'signed_in_state')
+        fields = ('username', 'status')
 
 
 class UserSerializer(serializers.ModelSerializer):

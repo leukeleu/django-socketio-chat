@@ -1,17 +1,11 @@
 <section class="chat-container">
-    <div class="session-state"></div>
+    <div class="session-state">
+    </div>
+    <div class="user">
+        <h3>{{ user.username }}</h3>
+    </div>
 
     <div class="chat-window">
-        <div class="user">
-            <h3>User</h3>
-            <p>
-                {% if not user.is_authenticated %}
-                    <a href="{% url login %}">login</a>
-                {% else %}
-                    {{ user.username }} (<a href="{% url logout %}">logout</a>)
-                {% endif %}
-            </p>
-        </div>
 
         <div class="users">
             <h3>Users</h3>

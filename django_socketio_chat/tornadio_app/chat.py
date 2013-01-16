@@ -69,7 +69,11 @@ class ChatConnection(SocketConnection):
                 if obj.chat_session.all()[0].is_invisible:
                     return 'offline'
                 else:
-                    return obj.chat_session.all()[0].get_status()
+                    status =  obj.chat_session.all()[0].get_status()
+                    if status == 'signed_off':
+                        return 'offline'
+                    else:
+                        return status
 
 
         chat_session_obj = prepare_for_emit(serializers.ChatSessionSerializer(self.chat_session).data)
@@ -83,10 +87,13 @@ class ChatConnection(SocketConnection):
 
     def notify_users_that_see_me(self, event):
         for user in self.chat_session.users_that_see_me:
-            chat_users = ChatSession.objects.get(user=user).users_that_i_see
-            chat_users_obj = prepare_for_emit(serializers.UserSerializer(chat_users).data)
-            for connection in self.connections.get(user, []):
-                connection.emit(event, self.user.username, chat_users_obj)
+            try:
+                chat_users = ChatSession.objects.get(user=user).users_that_i_see
+                chat_users_obj = prepare_for_emit(serializers.UserSerializer(chat_users).data)
+                for connection in self.connections.get(user, []):
+                    connection.emit(event, self.user.username, chat_users_obj)
+            except ChatSession.DoesNotExist:
+                pass
 
     @event('req_user_sign_off')
     def sign_off(self):
@@ -106,7 +113,7 @@ class ChatConnection(SocketConnection):
         self.emit('ev_chat_session_status', chat_session_obj)
 
     @event('req_user_become_invisible')
-    def go_invisible(self):
+    def become_invisible(self):
         """
         If user is already invisible, do nothing.
         If user is signed_off, don't notify others, just change state to invisible.
@@ -115,12 +122,11 @@ class ChatConnection(SocketConnection):
         if self.chat_session.is_invisible:
             return
         if self.chat_session.is_signed_off:
-            self.chat_session.go_invisible()
+            self.chat_session.become_invisible()
         else:
-            self.chat_session.go_invisible()
+            self.chat_session.become_invisible()
             self.notify_users_that_see_me('ev_user_signed_off')
-        chat_session_obj = prepare_for_emit(serializers.ChatSessionSerializer(self.chat_session).data)
-        self.emit('ev_chat_session_status', chat_session_obj)
+        self.send_all_chat_info()
 
     @event('req_user_become_available')
     def become_available(self):
@@ -128,8 +134,7 @@ class ChatConnection(SocketConnection):
             return
         self.chat_session.become_available()
         self.notify_users_that_see_me('ev_user_became_available')
-        chat_session_obj = prepare_for_emit(serializers.ChatSessionSerializer(self.chat_session).data)
-        self.emit('ev_chat_session_status', chat_session_obj)
+        self.send_all_chat_info()
 
     @event('req_user_become_busy')
     def become_busy(self):
@@ -137,8 +142,7 @@ class ChatConnection(SocketConnection):
             return
         self.chat_session.become_busy()
         self.notify_users_that_see_me('ev_user_became_busy')
-        chat_session_obj = prepare_for_emit(serializers.ChatSessionSerializer(self.chat_session).data)
-        self.emit('ev_chat_session_status', chat_session_obj)
+        self.send_all_chat_info()
 
     @event('req_chat_create')
     def chat_create(self, username):

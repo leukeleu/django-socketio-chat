@@ -81,7 +81,13 @@
 
       this.update_user_list_ui = __bind(this.update_user_list_ui, this);
 
-      this.ui_signed_in = __bind(this.ui_signed_in, this);
+      this.ui_invisible = __bind(this.ui_invisible, this);
+
+      this.ui_busy = __bind(this.ui_busy, this);
+
+      this.ui_available = __bind(this.ui_available, this);
+
+      this.update_session_state_ui = __bind(this.update_session_state_ui, this);
 
       this.init = __bind(this.init, this);
 
@@ -116,13 +122,21 @@
       });
       this.conn.on('ev_chat_session_status', function(chat_session) {
         _this.chat_session = chat_session;
-        if (_this.chat_session.signed_in_state === 0) {
+        if (_this.chat_session.status === 0) {
           return _this.ui_signed_off();
         }
       });
       this.conn.on('ev_data_update', function(chat_session, chat_users, chats) {
         _this.chat_session = chat_session;
-        _this.ui_signed_in();
+        if (_this.chat_session.status === 1) {
+          _this.ui_available();
+        }
+        if (_this.chat_session.status === 2) {
+          _this.ui_invisible();
+        }
+        if (_this.chat_session.status === 3) {
+          _this.ui_busy();
+        }
         _this.chat_users = chat_users;
         _this.update_user_list_ui(chat_users);
         return _this.update_chat_list_ui(chats);
@@ -131,8 +145,13 @@
         _this.debug_log('Disconnect');
         return _this.conn = null;
       });
-      this.conn.on('ev_user_signed_in', function(username, chat_users) {
-        _this.debug_log("" + username + " signed in.");
+      this.conn.on('ev_user_became_available', function(username, chat_users) {
+        _this.debug_log("" + username + " became available.");
+        _this.chat_users = chat_users;
+        return _this.update_user_list_ui(chat_users);
+      });
+      this.conn.on('ev_user_became_busy', function(username, chat_users) {
+        _this.debug_log("" + username + " became busy.");
         _this.chat_users = chat_users;
         return _this.update_user_list_ui(chat_users);
       });
@@ -172,26 +191,54 @@
       });
     };
 
-    Chat.prototype.ui_signed_off = function() {
-      var _this = this;
-      $('.chat-window').hide();
-      $('.session-state').html('<h1>Signed off</h1><a class="sign-in" href="#">Sign in</a>');
-      return $('.sign-in').click(function(e) {
-        e.preventDefault();
-        return _this.conn.emit('req_user_sign_in');
-      });
-    };
-
-    Chat.prototype.ui_signed_in = function() {
-      var $chat_window,
+    Chat.prototype.update_session_state_ui = function(state) {
+      var session_states,
         _this = this;
-      $chat_window = $('.chat-window');
-      $chat_window.show();
-      $('.session-state').html('<h1>Signed in</h1><a class="sign-off" href="#">Sign off</a>');
-      return $('.sign-off').click(function(e) {
+      session_states = "<ul>\n    <li><a class=\"become-available\" href=\"#\">Available</a></li>\n    <li><a class=\"become-busy\" href=\"#\">Busy</a></li>\n    <li><a class=\"become-invisible\" href=\"#\">Invisible</a></li>\n    <li><a class=\"sign-off\" href=\"#\">Sign off</a></li>\n</ul>\n<div class=\"current-state\"></div>";
+      $('.session-state').html(session_states);
+      $('.session-state .become-available').click(function(e) {
+        e.preventDefault();
+        return _this.conn.emit('req_user_become_available');
+      });
+      $('.session-state .become-busy').click(function(e) {
+        e.preventDefault();
+        return _this.conn.emit('req_user_become_busy');
+      });
+      $('.session-state .become-invisible').click(function(e) {
+        e.preventDefault();
+        return _this.conn.emit('req_user_become_invisible');
+      });
+      $('.session-state .sign-off').click(function(e) {
         e.preventDefault();
         return _this.conn.emit('req_user_sign_off');
       });
+      return $('.session-state .current-state').html(state);
+    };
+
+    Chat.prototype.ui_signed_off = function() {
+      $('.chat-window').hide();
+      return this.update_session_state_ui('Signed off');
+    };
+
+    Chat.prototype.ui_available = function() {
+      var $chat_window;
+      $chat_window = $('.chat-window');
+      $chat_window.show();
+      return this.update_session_state_ui('available');
+    };
+
+    Chat.prototype.ui_busy = function() {
+      var $chat_window;
+      $chat_window = $('.chat-window');
+      $chat_window.show();
+      return this.update_session_state_ui('busy');
+    };
+
+    Chat.prototype.ui_invisible = function() {
+      var $chat_window;
+      $chat_window = $('.chat-window');
+      $chat_window.show();
+      return this.update_session_state_ui('invisible');
     };
 
     Chat.prototype.update_user_list_ui = function(users) {

@@ -17,6 +17,14 @@
 <body>
     <h3>Django - Socket.IO - Tornadio2 - chat over HTTPS</h3>
 
+    <p>
+        {% if not user.is_authenticated %}
+            <a href="{% url login %}">login</a>
+        {% else %}
+            {{ user.username }} (<a href="{% url logout %}">logout</a>)
+        {% endif %}
+    </p>
+
     <section id="page">
         <section id="main-content">
             {% block content %}

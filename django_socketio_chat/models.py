@@ -16,7 +16,7 @@ class ChatSession(models.Model):
     BUSY = 3
 
     CHAT_SESSION_STATES = (
-        (SIGNED_OFF, 'signed_off')
+        (SIGNED_OFF, 'signed_off'),
         (AVAILABLE, 'available'),
         (INVISIBLE, 'invisible'),
         (BUSY, 'busy')

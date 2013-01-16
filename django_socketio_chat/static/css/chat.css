@@ -60,3 +60,19 @@
 .message-input input {
     min-width: 259px;
 }
+
+.users .user-list a:after {
+    padding: 0 0 0 5px;
+}
+
+.users .user-list .offline a:after {
+   content: 'offline';
+}
+
+.users .user-list .available a:after {
+   content: 'available';
+}
+
+.users .user-list .busy a:after {
+   content: 'busy';
+}
