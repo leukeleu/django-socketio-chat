@@ -3,6 +3,14 @@
     min-width: 320px;
 }
 
+.chat .chat-header {
+    cursor: pointer;
+}
+
+.chat .toggler {
+    float: left;
+}
+
 .chat .unread-messages {
     float: left;
     margin-right: 5px;
@@ -27,14 +35,14 @@
 
 .chat .messages {
     margin: 10px 0;
+    border-top: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
     max-height: 300px;
     overflow-y: scroll;
 }
 
 .chat .messages-inner {
     position: relative;
-    border-top: 1px solid #ccc;
-    border-bottom: 1px solid #ccc;
 }
 
 .chat .messages .message {

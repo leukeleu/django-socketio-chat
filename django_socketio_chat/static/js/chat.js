@@ -231,14 +231,14 @@
     Chat.prototype.update_chat_ui = function(chat) {
       var $chat_active_toggle, $chat_el, $chat_list, $message_input, $message_input_el, $messages_el, chat_participant_list, self, user_chat_status,
         _this = this;
-      $chat_el = $("<div id=\"chat-" + chat.uuid + "\" class=\"chat well well-small\">\n    <div class=\"chat-header clearfix\"></div>\n</div>");
+      $chat_el = $("<div id=\"chat-" + chat.uuid + "\" class=\"chat well well-small\">\n    <div class=\"chat-header toggle-active clearfix\">\n        <div class=\"caret toggler\"></div>\n    </div>\n</div>");
       chat_participant_list = new ChatParticipantList(chat.user_chat_statuses);
       this.chat_users_lists[chat.uuid] = chat_participant_list;
       $chat_el.find('.chat-header').append(chat_participant_list.render());
-      $chat_el.find('.chat-header').append($("<div class=\"chat-controls\">\n    <a href=\"#\" class=\"archive btn btn-small\"><i class=\"icon-remove\"></i></a>\n    <div class=\"btn-group\">\n        <a class=\"btn btn-small list-users dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">\n            <i class=\"icon-user\"></i>\n            <span class=\"caret\"></span>\n        </a>\n        <ul class=\"dropdown-menu chat-user-list unstyled\"></ul>\n    </div>\n    <span class=\"unread-messages badge\"></span>\n</div>"));
+      $chat_el.find('.chat-header').append($("<div class=\"chat-controls\">\n    <a href=\"#\" class=\"archive btn btn-small\"><i class=\"icon-remove\"></i></a>\n    <div class=\"btn-group\">\n        <a class=\"btn btn-small list-users dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">\n            <i class=\"icon-user\"></i>\n            <span class=\"caret\"></span>\n        </a>\n        <ul class=\"dropdown-menu chat-user-list unstyled\"></ul>\n    </div>\n    <div class=\"unread-messages badge\"></div>\n</div>"));
       $messages_el = $('<div class="messages"><div class="messages-inner clearfix"></div></div>');
-      $message_input_el = $("<div class=\"message-input input-prepend\">\n    <div class=\"add-on\"><i class=\"icon-user\"></i></div>\n    <input type=\"text\" placeholder=\"Type message\">\n</div>");
       $chat_el.append($messages_el);
+      $message_input_el = $("<div class=\"message-input input-prepend\">\n    <div class=\"add-on\"><i class=\"icon-user\"></i></div>\n    <input type=\"text\" placeholder=\"Type message\">\n</div>");
       $chat_el.append($message_input_el);
       $message_input = $message_input_el.find('input');
       self = this;
@@ -302,8 +302,7 @@
     Chat.prototype.ui_chat_activate = function(chat_uuid) {
       var chat, toggle;
       chat = $("#chat-" + chat_uuid);
-      toggle = chat.find(".toggle-active");
-      toggle.text('Deactivate');
+      toggle = chat.find('.toggle-active');
       toggle.addClass('js_active');
       chat.find('.messages').show();
       chat.find('.message-input').show();
@@ -314,8 +313,7 @@
     Chat.prototype.ui_chat_deactivate = function(chat_uuid) {
       var chat, toggle;
       chat = $("#chat-" + chat_uuid);
-      toggle = chat.find(".toggle-active");
-      toggle.text(' Activate');
+      toggle = chat.find('.toggle-active');
       toggle.removeClass('js_active');
       chat.find('.messages').hide();
       return chat.find('.message-input').hide();

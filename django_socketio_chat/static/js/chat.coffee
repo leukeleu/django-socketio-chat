@@ -126,7 +126,9 @@ class Chat
     update_chat_ui: (chat) =>
         $chat_el = $("""
         <div id=\"chat-#{chat.uuid}\" class="chat well well-small">
-            <div class="chat-header clearfix"></div>
+            <div class="chat-header toggle-active clearfix">
+                <div class="caret toggler"></div>
+            </div>
         </div>""")
 
         # append participant list to chat header
@@ -145,17 +147,19 @@ class Chat
                     </a>
                     <ul class=\"dropdown-menu chat-user-list unstyled\"></ul>
                 </div>
-                <span class=\"unread-messages badge\"></span>
+                <div class=\"unread-messages badge\"></div>
             </div>"""))
 
+        # append messages
         $messages_el = $('<div class="messages"><div class="messages-inner clearfix"></div></div>')
+        $chat_el.append($messages_el)
+
+        # append new message input
         $message_input_el = $("""
         <div class="message-input input-prepend">
             <div class="add-on"><i class="icon-user"></i></div>
             <input type="text" placeholder="Type message">
         </div>""")
-
-        $chat_el.append($messages_el)
         $chat_el.append($message_input_el)
 
         $message_input = $message_input_el.find('input')
@@ -169,6 +173,7 @@ class Chat
                 # TODO: show spinner, and use ack callback to hide the spinner
                 this.value = ''
 
+        # toggle active/deactive
         $chat_active_toggle = $chat_el.find('.toggle-active')
         user_chat_status = @get_user_chat_status(chat.user_chat_statuses)
         $chat_active_toggle.click (e) =>
@@ -182,10 +187,12 @@ class Chat
             e.preventDefault()
             @list_users(chat.uuid)
 
+        # archive chat
         $chat_el.find('.archive').click (e) =>
             e.preventDefault()
             @conn.emit('req_chat_archive', chat.uuid)
 
+        # append chat to chat-list
         $chat_list = $('.chat-list')
         $chat_list.append($chat_el)
 
@@ -203,9 +210,10 @@ class Chat
 
     ui_chat_activate: (chat_uuid) =>
         chat = $("#chat-#{chat_uuid}")
-        toggle = chat.find(".toggle-active")
-        toggle.text('Deactivate')
+        toggle = chat.find('.toggle-active')
         toggle.addClass('js_active')
+
+        # show messages
         chat.find('.messages').show()
         chat.find('.message-input').show()
         @ui_chat_clear_unread_messages(chat_uuid)
@@ -213,9 +221,10 @@ class Chat
 
     ui_chat_deactivate: (chat_uuid) =>
         chat = $("#chat-#{chat_uuid}")
-        toggle = chat.find(".toggle-active")
-        toggle.text(' Activate')
+        toggle = chat.find('.toggle-active')
         toggle.removeClass('js_active')
+
+        # hide messages
         chat.find('.messages').hide()
         chat.find('.message-input').hide()
 
@@ -229,7 +238,7 @@ class Chat
         else
             unread_messages.removeClass('active')
 
-    ui_chat_clear_unread_messages:(chat_uuid) =>
+    ui_chat_clear_unread_messages: (chat_uuid) =>
         chat = $("#chat-#{chat_uuid}")
         chat.find('.unread-messages').html('')
 
