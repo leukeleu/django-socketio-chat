@@ -124,25 +124,29 @@ class Chat
         (@update_chat_ui(chat) for chat in chats)
 
     update_chat_ui: (chat) =>
-        chat_participant_list = new ChatParticipantList(chat.user_chat_statuses)
-        @chat_users_lists[chat.uuid] = chat_participant_list
         $chat_el = $("""
         <div id=\"chat-#{chat.uuid}\" class="chat well well-small">
-            <div class="chat-header clearfix">
-                #{chat_participant_list.render()}
-                <div class="chat-controls">
-                    <a href=\"#\" class=\"archive btn btn-small\"><i class="icon-remove"></i></a>
-                    <div class="btn-group">
-                        <a class="btn btn-small list-users dropdown-toggle" data-toggle="dropdown" href="#">
-                            <i class="icon-user"></i>
-                            <span class="caret"></span>
-                        </a>
-                        <ul class=\"dropdown-menu chat-user-list unstyled\"></ul>
-                    </div>
-                    <span class=\"unread-messages badge\"></span>
-                </div>
-            </div>
+            <div class="chat-header clearfix"></div>
         </div>""")
+
+        # append participant list to chat header
+        chat_participant_list = new ChatParticipantList(chat.user_chat_statuses)
+        @chat_users_lists[chat.uuid] = chat_participant_list
+        $chat_el.find('.chat-header').append(chat_participant_list.render())
+
+        # append chat controls to chat header
+        $chat_el.find('.chat-header').append($("""
+            <div class="chat-controls">
+                <a href=\"#\" class=\"archive btn btn-small\"><i class="icon-remove"></i></a>
+                <div class="btn-group">
+                    <a class="btn btn-small list-users dropdown-toggle" data-toggle="dropdown" href="#">
+                        <i class="icon-user"></i>
+                        <span class="caret"></span>
+                    </a>
+                    <ul class=\"dropdown-menu chat-user-list unstyled\"></ul>
+                </div>
+                <span class=\"unread-messages badge\"></span>
+            </div>"""))
 
         $messages_el = $('<div class="messages"><div class="messages-inner clearfix"></div></div>')
         $message_input_el = $("""
