@@ -45,6 +45,7 @@ class ChatConnection(SocketConnection):
 
     connections = {}
     chat_session = None
+    user = None
 
     def on_open(self, info):
         """
@@ -63,14 +64,23 @@ class ChatConnection(SocketConnection):
             except (User.DoesNotExist, Session.DoesNotExist):
                 return
             else:
-                # TODO Implement a __hash__ method on this class?
+                self.chat_session, created = ChatSession.objects.get_or_create(user=self.user)
+                reconnected = None
+                if not self.connections.get(self.user):
+                    # The server knows of no active connection for this user
+                    reconnected = True
                 self.connections[self.user] = self.connections.get(self.user, set())
                 self.connections[self.user].add(self)
 
-                self.chat_session, created = ChatSession.objects.get_or_create(user=self.user)
-                chat_session_obj = prepare_for_emit(serializers.ChatSessionSerializer(self.chat_session).data)
+                if reconnected:
+                    # Notify other users if user is BUSY or AVAILABLE
+                    if self.chat_session.is_available:
+                        self.notify_users_that_see_me('ev_user_became_available')
+                    elif self.chat_session.is_busy:
+                        self.notify_users_that_see_me('ev_user_became_busy')
 
                 if self.chat_session.is_signed_off:
+                    chat_session_obj = prepare_for_emit(serializers.ChatSessionSerializer(self.chat_session).data)
                     self.emit('ev_chat_session_status', chat_session_obj)
                     return
                 else:
