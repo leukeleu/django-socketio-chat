@@ -1,10 +1,10 @@
-class ChatUserList
+class ChatParticipantList
 
     constructor: (user_chat_statuses) ->
         @user_list = (ucs.user__username for ucs in user_chat_statuses)
 
     render: =>
-        chat_users_el = "<ul class=\"chat-users unstyled\">"
+        chat_users_el = "<ul class=\"chat-participant-list unstyled\">"
         chat_users_el = "#{chat_users_el}#{("<li>#{username}</li>" for username in @user_list).join('')}"
         chat_users_el = "#{chat_users_el}</ul>"
         return chat_users_el
@@ -94,7 +94,7 @@ class Chat
 
     ui_signed_off: ->
         $('.chat-window').hide()
-        $('.chat-session-state').html('<h1>Signed off</h1><a class="sign-in" href="#">Sign in</a>')
+        $('.session-state').html('<h1>Signed off</h1><a class="sign-in" href="#">Sign in</a>')
         $('.sign-in').click (e) =>
             e.preventDefault()
             @conn.emit('req_user_sign_in')
@@ -102,18 +102,18 @@ class Chat
     ui_signed_in: =>
         $chat_window = $('.chat-window')
         $chat_window.show()
-        $('.chat-session-state').html('<h1>Signed in</h1><a class="sign-off" href="#">Sign off</a>')
+        $('.session-state').html('<h1>Signed in</h1><a class="sign-off" href="#">Sign off</a>')
         $('.sign-off').click (e) =>
             e.preventDefault()
             @conn.emit('req_user_sign_off')
 
     update_user_list_ui: (users) =>
-        $('.chat-users .user-list').empty()
+        $('.users .user-list').empty()
         (@user_list_add_user(user) for user in users)
 
     user_list_add_user: (user) =>
-        $user_list = $('.chat-users .user-list')
-        $user_el = $("<li class=\"#{user.status}\"><i class=\"icon-user\"></i><a href=\"#\">#{user.username}</a></li>")
+        $user_list = $('.users .user-list')
+        $user_el = $("<li class=\"#{user.status}\"><a href=\"#\"><i class=\"icon-user\"></i> #{user.username}</a></li>")
         $user_list.append($user_el)
         $user_el.on 'click', (e) =>
             e.preventDefault()
@@ -124,12 +124,12 @@ class Chat
         (@update_chat_ui(chat) for chat in chats)
 
     update_chat_ui: (chat) =>
-        chat_user_list = new ChatUserList(chat.user_chat_statuses)
-        @chat_users_lists[chat.uuid] = chat_user_list
+        chat_participant_list = new ChatParticipantList(chat.user_chat_statuses)
+        @chat_users_lists[chat.uuid] = chat_participant_list
         $chat_el = $("""
         <div id=\"chat-#{chat.uuid}\" class="chat well well-small">
             <div class="chat-header clearfix">
-                #{chat_user_list.render()}
+                #{chat_participant_list.render()}
                 <div class="chat-controls">
                     <a href=\"#\" class=\"archive btn btn-small\"><i class="icon-remove"></i></a>
                     <div class="btn-group">
@@ -174,7 +174,7 @@ class Chat
             else
                 @conn.emit('req_chat_activate', chat.uuid)
 
-        $chat_el.find('.list-users').click (e) =>
+        $chat_el.find('.chat-user-list').click (e) =>
             e.preventDefault()
             @list_users(chat.uuid)
 

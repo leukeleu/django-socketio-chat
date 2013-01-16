@@ -1,8 +1,8 @@
 <section class="chat-container">
-    <div class="chat-session-state"></div>
+    <div class="session-state"></div>
 
     <div class="chat-window">
-        <div class="chat-user">
+        <div class="user">
             <h3>User</h3>
             <p>
                 {% if not user.is_authenticated %}
@@ -13,7 +13,7 @@
             </p>
         </div>
 
-        <div class="chat-users">
+        <div class="users">
             <h3>Users</h3>
             <ul class="user-list unstyled"></ul>
         </div>

@@ -8,20 +8,20 @@
     margin-right: 5px;
 }
 
-.chat .chat-users {
+.chat .chat-participant-list {
     overflow: hidden;
     white-space: nowrap;
 }
 
-.chat .chat-users li {
+.chat .chat-participant-list li {
     display: inline;
 }
 
-.chat .chat-users li:before {
+.chat .chat-participant-list li:before {
     content: ', ';
 }
 
-.chat .chat-users li:first-child:before {
+.chat .chat-participant-list li:first-child:before {
     content: '';
 }
 
