@@ -11,6 +11,13 @@
     float: left;
 }
 
+.chat .chat-controls {
+    float: right;
+    width: 40%;
+    min-width: 120px;
+    text-align: right;
+}
+
 .chat .unread-messages {
     float: left;
     margin-right: 5px;
@@ -18,7 +25,11 @@
 
 .chat .chat-participant-list {
     overflow: hidden;
+    float: left;
+    margin: 0;
+    width: 60%;
     white-space: nowrap;
+    line-height: 26px;
 }
 
 .chat .chat-participant-list li {

@@ -126,9 +126,7 @@ class Chat
     update_chat_ui: (chat) =>
         $chat_el = $("""
         <div id=\"chat-#{chat.uuid}\" class="chat well well-small">
-            <div class="chat-header toggle-active clearfix">
-                <div class="caret toggler"></div>
-            </div>
+            <div class="chat-header toggle-active clearfix"></div>
         </div>""")
 
         # append participant list to chat header
@@ -142,8 +140,7 @@ class Chat
                 <a href=\"#\" class=\"archive btn btn-small\"><i class="icon-remove"></i></a>
                 <div class="btn-group">
                     <a class="btn btn-small list-users dropdown-toggle" data-toggle="dropdown" href="#">
-                        <i class="icon-user"></i>
-                        <span class="caret"></span>
+                        <i class="icon-plus"></i>
                     </a>
                     <ul class=\"dropdown-menu chat-user-list unstyled\"></ul>
                 </div>
