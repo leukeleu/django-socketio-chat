@@ -7,10 +7,6 @@
     cursor: pointer;
 }
 
-.chat .toggler {
-    float: left;
-}
-
 .chat .chat-controls {
     float: right;
     width: 40%;
