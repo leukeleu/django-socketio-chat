@@ -1,3 +1,50 @@
+class SessionStateUI
+
+    constructor: (@conn) ->
+        session_states = """
+        <div class="btn-group">
+            <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+                <span class="state"></span>
+                <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+                <li><a class="become-available" href="#">Available</a></li>
+                <li><a class="become-busy" href="#">Busy</a></li>
+                <li><a class="become-invisible" href="#">Invisible</a></li>
+                <li><a class="sign-off" href="#">Sign off</a></li>
+            </ul>
+        </div>
+            """
+        $('.session-state').html(session_states)
+        $('.session-state .become-available').click (e) =>
+            e.preventDefault()
+            @conn.emit('req_user_become_available')
+        $('.session-state .become-busy').click (e) =>
+            e.preventDefault()
+            @conn.emit('req_user_become_busy')
+        $('.session-state .become-invisible').click (e) =>
+            e.preventDefault()
+            @conn.emit('req_user_become_invisible')
+        $('.session-state .sign-off').click (e) =>
+            e.preventDefault()
+            @conn.emit('req_user_sign_off')
+
+    set_available: ->
+        $('.session-state .state').html('Available')
+        $('.session-state .btn').addClass('btn-success')
+
+    set_busy: ->
+        $('.session-state .state').html('Busy')
+        $('.session-state .btn').addClass('btn-danger')
+
+    set_invisible: ->
+        $('.session-state .state').html('Invisible')
+        $('.session-state .btn').addClass('btn-inverse')
+
+    set_signed_off: ->
+        $('.session-state .state').html('Signed off')
+
+
 class ChatParticipantList
 
     constructor: (user_chat_statuses) ->
@@ -102,49 +149,29 @@ class Chat
         @conn.on 'ev_chat_archived', (chat_uuid) =>
             @ui_chat_archive(chat_uuid)
 
-    update_session_state_ui: (state) =>
-        session_states = """
-            <ul>
-                <li><a class="become-available" href="#">Available</a></li>
-                <li><a class="become-busy" href="#">Busy</a></li>
-                <li><a class="become-invisible" href="#">Invisible</a></li>
-                <li><a class="sign-off" href="#">Sign off</a></li>
-            </ul>
-            <div class="current-state"></div>
-            """
-        $('.session-state').html(session_states)
-        $('.session-state .become-available').click (e) =>
-            e.preventDefault()
-            @conn.emit('req_user_become_available')
-        $('.session-state .become-busy').click (e) =>
-            e.preventDefault()
-            @conn.emit('req_user_become_busy')
-        $('.session-state .become-invisible').click (e) =>
-            e.preventDefault()
-            @conn.emit('req_user_become_invisible')
-        $('.session-state .sign-off').click (e) =>
-            e.preventDefault()
-            @conn.emit('req_user_sign_off')
-        $('.session-state .current-state').html(state)
 
     ui_signed_off: ->
         $('.chat-window').hide()
-        @update_session_state_ui('Signed off')
+        session_state = new SessionStateUI(@conn)
+        session_state.set_signed_off()
 
     ui_available: =>
         $chat_window = $('.chat-window')
         $chat_window.show()
-        @update_session_state_ui('available')
+        session_state = new SessionStateUI(@conn)
+        session_state.set_available()
 
     ui_busy: =>
         $chat_window = $('.chat-window')
         $chat_window.show()
-        @update_session_state_ui('busy')
+        session_state = new SessionStateUI(@conn)
+        session_state.set_busy()
 
     ui_invisible: =>
         $chat_window = $('.chat-window')
         $chat_window.show()
-        @update_session_state_ui('invisible')
+        session_state = new SessionStateUI(@conn)
+        session_state.set_invisible()
 
     update_user_list_ui: (users) =>
         $('.users .user-list').empty()
