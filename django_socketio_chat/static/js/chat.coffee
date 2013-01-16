@@ -137,13 +137,13 @@ class Chat
         # append chat controls to chat header
         $chat_el.find('.chat-header').append($("""
             <div class="chat-controls">
-                <a href=\"#\" class=\"archive btn btn-small\"><i class="icon-remove"></i></a>
-                <div class="btn-group">
-                    <a class="btn btn-small list-users dropdown-toggle" data-toggle="dropdown" href="#">
+                <div class="btn-group btn-show-add-user-list">
+                    <a class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="#">
                         <i class="icon-plus"></i>
                     </a>
                     <ul class=\"dropdown-menu chat-user-list unstyled\"></ul>
                 </div>
+                <a href=\"#\" class=\"archive btn btn-small\"><i class="icon-remove"></i></a>
                 <div class=\"unread-messages badge\"></div>
             </div>"""))
 
@@ -172,7 +172,6 @@ class Chat
 
         # toggle active/deactive
         $chat_active_toggle = $chat_el.find('.toggle-active')
-        user_chat_status = @get_user_chat_status(chat.user_chat_statuses)
         $chat_active_toggle.click (e) =>
             e.preventDefault()
             if $chat_active_toggle.hasClass('js_active')
@@ -180,9 +179,11 @@ class Chat
             else
                 @conn.emit('req_chat_activate', chat.uuid)
 
-        $chat_el.find('.chat-user-list').click (e) =>
+        # show user list to add a new user to the chat
+        $chat_el.find('.btn-show-add-user-list').click (e) =>
             e.preventDefault()
-            @list_users(chat.uuid)
+            # e.stopPropagation()
+            @update_add_user_list(chat.uuid)
 
         # archive chat
         $chat_el.find('.archive').click (e) =>
@@ -193,6 +194,7 @@ class Chat
         $chat_list = $('.chat-list')
         $chat_list.append($chat_el)
 
+        user_chat_status = @get_user_chat_status(chat.user_chat_statuses)
         if user_chat_status.status == 'active'
             @ui_chat_activate(chat.uuid)
         else if user_chat_status.status == 'inactive'
@@ -272,9 +274,9 @@ class Chat
     ui_animate_new_message: (chat_uuid) =>
         @ui_chat_scroll_down(chat_uuid, animate=true)
 
-    list_users: (chat_uuid) =>
+    update_add_user_list: (chat_uuid) =>
         chat = $("#chat-#{chat_uuid}")
-        $chat_user_list = chat.find('.chat-user-list')
+        $chat_user_list = chat.find('.chat-controls .chat-user-list')
         $chat_user_list.empty()
         ($chat_user_list.append("<li><a href=\"#\" class=\"user-add\" data-username=\"#{user.username}\"><i class=\"icon-user\"></i> #{user.username}</a></li>") for user in @chat_users)
         $chat_user_list.on 'click', '.user-add', (e) =>

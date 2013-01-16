@@ -18,9 +18,10 @@
     text-align: right;
 }
 
-.chat .unread-messages {
-    float: left;
-    margin-right: 5px;
+.chat .chat-controls .chat-user-list {
+    left: auto;
+    right: 0;
+    text-align: left;
 }
 
 .chat .chat-participant-list {

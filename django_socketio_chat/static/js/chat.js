@@ -51,7 +51,7 @@
     var chat_session, conn;
 
     function Chat() {
-      this.list_users = __bind(this.list_users, this);
+      this.update_add_user_list = __bind(this.update_add_user_list, this);
 
       this.ui_animate_new_message = __bind(this.ui_animate_new_message, this);
 
@@ -235,7 +235,7 @@
       chat_participant_list = new ChatParticipantList(chat.user_chat_statuses);
       this.chat_users_lists[chat.uuid] = chat_participant_list;
       $chat_el.find('.chat-header').append(chat_participant_list.render());
-      $chat_el.find('.chat-header').append($("<div class=\"chat-controls\">\n    <a href=\"#\" class=\"archive btn btn-small\"><i class=\"icon-remove\"></i></a>\n    <div class=\"btn-group\">\n        <a class=\"btn btn-small list-users dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">\n            <i class=\"icon-plus\"></i>\n        </a>\n        <ul class=\"dropdown-menu chat-user-list unstyled\"></ul>\n    </div>\n    <div class=\"unread-messages badge\"></div>\n</div>"));
+      $chat_el.find('.chat-header').append($("<div class=\"chat-controls\">\n    <div class=\"btn-group btn-show-add-user-list\">\n        <a class=\"btn btn-small dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">\n            <i class=\"icon-plus\"></i>\n        </a>\n        <ul class=\"dropdown-menu chat-user-list unstyled\"></ul>\n    </div>\n    <a href=\"#\" class=\"archive btn btn-small\"><i class=\"icon-remove\"></i></a>\n    <div class=\"unread-messages badge\"></div>\n</div>"));
       $messages_el = $('<div class="messages"><div class="messages-inner clearfix"></div></div>');
       $chat_el.append($messages_el);
       $message_input_el = $("<div class=\"message-input input-prepend\">\n    <div class=\"add-on\"><i class=\"icon-user\"></i></div>\n    <input type=\"text\" placeholder=\"Type message\">\n</div>");
@@ -253,7 +253,6 @@
         }
       });
       $chat_active_toggle = $chat_el.find('.toggle-active');
-      user_chat_status = this.get_user_chat_status(chat.user_chat_statuses);
       $chat_active_toggle.click(function(e) {
         e.preventDefault();
         if ($chat_active_toggle.hasClass('js_active')) {
@@ -262,9 +261,9 @@
           return _this.conn.emit('req_chat_activate', chat.uuid);
         }
       });
-      $chat_el.find('.chat-user-list').click(function(e) {
+      $chat_el.find('.btn-show-add-user-list').click(function(e) {
         e.preventDefault();
-        return _this.list_users(chat.uuid);
+        return _this.update_add_user_list(chat.uuid);
       });
       $chat_el.find('.archive').click(function(e) {
         e.preventDefault();
@@ -272,6 +271,7 @@
       });
       $chat_list = $('.chat-list');
       $chat_list.append($chat_el);
+      user_chat_status = this.get_user_chat_status(chat.user_chat_statuses);
       if (user_chat_status.status === 'active') {
         this.ui_chat_activate(chat.uuid);
       } else if (user_chat_status.status === 'inactive') {
@@ -384,11 +384,11 @@
       return this.ui_chat_scroll_down(chat_uuid, animate = true);
     };
 
-    Chat.prototype.list_users = function(chat_uuid) {
+    Chat.prototype.update_add_user_list = function(chat_uuid) {
       var $chat_user_list, chat, user, _i, _len, _ref,
         _this = this;
       chat = $("#chat-" + chat_uuid);
-      $chat_user_list = chat.find('.chat-user-list');
+      $chat_user_list = chat.find('.chat-controls .chat-user-list');
       $chat_user_list.empty();
       _ref = this.chat_users;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
