@@ -28,7 +28,7 @@ class CustomUserSerializer(serializers.UserSerializer):
         super(CustomUserSerializer, self).__init__(*args, **kwargs)
 
     def get_status(self, obj):
-        online = self.connection.connection_states.get(obj, False)
+        online = self.connection.connections.get(obj, False)
         if not online:
             return 'offline'
         if obj.chat_session.all()[0].is_invisible:
@@ -44,7 +44,6 @@ class CustomUserSerializer(serializers.UserSerializer):
 class ChatConnection(SocketConnection):
 
     connections = {}
-    connection_states = {}
     chat_session = None
 
     def on_open(self, info):
@@ -61,14 +60,12 @@ class ChatConnection(SocketConnection):
                 user_id = session.get_decoded().get('_auth_user_id')
                 # `store` user with connection
                 self.user = User.objects.get(pk=user_id)
-                print self.user
             except (User.DoesNotExist, Session.DoesNotExist):
                 return
             else:
                 # TODO Implement a __hash__ method on this class?
                 self.connections[self.user] = self.connections.get(self.user, set())
                 self.connections[self.user].add(self)
-                self.connection_states[self.user] = True
 
                 self.chat_session, created = ChatSession.objects.get_or_create(user=self.user)
                 chat_session_obj = prepare_for_emit(serializers.ChatSessionSerializer(self.chat_session).data)
@@ -239,7 +236,7 @@ class ChatConnection(SocketConnection):
         print 'disconnecting'
 
     def on_close(self):
-        self.connection_states[self.user] = False
+        self.connections[self.user].remove(self)
 
 # Create chat router
 ChatRouter = TornadioRouter(ChatConnection, user_settings={'websocket_check': True}, namespace='chat/socket.io')
