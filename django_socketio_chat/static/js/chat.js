@@ -73,13 +73,13 @@
 
       this.get_user_chat_status = __bind(this.get_user_chat_status, this);
 
-      this.update_chats_chat_ui = __bind(this.update_chats_chat_ui, this);
+      this.update_chat_ui = __bind(this.update_chat_ui, this);
 
-      this.update_chats_ui = __bind(this.update_chats_ui, this);
+      this.update_chat_list_ui = __bind(this.update_chat_list_ui, this);
 
-      this.ui_add_user = __bind(this.ui_add_user, this);
+      this.user_list_add_user = __bind(this.user_list_add_user, this);
 
-      this.update_users_ui = __bind(this.update_users_ui, this);
+      this.update_user_list_ui = __bind(this.update_user_list_ui, this);
 
       this.ui_signed_in = __bind(this.ui_signed_in, this);
 
@@ -124,8 +124,8 @@
         _this.chat_session = chat_session;
         _this.ui_signed_in();
         _this.chat_users = chat_users;
-        _this.update_users_ui(chat_users);
-        return _this.update_chats_ui(chats);
+        _this.update_user_list_ui(chat_users);
+        return _this.update_chat_list_ui(chats);
       });
       this.conn.on('disconnect', function(data) {
         _this.debug_log('Disconnect');
@@ -134,18 +134,18 @@
       this.conn.on('ev_user_signed_in', function(username, chat_users) {
         _this.debug_log("" + username + " signed in.");
         _this.chat_users = chat_users;
-        return _this.update_users_ui(chat_users);
+        return _this.update_user_list_ui(chat_users);
       });
       this.conn.on('ev_user_signed_off', function(username, chat_users) {
         _this.debug_log("" + username + " signed off.");
         _this.chat_users = chat_users;
-        return _this.update_users_ui(chat_users);
+        return _this.update_user_list_ui(chat_users);
       });
       this.conn.on('ev_chat_created', function(chat) {
-        return _this.update_chats_chat_ui(chat);
+        return _this.update_chat_ui(chat);
       });
       this.conn.on('ev_you_were_added', function(chat) {
-        return _this.update_chats_chat_ui(chat);
+        return _this.update_chat_ui(chat);
       });
       this.conn.on('ev_chat_user_added', function(chat_uuid, username) {
         var chat, chat_user_list;
@@ -194,21 +194,21 @@
       });
     };
 
-    Chat.prototype.update_users_ui = function(users) {
+    Chat.prototype.update_user_list_ui = function(users) {
       var user, _i, _len, _results;
-      $('.user-list').empty();
+      $('.chat-users .user-list').empty();
       _results = [];
       for (_i = 0, _len = users.length; _i < _len; _i++) {
         user = users[_i];
-        _results.push(this.ui_add_user(user));
+        _results.push(this.user_list_add_user(user));
       }
       return _results;
     };
 
-    Chat.prototype.ui_add_user = function(user) {
+    Chat.prototype.user_list_add_user = function(user) {
       var $user_el, $user_list,
         _this = this;
-      $user_list = $('.user-list');
+      $user_list = $('.chat-users .user-list');
       $user_el = $("<li class=\"" + user.status + "\"><i class=\"icon-user\"></i><a href=\"#\">" + user.username + "</a></li>");
       $user_list.append($user_el);
       return $user_el.on('click', function(e) {
@@ -217,23 +217,23 @@
       });
     };
 
-    Chat.prototype.update_chats_ui = function(chats) {
+    Chat.prototype.update_chat_list_ui = function(chats) {
       var chat, _i, _len, _results;
       $('.chat-list').empty();
       _results = [];
       for (_i = 0, _len = chats.length; _i < _len; _i++) {
         chat = chats[_i];
-        _results.push(this.update_chats_chat_ui(chat));
+        _results.push(this.update_chat_ui(chat));
       }
       return _results;
     };
 
-    Chat.prototype.update_chats_chat_ui = function(chat) {
+    Chat.prototype.update_chat_ui = function(chat) {
       var $chat_active_toggle, $chat_el, $chat_list, $message_input, $message_input_el, $messages_el, chat_user_list, self, user_chat_status,
         _this = this;
       chat_user_list = new ChatUserList(chat.user_chat_statuses);
       this.chat_users_lists[chat.uuid] = chat_user_list;
-      $chat_el = $("<div id=\"chat-" + chat.uuid + "\" class=\"chat well well-small\">\n    <div class=\"chat-header clearfix\">\n        <span class=\"unread-messages badge\"></span>\n        " + (chat_user_list.render()) + "\n        <div class=\"chat-controls\">\n            <a href=\"#\" class=\"toggle-active btn btn-small\"></a>\n            <a href=\"#\" class=\"archive btn btn-small\">Archive</a>\n            <div class=\"btn-group\">\n                <a class=\"btn btn-small list-users dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">\n                    <i class=\"icon-user\"></i>\n                    <span class=\"caret\"></span>\n                </a>\n                <ul class=\"dropdown-menu chat-user-list unstyled\"></ul>\n            </div>\n        </div>\n    </div>\n</div>");
+      $chat_el = $("<div id=\"chat-" + chat.uuid + "\" class=\"chat well well-small\">\n    <div class=\"chat-header clearfix\">\n        " + (chat_user_list.render()) + "\n        <div class=\"chat-controls\">\n            <a href=\"#\" class=\"archive btn btn-small\"><i class=\"icon-remove\"></i></a>\n            <div class=\"btn-group\">\n                <a class=\"btn btn-small list-users dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">\n                    <i class=\"icon-user\"></i>\n                    <span class=\"caret\"></span>\n                </a>\n                <ul class=\"dropdown-menu chat-user-list unstyled\"></ul>\n            </div>\n            <span class=\"unread-messages badge\"></span>\n        </div>\n    </div>\n</div>");
       $messages_el = $('<div class="messages"><div class="messages-inner clearfix"></div></div>');
       $message_input_el = $("<div class=\"message-input input-prepend\">\n    <div class=\"add-on\"><i class=\"icon-user\"></i></div>\n    <input type=\"text\" placeholder=\"Type message\">\n</div>");
       $chat_el.append($messages_el);

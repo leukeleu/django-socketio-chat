@@ -48,8 +48,8 @@ class Chat
             @chat_session = chat_session
             @ui_signed_in()
             @chat_users = chat_users
-            @update_users_ui(chat_users)
-            @update_chats_ui(chats)
+            @update_user_list_ui(chat_users)
+            @update_chat_list_ui(chats)
 
         @conn.on 'disconnect', (data) =>
             @debug_log('Disconnect')
@@ -58,18 +58,18 @@ class Chat
         @conn.on 'ev_user_signed_in', (username, chat_users) =>
             @debug_log("#{username} signed in.")
             @chat_users = chat_users
-            @update_users_ui(chat_users)
+            @update_user_list_ui(chat_users)
 
         @conn.on 'ev_user_signed_off', (username, chat_users) =>
             @debug_log("#{username} signed off.")
             @chat_users = chat_users
-            @update_users_ui(chat_users)
+            @update_user_list_ui(chat_users)
 
         @conn.on 'ev_chat_created', (chat) =>
-            @update_chats_chat_ui(chat)
+            @update_chat_ui(chat)
 
         @conn.on 'ev_you_were_added', (chat) =>
-            @update_chats_chat_ui(chat)
+            @update_chat_ui(chat)
 
         @conn.on 'ev_chat_user_added', (chat_uuid, username) =>
             chat_user_list = @chat_users_lists[chat_uuid]
@@ -107,33 +107,31 @@ class Chat
             e.preventDefault()
             @conn.emit('req_user_sign_off')
 
-    update_users_ui: (users) =>
-        $('.user-list').empty()
-        (@ui_add_user(user) for user in users)
+    update_user_list_ui: (users) =>
+        $('.chat-users .user-list').empty()
+        (@user_list_add_user(user) for user in users)
 
-    ui_add_user: (user) =>
-        $user_list = $('.user-list')
+    user_list_add_user: (user) =>
+        $user_list = $('.chat-users .user-list')
         $user_el = $("<li class=\"#{user.status}\"><i class=\"icon-user\"></i><a href=\"#\">#{user.username}</a></li>")
         $user_list.append($user_el)
         $user_el.on 'click', (e) =>
             e.preventDefault()
             @conn.emit('req_chat_create', user.username)
 
-    update_chats_ui: (chats) =>
+    update_chat_list_ui: (chats) =>
         $('.chat-list').empty()
-        (@update_chats_chat_ui(chat) for chat in chats)
+        (@update_chat_ui(chat) for chat in chats)
 
-    update_chats_chat_ui: (chat) =>
+    update_chat_ui: (chat) =>
         chat_user_list = new ChatUserList(chat.user_chat_statuses)
         @chat_users_lists[chat.uuid] = chat_user_list
         $chat_el = $("""
         <div id=\"chat-#{chat.uuid}\" class="chat well well-small">
             <div class="chat-header clearfix">
-                <span class=\"unread-messages badge\"></span>
                 #{chat_user_list.render()}
                 <div class="chat-controls">
-                    <a href=\"#\" class=\"toggle-active btn btn-small\"></a>
-                    <a href=\"#\" class=\"archive btn btn-small\">Archive</a>
+                    <a href=\"#\" class=\"archive btn btn-small\"><i class="icon-remove"></i></a>
                     <div class="btn-group">
                         <a class="btn btn-small list-users dropdown-toggle" data-toggle="dropdown" href="#">
                             <i class="icon-user"></i>
@@ -141,6 +139,7 @@ class Chat
                         </a>
                         <ul class=\"dropdown-menu chat-user-list unstyled\"></ul>
                     </div>
+                    <span class=\"unread-messages badge\"></span>
                 </div>
             </div>
         </div>""")
