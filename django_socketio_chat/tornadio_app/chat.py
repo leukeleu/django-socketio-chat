@@ -236,7 +236,7 @@ class ChatConnection(SocketConnection):
         print 'disconnecting'
 
     def on_close(self):
-        self.connections[self.user].remove(self)
+        self.connections.get(self.user, set()).discard(self)
 
 # Create chat router
 ChatRouter = TornadioRouter(ChatConnection, user_settings={'websocket_check': True}, namespace='chat/socket.io')
