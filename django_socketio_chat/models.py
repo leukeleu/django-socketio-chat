@@ -8,65 +8,70 @@ class ChatSession(models.Model):
     """
     Model for storing session state (signed_in/ signed_off/ invisible)
     """
-    # Signed-in states
-    SIGNED_OFF = 0
-    SIGNED_IN = 1
 
     # session states
-    AVAILABLE = 0
-    INVISIBLE = 1
-    BUSY = 2
-
-    SIGNED_IN_STATES = (
-        (SIGNED_OFF, 'signed off'),
-        (SIGNED_IN, 'signed in')
-    )
+    SIGNED_OFF = 0
+    AVAILABLE = 1
+    INVISIBLE = 2
+    BUSY = 3
 
     CHAT_SESSION_STATES = (
+        (SIGNED_OFF, 'signed_off')
         (AVAILABLE, 'available'),
         (INVISIBLE, 'invisible'),
         (BUSY, 'busy')
     )
 
     user = models.ForeignKey(User, related_name='chat_session')
-    signed_in_state = models.IntegerField(choices=SIGNED_IN_STATES, default=SIGNED_IN)
     status = models.IntegerField(choices=CHAT_SESSION_STATES, default=AVAILABLE)
 
     @property
     def users_that_see_me(self):
-        return User.objects.exclude(pk=self.user.pk).filter(chat_session__status=self.SIGNED_IN)
+        """
+        Includes users that are not connected, because Django has no notion of theit connection state.
+        """
+        return User.objects.exclude(pk=self.user.pk).exclude(chat_session__status=self.SIGNED_OFF)
 
     @property
     def users_that_i_see(self):
-        return User.objects.exclude(pk=self.user.pk, chat_session__status=self.INVISIBLE)
+        return User.objects.exclude(pk=self.user.pk,
+                                    chat_session__status=self.INVISIBLE).exclude(chat_session__status=self.INVISIBLE)
 
     @property
     def chats(self):
-        return [ ucs.chat for ucs in UserChatStatus.objects.filter(user=self.user).exclude(status=UserChatStatus.ARCHIVED)]
-
-    def sign_in(self):
-        self.signed_in_state = self.SIGNED_IN
-        self.save()
-
-    @property
-    def is_signed_in(self):
-        return self.signed_in_state == self.SIGNED_IN
+        return [ucs.chat for ucs in UserChatStatus.objects.filter(user=self.user).exclude(status=UserChatStatus.ARCHIVED)]
 
     def sign_off(self):
-        self.signed_in_state = self.SIGNED_OFF
+        self.status = self.SIGNED_OFF
         self.save()
 
     @property
     def is_signed_off(self):
-        return self.signed_in_state == self.SIGNED_OFF
+        return self.status == self.SIGNED_OFF
 
-    def go_invisible(self):
+    def become_invisible(self):
         self.status = self.INVISIBLE
         self.save()
 
     @property
     def is_invisible(self):
         return self.status == self.INVISIBLE
+
+    def become_available(self):
+        self.status = self.AVAILABLE
+        self.save()
+
+    @property
+    def is_available(self):
+        return self.status == self.AVAILABLE
+
+    def become_busy(self):
+        self.status = self.BUSY
+        self.save()
+
+    @property
+    def is_busy(self):
+        return self.status == self.BUSY
 
     def get_status(self):
         return self.CHAT_SESSION_STATES[self.status][1]
