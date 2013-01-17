@@ -306,7 +306,7 @@
     };
 
     Chat.prototype.update_chat_ui = function(chat) {
-      var $chat_active_toggle, $chat_el, $chat_list, $message_input, $message_input_el, $messages_el, chat_participant_list, self, user_chat_status,
+      var $chat_active_toggle, $chat_el, $chat_list, $message_input, $message_input_el, $messages_el, chat_participant_list, user_chat_status,
         _this = this;
       $chat_el = $("<div id=\"chat-" + chat.uuid + "\" class=\"chat well well-small\">\n    <div class=\"chat-header toggle-active clearfix\"></div>\n</div>");
       chat_participant_list = new ChatParticipantList(this, chat.user_chat_statuses);
@@ -318,15 +318,16 @@
       $message_input_el = $("<div class=\"message-input input-prepend\">\n    <div class=\"add-on\"><i class=\"icon-user\"></i></div>\n    <input type=\"text\" placeholder=\"Type message\">\n</div>");
       $chat_el.append($message_input_el);
       $message_input = $message_input_el.find('input');
-      self = this;
       $message_input.keypress(function(e) {
+        var self;
         if (e.which === 13) {
+          self = $(e.target);
           e.preventDefault();
-          if (this.value === '') {
+          if (self.value === '') {
             return;
           }
-          self.conn.emit('req_message_send', this.value, chat.uuid);
-          return this.value = '';
+          _this.conn.emit('req_message_send', self.value, chat.uuid);
+          return self.value = '';
         }
       });
       $chat_active_toggle = $chat_el.find('.toggle-active');
