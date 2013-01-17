@@ -3,6 +3,25 @@
     min-width: 320px;
 }
 
+.user h3 {
+    float: left;
+}
+
+.user h3 .icon-user {
+    margin: 10px 0;
+}
+
+.session-state {
+    float: right;
+    margin: 15px 0;
+}
+
+.right-align-dropdown {
+    left: auto;
+    right: 0;
+    text-align: left;
+}
+
 .chat .chat-header {
     cursor: pointer;
 }
@@ -12,12 +31,6 @@
     width: 40%;
     min-width: 120px;
     text-align: right;
-}
-
-.chat .chat-controls .chat-user-list {
-    left: auto;
-    right: 0;
-    text-align: left;
 }
 
 .chat .chat-participant-list {

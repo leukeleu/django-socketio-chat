@@ -7,7 +7,7 @@ class SessionStateUI
                 <span class="state"></span>
                 <span class="caret"></span>
             </a>
-            <ul class="dropdown-menu">
+            <ul class="dropdown-menu right-align-dropdown">
                 <li><a class="become-available" href="#">Available</a></li>
                 <li><a class="become-busy" href="#">Busy</a></li>
                 <li><a class="become-invisible" href="#">Invisible</a></li>
@@ -207,7 +207,7 @@ class Chat
                     <a class="btn btn-small dropdown-toggle btn-show-add-user-list" data-toggle="dropdown" href="#">
                         <i class="icon-plus"></i>
                     </a>
-                    <ul class=\"dropdown-menu chat-user-list unstyled\"></ul>
+                    <ul class=\"dropdown-menu chat-user-list right-align-dropdown\"></ul>
                 </div>
                 <a href=\"#\" class=\"archive btn btn-small\"><i class="icon-remove"></i></a>
                 <div class=\"unread-messages badge\"></div>
