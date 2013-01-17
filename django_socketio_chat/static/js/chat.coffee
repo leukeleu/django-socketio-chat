@@ -201,7 +201,7 @@ class Chat
         $chat_el.find('.chat-header').append(chat_participant_list.render())
 
         # append chat controls to chat header
-        $chat_el.find('.chat-header').append($("""
+        $chat_el.find('.chat-header').after($("""
             <div class="chat-controls">
                 <div class="btn-group">
                     <a class="btn btn-small dropdown-toggle btn-show-add-user-list" data-toggle="dropdown" href="#">
@@ -248,8 +248,6 @@ class Chat
         # show user list to add a new user to the chat
         $chat_el.find('.btn-show-add-user-list').click (e) =>
             e.preventDefault()
-            e.stopPropagation()
-            $(e.target).dropdown()
             @update_add_user_list(chat.uuid)
 
         # archive chat

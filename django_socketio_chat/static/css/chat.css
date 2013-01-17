@@ -41,24 +41,21 @@
    color: #bd362f;
 }
 
+.chat {
+    position: relative;
+}
+
 .chat .chat-header {
     cursor: pointer;
 }
 
-.chat .chat-controls {
-    float: right;
-    width: 40%;
-    min-width: 120px;
-    text-align: right;
-}
-
 .chat .chat-participant-list {
     overflow: hidden;
-    float: left;
     margin: 0;
     width: 60%;
     white-space: nowrap;
     line-height: 26px;
+    cursor: pointer;
 }
 
 .chat .chat-participant-list li {
@@ -71,6 +68,13 @@
 
 .chat .chat-participant-list li:first-child:before {
     content: '';
+}
+
+.chat .chat-controls {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    text-align: right;
 }
 
 .chat .messages {
