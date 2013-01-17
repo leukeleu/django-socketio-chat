@@ -226,15 +226,15 @@ class Chat
         $chat_el.append($message_input_el)
 
         $message_input = $message_input_el.find('input')
-        $message_input.keypress (e) =>
+        self = this
+        $message_input.keypress (e) ->
             if e.which == 13 # Enter keycode
-                self = $(e.target)
                 e.preventDefault()
-                if self.value == ''
+                if this.value == ''
                     return
-                @conn.emit('req_message_send', self.value, chat.uuid)
+                self.conn.emit('req_message_send', this.value, chat.uuid)
                 # TODO: show spinner, and use ack callback to hide the spinner
-                self.value = ''
+                this.value = ''
 
         # toggle active/deactive
         $chat_active_toggle = $chat_el.find('.toggle-active')
