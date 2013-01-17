@@ -1,7 +1,10 @@
-class SessionStateUI
+class UserState
+    session_state_el = null
 
     constructor: (@conn) ->
-        session_states = """
+        @session_state_el = $('.session-state')
+
+        session_state_dropdown = """
         <div class="btn-group">
             <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
                 <span class="state"></span>
@@ -13,195 +16,114 @@ class SessionStateUI
                 <li><a class="become-invisible" href="#">Invisible</a></li>
                 <li><a class="sign-off" href="#">Sign off</a></li>
             </ul>
-        </div>
-            """
-        $('.session-state').html(session_states)
-        $('.session-state .become-available').click (e) =>
+        </div>"""
+
+        @session_state_el.html(session_state_dropdown)
+
+        session_state_dropdown.find('.become-available').click (e) =>
             e.preventDefault()
             @conn.emit('req_user_become_available')
-        $('.session-state .become-busy').click (e) =>
+        session_state_dropdown.find('.become-busy').click (e) =>
             e.preventDefault()
             @conn.emit('req_user_become_busy')
-        $('.session-state .become-invisible').click (e) =>
+        session_state_dropdown.find('.become-invisible').click (e) =>
             e.preventDefault()
             @conn.emit('req_user_become_invisible')
-        $('.session-state .sign-off').click (e) =>
+        session_state_dropdown.find('.sign-off').click (e) =>
             e.preventDefault()
             @conn.emit('req_user_sign_off')
 
-    set_available: ->
-        $('.session-state .state').html('Available')
-        $('.session-state .btn').addClass('btn-success')
+    set_available: =>
+        $chat_window = $('.chat-window')
+        $chat_window.show()
 
-    set_busy: ->
-        $('.session-state .state').html('Busy')
-        $('.session-state .btn').addClass('btn-danger')
+        @session_state_el.find('.state').html('Available')
+        @session_state_el.find('.btn').addClass('btn-success')
 
-    set_invisible: ->
-        $('.session-state .state').html('Invisible')
-        $('.session-state .btn').addClass('btn-inverse')
+    set_busy: =>
+        $chat_window = $('.chat-window')
+        $chat_window.show()
 
-    set_signed_off: ->
-        $('.session-state .state').html('Signed off')
+        @session_state_el.find('.state').html('Busy')
+        @session_state_el.find('.btn').addClass('btn-danger')
+
+    set_invisible: =>
+        $chat_window = $('.chat-window')
+        $chat_window.show()
+
+        @session_state_el.find('.state').html('Invisible')
+        @session_state_el.find('.btn').addClass('btn-inverse')
+
+    set_signed_off: =>
+        $chat_window = $('.chat-window')
+        $chat_window.hide()
+
+        @session_state_el.find('.state').html('Signed off')
 
 
-class ChatParticipantList
+class UserList
+    conn = null
+    user_list_el = null
 
-    constructor: (connection, user_chat_statuses) ->
-        @user_list = (ucs.user for ucs in user_chat_statuses when ucs.user.username != connection.chat_session.username)
+    constructor: (@conn) ->
+        @user_list_el = $('.users .user-list')
 
-    render: =>
-        chat_users_el = "<ul class=\"chat-participant-list unstyled\">"
-        chat_users_el = "#{chat_users_el}#{("<li class = \"#{user.status}\">#{user.username}</li>" for user in @user_list).join('')}"
-        chat_users_el = "#{chat_users_el}</ul>"
-        return chat_users_el
+    set_user_list: (users) =>
+        @user_list_el.empty()
 
-    append: (username) =>
-        @user_list.push(username)
+        for user in users
+            $user_el = $("""
+            <li class=\"#{user.status}\">
+                <a href=\"#\">
+                    <i class=\"icon-user\"></i>
+                    #{user.username}
+                </a>
+            </li>""")
+
+            # add click event
+            $user_el.click (e) =>
+                e.preventDefault()
+                @conn.emit('req_chat_create', user.username)
+
+            # append user_el
+            @user_list_el.append($user_el)
+
+
+class ParticipantList
+    participant_list_el = null
+
+    constructor: (@conn, chat_el, users) ->
+        @participant_list_el = $("<ul class=\"participant-list unstyled\" />")
+        @set_participant_list(users)
+
+        chat_el.find('.chat-header').append(participant_list_el)
+
+    set_participant_list: (users) =>
+        # TODO: exclude yourself from participant list
+        # users = (ucs.user for ucs in user_chat_statuses when ucs.user.username != @conn.chat_session.username)
+
+        @participant_list_el.empty()
+
+        for user in users
+            $user_el = $("<li class=\"#{user.status}\">#{user.username}</li>")
+            @participant_list_el.append($user_el)
 
 
 class Chat
-    chat_session = null
-    conn = null
+    chat_el = null
+    participant_list = null
 
-    init: =>
-        @connect()
-        @chat_users_lists = {}
-
-    debug_log: (msg) ->
-        control = $('.debug-log')
-        now = new Date()
-        control.append(now.toLocaleTimeString() + ': ' + msg + '<br/>')
-
-    connect: ->
-        @conn = io.connect 'https://' + window.location.host,
-        'force_new_connection': false
-        'rememberTransport': true
-        'resource': 'chat/socket.io'
-
-        @debug_log('Connecting...')
-
-        @conn.on 'connect', =>
-            @debug_log('Connected')
-
-        @conn.on 'ev_chat_session_status', (chat_session) =>
-            #  Not signed in yet
-            @chat_session = chat_session
-            if @chat_session.status == 0
-                @ui_signed_off()
-
-        @conn.on 'ev_data_update', (chat_session, chat_users, chats) =>
-            # You are signed in
-            @chat_session = chat_session
-            if @chat_session.status == 1
-                @ui_available()
-            if @chat_session.status == 2
-                @ui_invisible()
-            if @chat_session.status == 3
-                @ui_busy()
-            @chat_users = chat_users
-            @update_user_list_ui(chat_users)
-            @update_chat_list_ui(chats)
-
-        @conn.on 'disconnect', (data) =>
-            @debug_log('Disconnect')
-            @conn = null
-
-        @conn.on 'ev_user_became_available', (username, chat_users) =>
-            @debug_log("#{username} became available.")
-            @chat_users = chat_users
-            @update_user_list_ui(chat_users)
-
-        @conn.on 'ev_user_became_busy', (username, chat_users) =>
-            @debug_log("#{username} became busy.")
-            @chat_users = chat_users
-            @update_user_list_ui(chat_users)
-
-        @conn.on 'ev_user_signed_off', (username, chat_users) =>
-            @debug_log("#{username} signed off.")
-            @chat_users = chat_users
-            @update_user_list_ui(chat_users)
-
-        @conn.on 'ev_chat_created', (chat) =>
-            @update_chat_ui(chat)
-
-        @conn.on 'ev_you_were_added', (chat) =>
-            @update_chat_ui(chat)
-
-        @conn.on 'ev_chat_user_added', (chat_uuid, username) =>
-            chat_user_list = @chat_users_lists[chat_uuid]
-            chat_user_list.append(username)
-            chat = $("#chat-#{chat_uuid}")
-            chat.find('.chat-users').html(chat_user_list.render())
-
-        @conn.on 'ev_message_sent', (message, user_chat_statuses) =>
-            @update_chats_chat_messages_message_ui(message)
-            @ui_animate_new_message(message.chat__uuid)
-            user_chat_status = @get_user_chat_status(user_chat_statuses)
-            @ui_chat_set_unread_messages(message.chat__uuid, user_chat_status.unread_messages)
-
-        @conn.on 'ev_chat_activated', (chat_uuid) =>
-            @ui_chat_activate(chat_uuid)
-
-        @conn.on 'ev_chat_deactivated', (chat_uuid) =>
-            @ui_chat_deactivate(chat_uuid)
-
-        @conn.on 'ev_chat_archived', (chat_uuid) =>
-            @ui_chat_archive(chat_uuid)
-
-
-    ui_signed_off: ->
-        $('.chat-window').hide()
-        session_state = new SessionStateUI(@conn)
-        session_state.set_signed_off()
-
-    ui_available: =>
-        $chat_window = $('.chat-window')
-        $chat_window.show()
-        session_state = new SessionStateUI(@conn)
-        session_state.set_available()
-
-    ui_busy: =>
-        $chat_window = $('.chat-window')
-        $chat_window.show()
-        session_state = new SessionStateUI(@conn)
-        session_state.set_busy()
-
-    ui_invisible: =>
-        $chat_window = $('.chat-window')
-        $chat_window.show()
-        session_state = new SessionStateUI(@conn)
-        session_state.set_invisible()
-
-    update_user_list_ui: (users) =>
-        $('.users .user-list').empty()
-        (@user_list_add_user(user) for user in users)
-
-    user_list_add_user: (user) =>
-        $user_list = $('.users .user-list')
-        $user_el = $("<li class=\"#{user.status}\"><a href=\"#\"><i class=\"icon-user\"></i> #{user.username}</a></li>")
-        $user_list.append($user_el)
-        $user_el.on 'click', (e) =>
-            e.preventDefault()
-            @conn.emit('req_chat_create', user.username)
-
-    update_chat_list_ui: (chats) =>
-        $('.chat-list').empty()
-        (@update_chat_ui(chat) for chat in chats)
-
-    update_chat_ui: (chat) =>
-        $chat_el = $("""
+    constructor: (@conn, chat) ->
+        @chat_el = $("""
         <div id=\"chat-#{chat.uuid}\" class="chat well well-small">
             <div class="chat-header toggle-active clearfix"></div>
         </div>""")
 
         # append participant list to chat header
-        chat_participant_list = new ChatParticipantList(this, chat.user_chat_statuses)
-        @chat_users_lists[chat.uuid] = chat_participant_list
-        $chat_el.find('.chat-header').append(chat_participant_list.render())
+        @participant_list = new ParticipantList(@conn, @chat_el, chat.users)
 
         # append chat controls to chat header
-        $chat_el.find('.chat-header').after($("""
+        @chat_el.find('.chat-header').after($("""
             <div class="chat-controls">
                 <div class="btn-group">
                     <a class="btn btn-small dropdown-toggle btn-show-add-user-list" data-toggle="dropdown" href="#">
@@ -215,7 +137,7 @@ class Chat
 
         # append messages
         $messages_el = $('<div class="messages"><div class="messages-inner clearfix"></div></div>')
-        $chat_el.append($messages_el)
+        @chat_el.append($messages_el)
 
         # append new message input
         $message_input_el = $("""
@@ -223,7 +145,7 @@ class Chat
             <div class="add-on"><i class="icon-user"></i></div>
             <input type="text" placeholder="Type message">
         </div>""")
-        $chat_el.append($message_input_el)
+        @chat_el.append($message_input_el)
 
         $message_input = $message_input_el.find('input')
         self = this
@@ -237,7 +159,7 @@ class Chat
                 this.value = ''
 
         # toggle active/deactive
-        $chat_active_toggle = $chat_el.find('.toggle-active')
+        $chat_active_toggle = @chat_el.find('.toggle-active')
         $chat_active_toggle.click (e) =>
             e.preventDefault()
             if $chat_active_toggle.hasClass('js_active')
@@ -250,18 +172,18 @@ class Chat
             e.preventDefault()
 
         # show user list to add a new user to the chat
-        $chat_el.find('.btn-show-add-user-list').click (e) =>
+        @chat_el.find('.btn-show-add-user-list').click (e) =>
             e.preventDefault()
             @update_add_user_list(chat.uuid)
 
         # archive chat
-        $chat_el.find('.archive').click (e) =>
+        @chat_el.find('.archive').click (e) =>
             e.preventDefault()
             @conn.emit('req_chat_archive', chat.uuid)
 
         # append chat to chat-list
         $chat_list = $('.chat-list')
-        $chat_list.append($chat_el)
+        $chat_list.append(@chat_el)
 
         user_chat_status = @get_user_chat_status(chat.user_chat_statuses)
         if user_chat_status.status == 'active'
@@ -272,11 +194,14 @@ class Chat
         if chat.messages.length > 0
             @update_chats_chat_messages_ui(chat.messages)
 
+    add_message: (message, user_chat_statuses) =>
+
+
     get_user_chat_status: (user_chat_statuses) =>
         self = this
         (ucs for ucs in user_chat_statuses when ucs.user.username == self.chat_session.username)[0]
 
-    ui_chat_activate: (chat_uuid) =>
+    activate: (chat_uuid) =>
         chat = $("#chat-#{chat_uuid}")
         toggle = chat.find('.toggle-active')
         toggle.addClass('js_active')
@@ -287,7 +212,7 @@ class Chat
         @ui_chat_clear_unread_messages(chat_uuid)
         @ui_chat_scroll_down(chat_uuid)
 
-    ui_chat_deactivate: (chat_uuid) =>
+    deactivate: (chat_uuid) =>
         chat = $("#chat-#{chat_uuid}")
         toggle = chat.find('.toggle-active')
         toggle.removeClass('js_active')
@@ -295,6 +220,10 @@ class Chat
         # hide messages
         chat.find('.messages').hide()
         chat.find('.message-input').hide()
+
+    archive: (chat_uuid) =>
+        chat = $("#chat-#{chat_uuid}")
+        chat.remove()
 
     ui_chat_set_unread_messages: (chat_uuid, count) =>
         chat = $("#chat-#{chat_uuid}")
@@ -309,10 +238,6 @@ class Chat
     ui_chat_clear_unread_messages: (chat_uuid) =>
         chat = $("#chat-#{chat_uuid}")
         chat.find('.unread-messages').html('')
-
-    ui_chat_archive: (chat_uuid) =>
-        chat = $("#chat-#{chat_uuid}")
-        chat.remove()
 
     update_chats_chat_messages_ui: (messages) =>
         (@update_chats_chat_messages_message_ui(message) for message in messages)
@@ -352,7 +277,99 @@ class Chat
             e.preventDefault()
             @conn.emit('req_chat_add_user', chat_uuid, $(e.target).data('username'))
 
+
+class ChatApp
+    chat_session = null
+    conn = null
+    user_state = null
+    user_list = null
+    chats = {}
+
+    init: =>
+        @connect()
+        @user_state = new UserState(@conn)
+        @user_list = new UserList(@conn)
+
+    debug_log: (msg) ->
+        control = $('.debug-log')
+        now = new Date()
+        control.append(now.toLocaleTimeString() + ': ' + msg + '<br/>')
+
+    connect: ->
+        @conn = io.connect 'https://' + window.location.host,
+        'force_new_connection': false
+        'rememberTransport': true
+        'resource': 'chat/socket.io'
+
+        @debug_log('Connecting...')
+
+        @conn.on 'connect', =>
+            @debug_log('Connected')
+
+        @conn.on 'ev_chat_session_status', (chat_session) =>
+            #  Not signed in yet
+            @chat_session = chat_session
+            if @chat_session.status == 0
+                @user_state.set_signed_off()
+
+        @conn.on 'ev_data_update', (chat_session, chat_users, chats) =>
+            # You are signed in
+            @chat_session = chat_session
+            if @chat_session.status == 1
+                @user_state.set_available()
+            if @chat_session.status == 2
+                @user_state.set_invisible()
+            if @chat_session.status == 3
+                @user_state.set_busy()
+
+            # update user list
+            @user_list.set_user_list(chat_users)
+
+            # init all chats
+            for chat in chats
+                @chats[chat.uuid] = new Chat(@conn, chat)
+
+        @conn.on 'disconnect', (data) =>
+            @debug_log('Disconnect')
+            @conn = null
+
+        @conn.on 'ev_user_became_available', (username, users) =>
+            @debug_log("#{username} became available.")
+            @user_list.set_user_list(users)
+
+        @conn.on 'ev_user_became_busy', (username, users) =>
+            @debug_log("#{username} became busy.")
+            @user_list.set_user_list(users)
+
+        @conn.on 'ev_user_signed_off', (username, users) =>
+            @debug_log("#{username} signed off.")
+            @user_list.set_user_list(users)
+
+        @conn.on 'ev_chat_created', (chat) =>
+            @chats[chat.uuid] = new Chat(@conn, chat)
+
+        @conn.on 'ev_you_were_added', (chat) =>
+            @chats[chat.uuid] = new Chat(@conn, chat)
+
+        @conn.on 'ev_chat_user_added', (chat_uuid, username, users) =>
+            # TODO: remove username arg
+            @chats[chat_uuid].participant_list.set_participant_list(users)
+
+        @conn.on 'ev_message_sent', (message, user_chat_statuses) =>
+            # TODO: cleanup user_chat_statuses (unread messages)
+            @chats[message.chat_uuid].add_message(message, user_chat_statuses)
+
+        @conn.on 'ev_chat_activated', (chat_uuid) =>
+            @chats[chat_uuid].activate()
+
+        @conn.on 'ev_chat_deactivated', (chat_uuid) =>
+            @chats[chat_uuid].deactivate()
+
+        @conn.on 'ev_chat_archived', (chat_uuid) =>
+            @chats[chat_uuid].archive()
+
+
 $(->
-    chat = new Chat()
-    chat.init()
+    chat_app = new ChatApp()
+    chat_app.init()
 )
