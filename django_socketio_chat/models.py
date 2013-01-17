@@ -34,9 +34,7 @@ class ChatSession(models.Model):
 
     @property
     def users_that_i_see(self):
-        return User.objects.exclude(pk=self.user.pk) \
-            .exclude(chat_session__status=self.INVISIBLE) \
-            .exclude(chat_session__status=self.INVISIBLE)
+        return User.objects.exclude(pk=self.user.pk)
 
     @property
     def chats(self):
