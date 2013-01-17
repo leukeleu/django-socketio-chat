@@ -54,7 +54,7 @@
 
   ChatParticipantList = (function() {
 
-    function ChatParticipantList(user_chat_statuses) {
+    function ChatParticipantList(connection, user_chat_statuses) {
       this.append = __bind(this.append, this);
 
       this.render = __bind(this.render, this);
@@ -65,22 +65,24 @@
         _results = [];
         for (_i = 0, _len = user_chat_statuses.length; _i < _len; _i++) {
           ucs = user_chat_statuses[_i];
-          _results.push(ucs.user__username);
+          if (ucs.user.username !== connection.chat_session.username) {
+            _results.push(ucs.user);
+          }
         }
         return _results;
       })();
     }
 
     ChatParticipantList.prototype.render = function() {
-      var chat_users_el, username;
+      var chat_users_el, user;
       chat_users_el = "<ul class=\"chat-participant-list unstyled\">";
       chat_users_el = "" + chat_users_el + (((function() {
         var _i, _len, _ref, _results;
         _ref = this.user_list;
         _results = [];
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          username = _ref[_i];
-          _results.push("<li>" + username + "</li>");
+          user = _ref[_i];
+          _results.push("<li class = \"" + user.status + "\">" + user.username + "</li>");
         }
         return _results;
       }).call(this)).join(''));
@@ -307,7 +309,7 @@
       var $chat_active_toggle, $chat_el, $chat_list, $message_input, $message_input_el, $messages_el, chat_participant_list, self, user_chat_status,
         _this = this;
       $chat_el = $("<div id=\"chat-" + chat.uuid + "\" class=\"chat well well-small\">\n    <div class=\"chat-header toggle-active clearfix\"></div>\n</div>");
-      chat_participant_list = new ChatParticipantList(chat.user_chat_statuses);
+      chat_participant_list = new ChatParticipantList(this, chat.user_chat_statuses);
       this.chat_users_lists[chat.uuid] = chat_participant_list;
       $chat_el.find('.chat-header').append(chat_participant_list.render());
       $chat_el.find('.chat-header').after($("<div class=\"chat-controls\">\n    <div class=\"btn-group\">\n        <a class=\"btn btn-small dropdown-toggle btn-show-add-user-list\" data-toggle=\"dropdown\" href=\"#\">\n            <i class=\"icon-plus\"></i>\n        </a>\n        <ul class=\"dropdown-menu chat-user-list right-align-dropdown\"></ul>\n    </div>\n    <a href=\"#\" class=\"archive btn btn-small\"><i class=\"icon-remove\"></i></a>\n    <div class=\"unread-messages badge\"></div>\n</div>"));
@@ -366,7 +368,7 @@
         _results = [];
         for (_i = 0, _len = user_chat_statuses.length; _i < _len; _i++) {
           ucs = user_chat_statuses[_i];
-          if (ucs.user__username === self.chat_session.username) {
+          if (ucs.user.username === self.chat_session.username) {
             _results.push(ucs);
           }
         }

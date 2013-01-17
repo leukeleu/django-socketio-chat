@@ -23,12 +23,8 @@ CONNECTED  = 1
 
 class CustomUserSerializer(serializers.UserSerializer):
 
-    def __init__(self, connection, *args, **kwargs):
-        self.connection = connection
-        super(CustomUserSerializer, self).__init__(*args, **kwargs)
-
     def get_status(self, obj):
-        online = self.connection.connections.get(obj, False)
+        online = ChatConnection.connections.get(obj, False)
         if not online:
             return 'offline'
         if obj.chat_session.all()[0].is_invisible:
@@ -40,10 +36,17 @@ class CustomUserSerializer(serializers.UserSerializer):
             else:
                 return status
 
+class CustomUserChatStatusSerialzier(serializers.UserChatStatusSerializer):
+    user = CustomUserSerializer()
+
+
+class CustomChatSerializer(serializers.ChatSerializer):
+    user_chat_statuses = CustomUserChatStatusSerialzier()
+
 
 class ChatConnection(SocketConnection):
 
-    connections = {}
+    connections = {} # class attribute
     chat_session = None
     user = None
 
@@ -89,10 +92,11 @@ class ChatConnection(SocketConnection):
     def send_all_chat_info(self):
         chat_session_obj = prepare_for_emit(serializers.ChatSessionSerializer(self.chat_session).data)
         chat_users = self.chat_session.users_that_i_see
-        chat_users_obj = prepare_for_emit(CustomUserSerializer(self, chat_users).data)
+        chat_users_obj = prepare_for_emit(CustomUserSerializer(chat_users).data)
 
         chats = self.chat_session.chats
-        chats_obj = prepare_for_emit(serializers.ChatSerializer(chats).data)
+
+        chats_obj = prepare_for_emit(CustomChatSerializer(chats).data)
 
         self.emit('ev_data_update', chat_session_obj, chat_users_obj, chats_obj)
 
@@ -100,7 +104,7 @@ class ChatConnection(SocketConnection):
         for user in self.chat_session.users_that_see_me:
             try:
                 chat_users = ChatSession.objects.get(user=user).users_that_i_see
-                chat_users_obj = prepare_for_emit(CustomUserSerializer(self, chat_users).data)
+                chat_users_obj = prepare_for_emit(CustomUserSerializer(chat_users).data)
                 for connection in self.connections.get(user, []):
                     connection.emit(event, self.user.username, chat_users_obj)
             except ChatSession.DoesNotExist:
@@ -160,7 +164,7 @@ class ChatConnection(SocketConnection):
         user = User.objects.get(username=username)
         if user in self.chat_session.users_that_i_see:
             chat = Chat.start(self.user, [user])
-            chat_obj = prepare_for_emit(serializers.ChatSerializer(chat).data)
+            chat_obj = prepare_for_emit(CustomChatSerializer(chat).data)
             for user in chat.users.all():
                 for connection in self.connections.get(user, []):
                     connection.emit('ev_chat_created', chat_obj)
@@ -171,7 +175,7 @@ class ChatConnection(SocketConnection):
         user = User.objects.get(username=username)
         if user in self.chat_session.users_that_i_see and self.user in chat.users.all() and user not in chat.users.all():
             chat.add_users([user])
-            chat_obj = prepare_for_emit(serializers.ChatSerializer(chat).data)
+            chat_obj = prepare_for_emit(CustomChatSerializer(chat).data)
 
             # send chat obj to new user
             for connection in self.connections.get(user, []):
@@ -202,7 +206,7 @@ class ChatConnection(SocketConnection):
         # Activate any archived user_chat_statusses
         for user_chat_status in chat.user_chat_statuses.all().filter(status=UserChatStatus.ARCHIVED):
             user_chat_status.activate()
-            chat_obj = prepare_for_emit(serializers.ChatSerializer(chat).data)
+            chat_obj = prepare_for_emit(CustomChatSerializer(chat).data)
             for connection in self.connections.get(user_chat_status.user, []):
                 connection.emit('ev_chat_created', chat_obj)
 

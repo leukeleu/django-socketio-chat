@@ -47,12 +47,12 @@ class SessionStateUI
 
 class ChatParticipantList
 
-    constructor: (user_chat_statuses) ->
-        @user_list = (ucs.user__username for ucs in user_chat_statuses)
+    constructor: (connection, user_chat_statuses) ->
+        @user_list = (ucs.user for ucs in user_chat_statuses when ucs.user.username != connection.chat_session.username)
 
     render: =>
         chat_users_el = "<ul class=\"chat-participant-list unstyled\">"
-        chat_users_el = "#{chat_users_el}#{("<li>#{username}</li>" for username in @user_list).join('')}"
+        chat_users_el = "#{chat_users_el}#{("<li class = \"#{user.status}\">#{user.username}</li>" for user in @user_list).join('')}"
         chat_users_el = "#{chat_users_el}</ul>"
         return chat_users_el
 
@@ -196,7 +196,7 @@ class Chat
         </div>""")
 
         # append participant list to chat header
-        chat_participant_list = new ChatParticipantList(chat.user_chat_statuses)
+        chat_participant_list = new ChatParticipantList(this, chat.user_chat_statuses)
         @chat_users_lists[chat.uuid] = chat_participant_list
         $chat_el.find('.chat-header').append(chat_participant_list.render())
 
@@ -270,7 +270,7 @@ class Chat
 
     get_user_chat_status: (user_chat_statuses) =>
         self = this
-        (ucs for ucs in user_chat_statuses when ucs.user__username == self.chat_session.username)[0]
+        (ucs for ucs in user_chat_statuses when ucs.user.username == self.chat_session.username)[0]
 
     ui_chat_activate: (chat_uuid) =>
         chat = $("#chat-#{chat_uuid}")

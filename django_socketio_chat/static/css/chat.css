@@ -96,3 +96,15 @@
 .chat .message-input input {
     min-width: 259px;
 }
+
+.chat-participant-list .offline {
+    color: lightgrey;
+}
+
+.chat-participant-list .available {
+    color: green;
+}
+
+.chat-participant-list .busy {
+    color: red;
+}
