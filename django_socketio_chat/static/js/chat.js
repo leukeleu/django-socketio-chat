@@ -310,7 +310,7 @@
       chat_participant_list = new ChatParticipantList(chat.user_chat_statuses);
       this.chat_users_lists[chat.uuid] = chat_participant_list;
       $chat_el.find('.chat-header').append(chat_participant_list.render());
-      $chat_el.find('.chat-header').append($("<div class=\"chat-controls\">\n    <div class=\"btn-group btn-show-add-user-list\">\n        <a class=\"btn btn-small dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">\n            <i class=\"icon-plus\"></i>\n        </a>\n        <ul class=\"dropdown-menu chat-user-list unstyled\"></ul>\n    </div>\n    <a href=\"#\" class=\"archive btn btn-small\"><i class=\"icon-remove\"></i></a>\n    <div class=\"unread-messages badge\"></div>\n</div>"));
+      $chat_el.find('.chat-header').append($("<div class=\"chat-controls\">\n    <div class=\"btn-group\">\n        <a class=\"btn btn-small dropdown-toggle btn-show-add-user-list\" data-toggle=\"dropdown\" href=\"#\">\n            <i class=\"icon-plus\"></i>\n        </a>\n        <ul class=\"dropdown-menu chat-user-list unstyled\"></ul>\n    </div>\n    <a href=\"#\" class=\"archive btn btn-small\"><i class=\"icon-remove\"></i></a>\n    <div class=\"unread-messages badge\"></div>\n</div>"));
       $messages_el = $('<div class="messages"><div class="messages-inner clearfix"></div></div>');
       $chat_el.append($messages_el);
       $message_input_el = $("<div class=\"message-input input-prepend\">\n    <div class=\"add-on\"><i class=\"icon-user\"></i></div>\n    <input type=\"text\" placeholder=\"Type message\">\n</div>");
@@ -338,6 +338,8 @@
       });
       $chat_el.find('.btn-show-add-user-list').click(function(e) {
         e.preventDefault();
+        e.stopPropagation();
+        $(e.target).dropdown();
         return _this.update_add_user_list(chat.uuid);
       });
       $chat_el.find('.archive').click(function(e) {
