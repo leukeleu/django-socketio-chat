@@ -3,6 +3,12 @@
     min-width: 320px;
 }
 
+.right-align-dropdown {
+    left: auto;
+    right: 0;
+    text-align: left;
+}
+
 .user h3 {
     float: left;
 }
@@ -16,10 +22,23 @@
     margin: 15px 0;
 }
 
-.right-align-dropdown {
-    left: auto;
-    right: 0;
-    text-align: left;
+.users .user-list a:after {
+    padding: 0 0 0 5px;
+}
+
+.users .user-list .offline a:after {
+   content: 'offline';
+   color: #e6e6e6;
+}
+
+.users .user-list .available a:after {
+   content: 'available';
+   color: #51a351;
+}
+
+.users .user-list .busy a:after {
+   content: 'busy';
+   color: #bd362f;
 }
 
 .chat .chat-header {
@@ -70,25 +89,6 @@
     clear: both;
 }
 
-.message-input input {
+.chat .message-input input {
     min-width: 259px;
-}
-
-.users .user-list a:after {
-    padding: 0 0 0 5px;
-}
-
-.users .user-list .offline a:after {
-   content: 'offline';
-   color: lightgrey;
-}
-
-.users .user-list .available a:after {
-   content: 'available';
-   color: green;
-}
-
-.users .user-list .busy a:after {
-   content: 'busy';
-   color: red;
 }
