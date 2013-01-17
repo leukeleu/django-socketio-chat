@@ -245,6 +245,10 @@ class Chat
             else
                 @conn.emit('req_chat_activate', chat.uuid)
 
+        # prevent text selection
+        $chat_active_toggle.mousedown (e) =>
+            e.preventDefault()
+
         # show user list to add a new user to the chat
         $chat_el.find('.btn-show-add-user-list').click (e) =>
             e.preventDefault()

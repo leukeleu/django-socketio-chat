@@ -339,6 +339,9 @@
           return _this.conn.emit('req_chat_activate', chat.uuid);
         }
       });
+      $chat_active_toggle.mousedown(function(e) {
+        return e.preventDefault();
+      });
       $chat_el.find('.btn-show-add-user-list').click(function(e) {
         e.preventDefault();
         return _this.update_add_user_list(chat.uuid);
