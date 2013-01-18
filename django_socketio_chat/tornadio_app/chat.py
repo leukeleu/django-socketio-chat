@@ -1,12 +1,6 @@
-import os
-import sys
+import logging
 
-sys.path.insert(0, '../../example')
-sys.path.insert(0, '../../example/example')
-os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
-
-from tornadio2 import SocketConnection, TornadioRouter, SocketServer, event
-from tornado import web
+from tornadio2 import SocketConnection, event
 
 from django.utils.html import escape, urlize
 from django.contrib.auth.models import User
@@ -261,22 +255,8 @@ class ChatConnection(SocketConnection):
                 self.emit('ev_chat_archived', chat.uuid.hex)
 
     def on_disconnect(self):
-        print 'disconnecting'
+        pass
 
     def on_close(self):
         self.connections.get(self.user, set()).discard(self)
 
-# Create chat router
-ChatRouter = TornadioRouter(ChatConnection, user_settings={'websocket_check': True}, namespace='chat/socket.io')
-
-# Create application
-application = web.Application(
-    ChatRouter.apply_routes([]),
-    socket_io_port=8001,
-)
-
-if __name__ == "__main__":
-    import logging
-    logging.getLogger().setLevel(logging.INFO)
-
-    SocketServer(application)
