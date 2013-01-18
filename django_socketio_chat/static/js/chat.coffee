@@ -37,6 +37,7 @@ class UserState
         $chat_window.show()
 
         @session_state_el.find('.state').html('Available')
+        @clear_btn_classes()
         @session_state_el.find('.btn').addClass('btn-success')
 
     set_busy: =>
@@ -44,6 +45,7 @@ class UserState
         $chat_window.show()
 
         @session_state_el.find('.state').html('Busy')
+        @clear_btn_classes()
         @session_state_el.find('.btn').addClass('btn-danger')
 
     set_invisible: =>
@@ -51,6 +53,7 @@ class UserState
         $chat_window.show()
 
         @session_state_el.find('.state').html('Invisible')
+        @clear_btn_classes()
         @session_state_el.find('.btn').addClass('btn-inverse')
 
     set_signed_off: =>
@@ -58,6 +61,9 @@ class UserState
         $chat_window.hide()
 
         @session_state_el.find('.state').html('Signed off')
+
+    clear_btn_classes: =>
+        @session_state_el.find('.btn').removeClass('btn-success btn-danger btn-inverse')
 
 
 class UserList
@@ -207,7 +213,8 @@ class Chat
         </blockquote>""")
         @chat_el.find('.messages-inner').append($message_el)
 
-        # scroll the ui down, animated
+    new_message: (message, user_chat_statuses) =>
+        @add_message(message, user_chat_statuses)
         @ui_scroll_down(true)
 
     activate: =>
@@ -272,7 +279,7 @@ class ChatApp
         @user_state = new UserState(@conn)
         @user_list = new UserList(@conn)
 
-    debug_log: (msg) ->
+    debug_log: (msg) =>
         control = $('.debug-log')
         now = new Date()
         control.append(now.toLocaleTimeString() + ': ' + msg + '<br/>')
@@ -307,6 +314,9 @@ class ChatApp
             # update user list
             @user_list.set_user_list(chat_users)
 
+            # clear chat list
+            $('.chat-list').empty()
+
             # init all chats
             for chat in chats
                 @chats[chat.uuid] = new Chat(@conn, @chat_session, chat)
@@ -339,7 +349,7 @@ class ChatApp
 
         @conn.on 'ev_message_sent', (message, user_chat_statuses) =>
             # TODO: cleanup user_chat_statuses (unread messages)
-            @chats[message.chat_uuid].add_message(message, user_chat_statuses)
+            @chats[message.chat__uuid].new_message(message, user_chat_statuses)
 
         @conn.on 'ev_chat_activated', (chat_uuid) =>
             @chats[chat_uuid].activate()

@@ -9,6 +9,8 @@
       var session_state_dropdown_el,
         _this = this;
       this.conn = conn;
+      this.clear_btn_classes = __bind(this.clear_btn_classes, this);
+
       this.set_signed_off = __bind(this.set_signed_off, this);
 
       this.set_invisible = __bind(this.set_invisible, this);
@@ -43,6 +45,7 @@
       $chat_window = $('.chat-window');
       $chat_window.show();
       this.session_state_el.find('.state').html('Available');
+      this.clear_btn_classes();
       return this.session_state_el.find('.btn').addClass('btn-success');
     };
 
@@ -51,6 +54,7 @@
       $chat_window = $('.chat-window');
       $chat_window.show();
       this.session_state_el.find('.state').html('Busy');
+      this.clear_btn_classes();
       return this.session_state_el.find('.btn').addClass('btn-danger');
     };
 
@@ -59,6 +63,7 @@
       $chat_window = $('.chat-window');
       $chat_window.show();
       this.session_state_el.find('.state').html('Invisible');
+      this.clear_btn_classes();
       return this.session_state_el.find('.btn').addClass('btn-inverse');
     };
 
@@ -67,6 +72,10 @@
       $chat_window = $('.chat-window');
       $chat_window.hide();
       return this.session_state_el.find('.state').html('Signed off');
+    };
+
+    UserState.prototype.clear_btn_classes = function() {
+      return this.session_state_el.find('.btn').removeClass('btn-success btn-danger btn-inverse');
     };
 
     return UserState;
@@ -150,6 +159,8 @@
 
       this.activate = __bind(this.activate, this);
 
+      this.new_message = __bind(this.new_message, this);
+
       this.add_message = __bind(this.add_message, this);
 
       this.is_active = __bind(this.is_active, this);
@@ -228,7 +239,11 @@
         return ('0' + timestamp.getHours()).slice(-2) + ':' + ('0' + timestamp.getMinutes()).slice(-2);
       };
       $message_el = $("<blockquote id=\"message-" + message.uuid + "\" class=\"message\n    " + (message.user_from__username === this.chat_session.username ? ' pull-right\"' : '\"') + ">\n    <p class=\"msg-body\">" + message.message_body + "</p>\n    <small class=\"msg-sender-timestamp\">" + message.user_from__username + " - " + (stamp(message.timestamp)) + "</small>\n</blockquote>");
-      this.chat_el.find('.messages-inner').append($message_el);
+      return this.chat_el.find('.messages-inner').append($message_el);
+    };
+
+    Chat.prototype.new_message = function(message, user_chat_statuses) {
+      this.add_message(message, user_chat_statuses);
       return this.ui_scroll_down(true);
     };
 
@@ -302,6 +317,8 @@
 
     function ChatApp() {
       this.connect = __bind(this.connect, this);
+
+      this.debug_log = __bind(this.debug_log, this);
       this.chat_session = null;
       this.chats = {};
       this.connect();
@@ -346,6 +363,7 @@
           _this.user_state.set_busy();
         }
         _this.user_list.set_user_list(chat_users);
+        $('.chat-list').empty();
         _results = [];
         for (_i = 0, _len = chats.length; _i < _len; _i++) {
           chat = chats[_i];
@@ -379,7 +397,7 @@
         return _this.chats[chat_uuid].participant_list.set_participant_list(users);
       });
       this.conn.on('ev_message_sent', function(message, user_chat_statuses) {
-        return _this.chats[message.chat_uuid].add_message(message, user_chat_statuses);
+        return _this.chats[message.chat__uuid].new_message(message, user_chat_statuses);
       });
       this.conn.on('ev_chat_activated', function(chat_uuid) {
         return _this.chats[chat_uuid].activate();
