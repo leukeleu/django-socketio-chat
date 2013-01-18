@@ -99,21 +99,19 @@
     };
 
     UserList.prototype.set_user_list = function(users) {
-      var $user_el, user, _i, _len, _results,
+      var $user_el, user, _i, _len,
         _this = this;
       this.user_list = users;
       this.user_list_el.empty();
-      _results = [];
       for (_i = 0, _len = users.length; _i < _len; _i++) {
         user = users[_i];
-        $user_el = $("<li class=\"" + user.status + "\">\n    <a href=\"#\">\n        <i class=\"icon-user\"></i>\n        " + user.username + "\n    </a>\n</li>");
-        $user_el.click(function(e) {
-          e.preventDefault();
-          return _this.conn.emit('req_chat_create', user.username);
-        });
-        _results.push(this.user_list_el.append($user_el));
+        $user_el = $("<li class=\"" + user.status + "\" data-username=\"" + user.username + "\">\n    <a href=\"#\">\n        <i class=\"icon-user\"></i>\n        " + user.username + "\n    </a>\n</li>");
+        this.user_list_el.append($user_el);
       }
-      return _results;
+      return this.user_list_el.on('click', 'li', function(e) {
+        e.preventDefault();
+        return _this.conn.emit('req_chat_create', $(e.currentTarget).data('username'));
+      });
     };
 
     return UserList;
@@ -122,8 +120,7 @@
 
   ParticipantList = (function() {
 
-    function ParticipantList(conn, chat_session, chat_el, user_chat_statuses) {
-      this.conn = conn;
+    function ParticipantList(chat_session, chat_el, user_chat_statuses) {
       this.chat_session = chat_session;
       this.user_chat_statuses = user_chat_statuses;
       this.set_user_status = __bind(this.set_user_status, this);
@@ -196,7 +193,7 @@
       this.is_active = __bind(this.is_active, this);
 
       this.chat_el = $("<div id=\"chat-" + chat.uuid + "\" class=\"chat well well-small\">\n    <div class=\"chat-header toggle-active clearfix\"></div>\n</div>");
-      this.participant_list = new ParticipantList(this.conn, this.chat_session, this.chat_el, this.chat.user_chat_statuses);
+      this.participant_list = new ParticipantList(this.chat_session, this.chat_el, this.chat.user_chat_statuses);
       this.chat_el.find('.chat-header').after($("<div class=\"chat-controls\">\n    <div class=\"btn-group\">\n        <a class=\"btn btn-small dropdown-toggle btn-show-add-user-list\" data-toggle=\"dropdown\" href=\"#\">\n            <i class=\"icon-plus\"></i>\n        </a>\n        <ul class=\"dropdown-menu chat-user-list right-align-dropdown\"></ul>\n    </div>\n    <a href=\"#\" class=\"archive btn btn-small\"><i class=\"icon-remove\"></i></a>\n    <div class=\"unread-messages badge\"></div>\n</div>"));
       $messages_el = $('<div class="messages"><div class="messages-inner clearfix"></div></div>');
       this.chat_el.append($messages_el);
@@ -234,7 +231,7 @@
         return _this.conn.emit('req_chat_archive', chat.uuid);
       });
       $('.chat-list').append(this.chat_el);
-      if (this.is_active) {
+      if (this.is_active()) {
         this.activate();
       } else {
         this.deactivate();
@@ -334,7 +331,7 @@
         $chat_user_list.append($("<li>\n    <a href=\"#\" class=\"user-add\" data-username=\"" + user.username + "\">\n        <i class=\"icon-user\"></i>\n        " + user.username + "\n    </a>\n</li>"));
         _results.push($chat_user_list.on('click', '.user-add', function(e) {
           e.preventDefault();
-          return _this.conn.emit('req_chat_add_user', _this.chat.uuid, $(e.target).data('username'));
+          return _this.conn.emit('req_chat_add_user', _this.chat.uuid, $(e.currentTarget).data('username'));
         }));
       }
       return _results;

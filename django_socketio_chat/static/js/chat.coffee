@@ -83,25 +83,25 @@ class UserList
 
         for user in users
             $user_el = $("""
-            <li class=\"#{user.status}\">
+            <li class=\"#{user.status}\" data-username=\"#{user.username}\">
                 <a href=\"#\">
                     <i class=\"icon-user\"></i>
                     #{user.username}
                 </a>
             </li>""")
 
-            # add click event
-            $user_el.click (e) =>
-                e.preventDefault()
-                @conn.emit('req_chat_create', user.username)
-
             # append user_el
             @user_list_el.append($user_el)
+
+        # add click event
+        @user_list_el.on 'click', 'li', (e) =>
+            e.preventDefault()
+            @conn.emit('req_chat_create', $(e.currentTarget).data('username'))
 
 
 class ParticipantList
 
-    constructor: (@conn, @chat_session, chat_el, @user_chat_statuses) ->
+    constructor: (@chat_session, chat_el, @user_chat_statuses) ->
         @participant_list_el = $('<ul class="participant-list unstyled" />')
         @set_participant_list(user_chat_statuses)
 
@@ -131,7 +131,7 @@ class Chat
         </div>""")
 
         # append participant list to chat header
-        @participant_list = new ParticipantList(@conn, @chat_session, @chat_el, @chat.user_chat_statuses)
+        @participant_list = new ParticipantList(@chat_session, @chat_el, @chat.user_chat_statuses)
 
         # append chat controls to chat header
         @chat_el.find('.chat-header').after($("""
@@ -194,7 +194,7 @@ class Chat
         # append chat to chat-list
         $('.chat-list').append(@chat_el)
 
-        if @is_active
+        if @is_active()
             @activate()
         else
             @deactivate()
@@ -282,7 +282,7 @@ class Chat
                 </li>"""))
             $chat_user_list.on 'click', '.user-add', (e) =>
                 e.preventDefault()
-                @conn.emit('req_chat_add_user', @chat.uuid, $(e.target).data('username'))
+                @conn.emit('req_chat_add_user', @chat.uuid, $(e.currentTarget).data('username'))
 
 
 class ChatApp
