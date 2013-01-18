@@ -9,6 +9,8 @@
     text-align: left;
 }
 
+/* user */
+
 .user h3 {
     float: left;
 }
@@ -21,6 +23,8 @@
     float: right;
     margin: 15px 0;
 }
+
+/* user list */
 
 .users .user-list a:after {
     padding: 0 0 0 5px;
@@ -40,6 +44,8 @@
    content: 'busy';
    color: #bd362f;
 }
+
+/* chat */
 
 .chat {
     position: relative;
@@ -98,13 +104,13 @@
 }
 
 .participant-list .offline {
-    color: lightgrey;
+    color: #e6e6e6;
 }
 
 .participant-list .available {
-    color: green;
+    color: #51a351;
 }
 
 .participant-list .busy {
-    color: red;
+    color: #bd362f;
 }
