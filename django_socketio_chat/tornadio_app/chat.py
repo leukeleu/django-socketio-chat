@@ -18,7 +18,7 @@ from django_socketio_chat.utils import prepare_for_emit
 
 # Connection states (not persisted in db)
 DISCONNECTED = 0
-CONNECTED  = 1
+CONNECTED = 1
 
 
 class CustomUserSerializer(serializers.UserSerializer):
@@ -30,23 +30,24 @@ class CustomUserSerializer(serializers.UserSerializer):
         if obj.chat_session.all()[0].is_invisible:
             return 'offline'
         else:
-            status =  obj.chat_session.all()[0].get_status()
+            status = obj.chat_session.all()[0].get_status()
             if status == 'signed_off':
                 return 'offline'
             else:
                 return status
 
-class CustomUserChatStatusSerialzier(serializers.UserChatStatusSerializer):
+
+class CustomUserChatStatusSerializer(serializers.UserChatStatusSerializer):
     user = CustomUserSerializer()
 
 
 class CustomChatSerializer(serializers.ChatSerializer):
-    user_chat_statuses = CustomUserChatStatusSerialzier()
+    user_chat_statuses = CustomUserChatStatusSerializer()
 
 
 class ChatConnection(SocketConnection):
 
-    connections = {} # class attribute
+    connections = {}  # class attribute
     chat_session = None
     user = None
 
@@ -176,6 +177,9 @@ class ChatConnection(SocketConnection):
         if user in self.chat_session.users_that_i_see and self.user in chat.users.all() and user not in chat.users.all():
             chat.add_users([user])
             chat_obj = prepare_for_emit(CustomChatSerializer(chat).data)
+            user_chat_statuses = chat.user_chat_statuses
+            user_chat_statuses_obj = prepare_for_emit(
+                [CustomUserChatStatusSerializer(ucs).data for ucs in user_chat_statuses.all()])
 
             # send chat obj to new user
             for connection in self.connections.get(user, []):
@@ -184,7 +188,7 @@ class ChatConnection(SocketConnection):
             # notify all users in chat
             for user in chat.users.all():
                 for connection in self.connections.get(user, []):
-                    connection.emit('ev_chat_user_added', chat.uuid.hex, username)
+                    connection.emit('ev_chat_user_added', chat.uuid.hex, username, user_chat_statuses_obj)
 
     @event('req_message_send')
     def message_send(self, message_body, chat_uuid):
@@ -197,7 +201,7 @@ class ChatConnection(SocketConnection):
         message_obj = prepare_for_emit(serializers.MessageSerializer(message).data)
         user_chat_statuses = chat.user_chat_statuses
         user_chat_statuses_obj = prepare_for_emit(
-            [serializers.UserChatStatusSerializer(ucs).data for ucs in user_chat_statuses.all()])
+            [CustomUserChatStatusSerializer(ucs).data for ucs in user_chat_statuses.all()])
 
         for user in chat.users.all():
             for connection in self.connections.get(user, []):
