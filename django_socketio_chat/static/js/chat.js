@@ -252,7 +252,7 @@
       _ref = this.chat.user_chat_statuses;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         ucs = _ref[_i];
-        if (ucs.user.username === this.chat_session.username) {
+        if (ucs.user.username === this.chat_session.username && ucs.status === 'active') {
           return true;
         }
       }

@@ -208,7 +208,7 @@ class Chat
 
     is_active: =>
         for ucs in @chat.user_chat_statuses
-            if ucs.user.username == @chat_session.username
+            if ucs.user.username == @chat_session.username and  ucs.status == 'active'
                 return true
 
     add_message: (message, user_chat_statuses) =>
