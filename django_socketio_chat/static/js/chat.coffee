@@ -94,20 +94,19 @@ class UserList
 
 class ParticipantList
 
-    constructor: (@conn, chat_el, user_chat_statuses) ->
+    constructor: (@conn, @chat_session, chat_el, user_chat_statuses) ->
         @participant_list_el = $('<ul class="participant-list unstyled" />')
         @set_participant_list(user_chat_statuses)
 
         chat_el.find('.chat-header').append(@participant_list_el)
 
     set_participant_list: (user_chat_statuses) =>
-        # TODO: exclude yourself from participant list
-        # user_chat_statuses = (ucs.user for ucs in user_chat_statuses when ucs.user.username != @conn.chat_session.username)
         @participant_list_el.empty()
 
         for user_chat_status in user_chat_statuses
-            $user_el = $("<li class=\"#{user_chat_status.user.status}\">#{user_chat_status.user.username}</li>")
-            @participant_list_el.append($user_el)
+            if user_chat_status.user.username != @chat_session.username
+                $user_el = $("<li class=\"#{user_chat_status.user.status}\">#{user_chat_status.user.username}</li>")
+                @participant_list_el.append($user_el)
 
 
 class Chat
@@ -119,7 +118,7 @@ class Chat
         </div>""")
 
         # append participant list to chat header
-        @participant_list = new ParticipantList(@conn, @chat_el, @chat.user_chat_statuses)
+        @participant_list = new ParticipantList(@conn, @chat_session, @chat_el, @chat.user_chat_statuses)
 
         # append chat controls to chat header
         @chat_el.find('.chat-header').after($("""
