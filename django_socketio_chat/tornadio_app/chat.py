@@ -118,6 +118,7 @@ class ChatConnection(SocketConnection):
         If user is invisble, don't notify others, just sign off.
         Else sign off and notify others.
         """
+        logging.info('req_user_sign_off %s' % self.user)
         if self.chat_session.is_signed_off:
             return
         if self.chat_session.is_invisible:
@@ -135,6 +136,7 @@ class ChatConnection(SocketConnection):
         If user is signed_off, don't notify others, just change state to invisible.
         Else also notify others.
         """
+        logging.info('req_user_become_invisible %s' % self.user)
         if self.chat_session.is_invisible:
             return
         if self.chat_session.is_signed_off:
@@ -146,6 +148,7 @@ class ChatConnection(SocketConnection):
 
     @event('req_user_become_available')
     def become_available(self):
+        logging.info('req_user_become_available %s' % self.user)
         if self.chat_session.is_available:
             return
         self.chat_session.become_available()
@@ -154,6 +157,7 @@ class ChatConnection(SocketConnection):
 
     @event('req_user_become_busy')
     def become_busy(self):
+        logging.info('req_user_become_busy %s' % self.user)
         if self.chat_session.is_busy:
             return
         self.chat_session.become_busy()
@@ -162,6 +166,7 @@ class ChatConnection(SocketConnection):
 
     @event('req_chat_create')
     def chat_create(self, username):
+        logging.info('req_chat_create from %s with %s' % (self.user, username))
         user = User.objects.get(username=username)
         if user in self.chat_session.users_that_i_see:
             chat = Chat.start(self.user, [user])
@@ -172,6 +177,7 @@ class ChatConnection(SocketConnection):
 
     @event('req_chat_add_user')
     def chat_add_user(self, chat_uuid, username):
+        logging.info('req_chat_add_user from %s with %s' % (self.user, username))
         chat = Chat.objects.get(uuid=chat_uuid)
         user = User.objects.get(username=username)
         if user in self.chat_session.users_that_i_see and self.user in chat.users.all() and user not in chat.users.all():
@@ -192,6 +198,7 @@ class ChatConnection(SocketConnection):
 
     @event('req_message_send')
     def message_send(self, message_body, chat_uuid):
+        logging.info('req_message_send from %s with message_body %s' % (self.user, message_body))
         chat = Chat.objects.get(uuid=chat_uuid)
 
         if not self.user in chat.users.all():
@@ -219,6 +226,7 @@ class ChatConnection(SocketConnection):
         """
         Change the UI state to visible.
         """
+        logging.info('req_chat_activate from %s for chat %s' % (self.user, chat_uuid))
         chat = Chat.objects.get(uuid=chat_uuid)
         if self.user in chat.users.all():
             user_chat_status = chat.user_chat_statuses.get(user=self.user)
@@ -231,6 +239,7 @@ class ChatConnection(SocketConnection):
         """
         Change the UI state to invisible.
         """
+        logging.info('req_chat_deactivate from %s for chat %s' % (self.user, chat_uuid))
         chat = Chat.objects.get(uuid=chat_uuid)
         if self.user in chat.users.all():
             user_chat_status = chat.user_chat_statuses.get(user=self.user)
@@ -243,6 +252,7 @@ class ChatConnection(SocketConnection):
         """
         Archive the chat.
         """
+        logging.info('req_chat_archive from %s for chat %s' % (self.user, chat_uuid))
         chat = Chat.objects.get(uuid=chat_uuid)
         if self.user in chat.users.all():
             user_chat_status = chat.user_chat_statuses.get(user=self.user)
@@ -266,7 +276,7 @@ application = web.Application(
 )
 
 if __name__ == "__main__":
-    # import logging
-    # logging.getLogger().setLevel(logging.DEBUG)
+    import logging
+    logging.getLogger().setLevel(logging.INFO)
 
     SocketServer(application)

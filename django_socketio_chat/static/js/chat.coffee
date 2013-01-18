@@ -72,6 +72,11 @@ class UserList
         @user_list_el = $('.users .user-list')
         @user_list = []
 
+        # add click event
+        @user_list_el.on 'click', 'li', (e) =>
+            e.preventDefault()
+            @conn.emit('req_chat_create', $(e.currentTarget).data('username'))
+
     get_user_list: =>
         @user_list
 
@@ -92,11 +97,6 @@ class UserList
 
             # append user_el
             @user_list_el.append($user_el)
-
-        # add click event
-        @user_list_el.on 'click', 'li', (e) =>
-            e.preventDefault()
-            @conn.emit('req_chat_create', $(e.currentTarget).data('username'))
 
 
 class ParticipantList
@@ -288,9 +288,9 @@ class Chat
                         #{user.username}
                     </a>
                 </li>"""))
-            $chat_user_list.on 'click', '.user-add', (e) =>
-                e.preventDefault()
-                @conn.emit('req_chat_add_user', @chat.uuid, $(e.currentTarget).data('username'))
+        $chat_user_list.on 'click', '.user-add', (e) =>
+            e.preventDefault()
+            @conn.emit('req_chat_add_user', @chat.uuid, $(e.currentTarget).data('username'))
 
 
 class ChatApp

@@ -85,6 +85,7 @@
   UserList = (function() {
 
     function UserList(conn) {
+      var _this = this;
       this.conn = conn;
       this.set_user_list = __bind(this.set_user_list, this);
 
@@ -92,6 +93,10 @@
 
       this.user_list_el = $('.users .user-list');
       this.user_list = [];
+      this.user_list_el.on('click', 'li', function(e) {
+        e.preventDefault();
+        return _this.conn.emit('req_chat_create', $(e.currentTarget).data('username'));
+      });
     }
 
     UserList.prototype.get_user_list = function() {
@@ -99,19 +104,16 @@
     };
 
     UserList.prototype.set_user_list = function(users) {
-      var $user_el, user, _i, _len,
-        _this = this;
+      var $user_el, user, _i, _len, _results;
       this.user_list = users;
       this.user_list_el.empty();
+      _results = [];
       for (_i = 0, _len = users.length; _i < _len; _i++) {
         user = users[_i];
         $user_el = $("<li class=\"" + user.status + "\" data-username=\"" + user.username + "\">\n    <a href=\"#\">\n        <i class=\"icon-user\"></i>\n        " + user.username + "\n    </a>\n</li>");
-        this.user_list_el.append($user_el);
+        _results.push(this.user_list_el.append($user_el));
       }
-      return this.user_list_el.on('click', 'li', function(e) {
-        e.preventDefault();
-        return _this.conn.emit('req_chat_create', $(e.currentTarget).data('username'));
-      });
+      return _results;
     };
 
     return UserList;
@@ -333,21 +335,19 @@
     };
 
     Chat.prototype.update_add_user_list = function() {
-      var $chat_user_list, user, _i, _len, _ref, _results,
+      var $chat_user_list, user, _i, _len, _ref,
         _this = this;
       $chat_user_list = this.chat_el.find('.chat-user-list');
       $chat_user_list.empty();
       _ref = this.user_list.get_user_list();
-      _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         user = _ref[_i];
         $chat_user_list.append($("<li>\n    <a href=\"#\" class=\"user-add\" data-username=\"" + user.username + "\">\n        <i class=\"icon-user\"></i>\n        " + user.username + "\n    </a>\n</li>"));
-        _results.push($chat_user_list.on('click', '.user-add', function(e) {
-          e.preventDefault();
-          return _this.conn.emit('req_chat_add_user', _this.chat.uuid, $(e.currentTarget).data('username'));
-        }));
       }
-      return _results;
+      return $chat_user_list.on('click', '.user-add', function(e) {
+        e.preventDefault();
+        return _this.conn.emit('req_chat_add_user', _this.chat.uuid, $(e.currentTarget).data('username'));
+      });
     };
 
     return Chat;
