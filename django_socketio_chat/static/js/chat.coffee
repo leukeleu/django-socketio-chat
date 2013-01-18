@@ -220,9 +220,7 @@ class Chat
         @chat_el.find('.toggle-active').addClass('js_active')
 
         # show messages
-        @chat_el
-            .find('.messages').show()
-            .find('.message-input').show()
+        @chat_el.find('.messages, .message-input').show()
 
         @set_unread_messages()
         @ui_scroll_down()
@@ -231,9 +229,7 @@ class Chat
         @chat_el.find('.toggle-active').removeClass('js_active')
 
         # hide messages
-        @chat_el
-            .find('.messages').hide()
-            .find('.message-input').hide()
+        @chat_el.find('.messages, .message-input').hide()
 
     archive: =>
         @chat_el.remove()

@@ -254,14 +254,14 @@
 
     Chat.prototype.activate = function() {
       this.chat_el.find('.toggle-active').addClass('js_active');
-      this.chat_el.find('.messages').show().find('.message-input').show();
+      this.chat_el.find('.messages, .message-input').show();
       this.set_unread_messages();
       return this.ui_scroll_down();
     };
 
     Chat.prototype.deactivate = function() {
       this.chat_el.find('.toggle-active').removeClass('js_active');
-      return this.chat_el.find('.messages').hide().find('.message-input').hide();
+      return this.chat_el.find('.messages, .message-input').hide();
     };
 
     Chat.prototype.archive = function() {
