@@ -4,9 +4,6 @@
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   UserState = (function() {
-    var session_state_el;
-
-    session_state_el = null;
 
     function UserState(conn) {
       var session_state_dropdown_el,
@@ -77,11 +74,6 @@
   })();
 
   UserList = (function() {
-    var conn, user_list_el;
-
-    conn = null;
-
-    user_list_el = null;
 
     function UserList(conn) {
       this.conn = conn;
@@ -112,26 +104,23 @@
   })();
 
   ParticipantList = (function() {
-    var participant_list_el;
 
-    participant_list_el = null;
-
-    function ParticipantList(conn, chat_el, users) {
+    function ParticipantList(conn, chat_el, user_chat_statuses) {
       this.conn = conn;
       this.set_participant_list = __bind(this.set_participant_list, this);
 
       this.participant_list_el = $('<ul class="participant-list unstyled" />');
-      this.set_participant_list(users);
-      chat_el.find('.chat-header').append(participant_list_el);
+      this.set_participant_list(user_chat_statuses);
+      chat_el.find('.chat-header').append(this.participant_list_el);
     }
 
-    ParticipantList.prototype.set_participant_list = function(users) {
-      var $user_el, user, _i, _len, _results;
+    ParticipantList.prototype.set_participant_list = function(user_chat_statuses) {
+      var $user_el, user_chat_status, _i, _len, _results;
       this.participant_list_el.empty();
       _results = [];
-      for (_i = 0, _len = users.length; _i < _len; _i++) {
-        user = users[_i];
-        $user_el = $("<li class=\"" + user.status + "\">" + user.username + "</li>");
+      for (_i = 0, _len = user_chat_statuses.length; _i < _len; _i++) {
+        user_chat_status = user_chat_statuses[_i];
+        $user_el = $("<li class=\"" + user_chat_status.user.status + "\">" + user_chat_status.user.username + "</li>");
         _results.push(this.participant_list_el.append($user_el));
       }
       return _results;
@@ -142,16 +131,13 @@
   })();
 
   Chat = (function() {
-    var chat_el, participant_list;
 
-    chat_el = null;
-
-    participant_list = null;
-
-    function Chat(conn, chat) {
-      var $chat_active_toggle, $chat_list, $message_input, $message_input_el, $messages_el, message, self, user_chat_status, _i, _len, _ref,
+    function Chat(conn, chat_session, chat) {
+      var $chat_active_toggle, $message_input_el, $messages_el, message, self, _i, _len, _ref,
         _this = this;
       this.conn = conn;
+      this.chat_session = chat_session;
+      this.chat = chat;
       this.update_add_user_list = __bind(this.update_add_user_list, this);
 
       this.ui_scroll_down = __bind(this.ui_scroll_down, this);
@@ -164,20 +150,19 @@
 
       this.activate = __bind(this.activate, this);
 
-      this.get_user_chat_status = __bind(this.get_user_chat_status, this);
-
       this.add_message = __bind(this.add_message, this);
 
+      this.is_active = __bind(this.is_active, this);
+
       this.chat_el = $("<div id=\"chat-" + chat.uuid + "\" class=\"chat well well-small\">\n    <div class=\"chat-header toggle-active clearfix\"></div>\n</div>");
-      this.participant_list = new ParticipantList(this.conn, this.chat_el, chat.users);
+      this.participant_list = new ParticipantList(this.conn, this.chat_el, this.chat.user_chat_statuses);
       this.chat_el.find('.chat-header').after($("<div class=\"chat-controls\">\n    <div class=\"btn-group\">\n        <a class=\"btn btn-small dropdown-toggle btn-show-add-user-list\" data-toggle=\"dropdown\" href=\"#\">\n            <i class=\"icon-plus\"></i>\n        </a>\n        <ul class=\"dropdown-menu chat-user-list right-align-dropdown\"></ul>\n    </div>\n    <a href=\"#\" class=\"archive btn btn-small\"><i class=\"icon-remove\"></i></a>\n    <div class=\"unread-messages badge\"></div>\n</div>"));
       $messages_el = $('<div class="messages"><div class="messages-inner clearfix"></div></div>');
       this.chat_el.append($messages_el);
       $message_input_el = $("<div class=\"message-input input-prepend\">\n    <div class=\"add-on\"><i class=\"icon-user\"></i></div>\n    <input type=\"text\" placeholder=\"Type message\">\n</div>");
       this.chat_el.append($message_input_el);
-      $message_input = $message_input_el.find('input');
       self = this;
-      $message_input.keypress(function(e) {
+      $message_input_el.find('input').keypress(function(e) {
         if (e.which === 13) {
           e.preventDefault();
           if (this.value === '') {
@@ -207,16 +192,14 @@
         e.preventDefault();
         return _this.conn.emit('req_chat_archive', chat.uuid);
       });
-      $chat_list = $('.chat-list');
-      $chat_list.append(this.chat_el);
-      user_chat_status = this.get_user_chat_status(chat.user_chat_statuses);
-      if (user_chat_status.status === 'active') {
-        this.ui_chat_activate(chat.uuid);
-      } else if (user_chat_status.status === 'inactive') {
-        this.ui_chat_deactivate(chat.uuid);
-        this.ui_chat_set_unread_messages(chat.uuid, user_chat_status.unread_messages);
+      $('.chat-list').append(this.chat_el);
+      if (this.is_active) {
+        this.activate();
+      } else {
+        this.deactivate();
+        this.set_unread_messages(user_chat_status.unread_messages);
       }
-      if (chat.messages.length > 0) {
+      if (this.chat.messages.length > 0) {
         _ref = chat.messages;
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           message = _ref[_i];
@@ -226,6 +209,17 @@
       }
     }
 
+    Chat.prototype.is_active = function() {
+      var ucs, _i, _len, _ref;
+      _ref = this.chat.user_chat_statuses;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        ucs = _ref[_i];
+        if (ucs.user.username === this.chat_session.username) {
+          return true;
+        }
+      }
+    };
+
     Chat.prototype.add_message = function(message, user_chat_statuses) {
       var $message_el, stamp,
         _this = this;
@@ -233,25 +227,9 @@
         timestamp = new Date(timestamp);
         return ('0' + timestamp.getHours()).slice(-2) + ':' + ('0' + timestamp.getMinutes()).slice(-2);
       };
-      $message_el = "<blockquote id=\"message-" + message.uuid + "\" class=\"message\n    " + (message.user_from__username === this.chat_session.username ? ' pull-right\"' : '\"') + ">\n    <p class=\"msg-body\">" + message.message_body + "</p>\n    <small class=\"msg-sender-timestamp\">" + message.user_from__username + " - " + (stamp(message.timestamp)) + "</small>\n</blockquote>";
+      $message_el = $("<blockquote id=\"message-" + message.uuid + "\" class=\"message\n    " + (message.user_from__username === this.chat_session.username ? ' pull-right\"' : '\"') + ">\n    <p class=\"msg-body\">" + message.message_body + "</p>\n    <small class=\"msg-sender-timestamp\">" + message.user_from__username + " - " + (stamp(message.timestamp)) + "</small>\n</blockquote>");
       this.chat_el.find('.messages-inner').append($message_el);
       return this.ui_scroll_down(true);
-    };
-
-    Chat.prototype.get_user_chat_status = function(user_chat_statuses) {
-      var self, ucs;
-      self = this;
-      return ((function() {
-        var _i, _len, _results;
-        _results = [];
-        for (_i = 0, _len = user_chat_statuses.length; _i < _len; _i++) {
-          ucs = user_chat_statuses[_i];
-          if (ucs.user.username === self.chat_session.username) {
-            _results.push(ucs);
-          }
-        }
-        return _results;
-      })())[0];
     };
 
     Chat.prototype.activate = function() {
@@ -290,12 +268,12 @@
       }
       $messages_el = this.chat_el.find('.messages');
       $messages_inner_el = this.chat_el.find('.messages-inner');
-      if (!animate) {
-        return $message_el.scrollTop($messages_inner_el.outerHeight());
-      } else {
+      if (animate) {
         return $messages_el.animate({
           scrollTop: $messages_inner_el.outerHeight()
         }, 1000);
+      } else {
+        return $messages_el.scrollTop($messages_inner_el.outerHeight());
       }
     };
 
@@ -321,28 +299,15 @@
   })();
 
   ChatApp = (function() {
-    var chat_session, chats, conn, user_list, user_state;
 
     function ChatApp() {
-      this.init = __bind(this.init, this);
-
-    }
-
-    chat_session = null;
-
-    conn = null;
-
-    user_state = null;
-
-    user_list = null;
-
-    chats = {};
-
-    ChatApp.prototype.init = function() {
+      this.connect = __bind(this.connect, this);
+      this.chat_session = null;
+      this.chats = {};
       this.connect();
       this.user_state = new UserState(this.conn);
-      return this.user_list = new UserList(this.conn);
-    };
+      this.user_list = new UserList(this.conn);
+    }
 
     ChatApp.prototype.debug_log = function(msg) {
       var control, now;
@@ -384,7 +349,7 @@
         _results = [];
         for (_i = 0, _len = chats.length; _i < _len; _i++) {
           chat = chats[_i];
-          _results.push(_this.chats[chat.uuid] = new Chat(_this.conn, chat));
+          _results.push(_this.chats[chat.uuid] = new Chat(_this.conn, _this.chat_session, chat));
         }
         return _results;
       });
@@ -405,10 +370,10 @@
         return _this.user_list.set_user_list(users);
       });
       this.conn.on('ev_chat_created', function(chat) {
-        return _this.chats[chat.uuid] = new Chat(_this.conn, chat);
+        return _this.chats[chat.uuid] = new Chat(_this.conn, _this.chat_session, chat);
       });
       this.conn.on('ev_you_were_added', function(chat) {
-        return _this.chats[chat.uuid] = new Chat(_this.conn, chat);
+        return _this.chats[chat.uuid] = new Chat(_this.conn, _this.chat_session, chat);
       });
       this.conn.on('ev_chat_user_added', function(chat_uuid, username, users) {
         return _this.chats[chat_uuid].participant_list.set_participant_list(users);
@@ -432,9 +397,7 @@
   })();
 
   $(function() {
-    var chat_app;
-    chat_app = new ChatApp();
-    return chat_app.init();
+    return new ChatApp();
   });
 
 }).call(this);

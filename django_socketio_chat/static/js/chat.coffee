@@ -1,5 +1,4 @@
 class UserState
-    session_state_el = null
 
     constructor: (@conn) ->
         @session_state_el = $('.session-state')
@@ -62,8 +61,6 @@ class UserState
 
 
 class UserList
-    conn = null
-    user_list_el = null
 
     constructor: (@conn) ->
         @user_list_el = $('.users .user-list')
@@ -90,36 +87,33 @@ class UserList
 
 
 class ParticipantList
-    participant_list_el = null
 
-    constructor: (@conn, chat_el, users) ->
+    constructor: (@conn, chat_el, user_chat_statuses) ->
         @participant_list_el = $('<ul class="participant-list unstyled" />')
-        @set_participant_list(users)
+        @set_participant_list(user_chat_statuses)
 
-        chat_el.find('.chat-header').append(participant_list_el)
+        chat_el.find('.chat-header').append(@participant_list_el)
 
-    set_participant_list: (users) =>
+    set_participant_list: (user_chat_statuses) =>
         # TODO: exclude yourself from participant list
-        # users = (ucs.user for ucs in user_chat_statuses when ucs.user.username != @conn.chat_session.username)
+        # user_chat_statuses = (ucs.user for ucs in user_chat_statuses when ucs.user.username != @conn.chat_session.username)
         @participant_list_el.empty()
 
-        for user in users
-            $user_el = $("<li class=\"#{user.status}\">#{user.username}</li>")
+        for user_chat_status in user_chat_statuses
+            $user_el = $("<li class=\"#{user_chat_status.user.status}\">#{user_chat_status.user.username}</li>")
             @participant_list_el.append($user_el)
 
 
 class Chat
-    chat_el = null
-    participant_list = null
 
-    constructor: (@conn, chat) ->
+    constructor: (@conn, @chat_session, @chat) ->
         @chat_el = $("""
         <div id=\"chat-#{chat.uuid}\" class="chat well well-small">
             <div class="chat-header toggle-active clearfix"></div>
         </div>""")
 
         # append participant list to chat header
-        @participant_list = new ParticipantList(@conn, @chat_el, chat.users)
+        @participant_list = new ParticipantList(@conn, @chat_el, @chat.user_chat_statuses)
 
         # append chat controls to chat header
         @chat_el.find('.chat-header').after($("""
@@ -146,9 +140,8 @@ class Chat
         </div>""")
         @chat_el.append($message_input_el)
 
-        $message_input = $message_input_el.find('input')
         self = this
-        $message_input.keypress (e) ->
+        $message_input_el.find('input').keypress (e) ->
             if e.which == 13 # Enter keycode
                 e.preventDefault()
                 if this.value == ''
@@ -170,30 +163,35 @@ class Chat
         $chat_active_toggle.mousedown (e) =>
             e.preventDefault()
 
-        # show user list to add a new user to the chat
+        # show user list to add a new user to the chat click event
         @chat_el.find('.btn-show-add-user-list').click (e) =>
             e.preventDefault()
             @update_add_user_list(chat.uuid)
 
-        # archive chat
+        # archive chat click event
         @chat_el.find('.archive').click (e) =>
             e.preventDefault()
             @conn.emit('req_chat_archive', chat.uuid)
 
         # append chat to chat-list
-        $chat_list = $('.chat-list')
-        $chat_list.append(@chat_el)
+        $('.chat-list').append(@chat_el)
 
-        user_chat_status = @get_user_chat_status(chat.user_chat_statuses)
-        if user_chat_status.status == 'active'
-            @ui_chat_activate(chat.uuid)
-        else if user_chat_status.status == 'inactive'
-            @ui_chat_deactivate(chat.uuid)
-            @ui_chat_set_unread_messages(chat.uuid, user_chat_status.unread_messages)
-        if chat.messages.length > 0
+        if @is_active
+            @activate()
+        else
+            @deactivate()
+            @set_unread_messages(user_chat_status.unread_messages)
+
+        # add messages
+        if @chat.messages.length > 0
             for message in chat.messages
                 @add_message(message)
             @ui_scroll_down()
+
+    is_active: =>
+        for ucs in @chat.user_chat_statuses
+            if ucs.user.username == @chat_session.username
+                return true
 
     add_message: (message, user_chat_statuses) =>
 
@@ -201,20 +199,16 @@ class Chat
             timestamp = new Date(timestamp)
             return ('0' + timestamp.getHours()).slice(-2) + ':' + ('0' + timestamp.getMinutes()).slice(-2)
 
-        $message_el = """
+        $message_el = $("""
         <blockquote id=\"message-#{message.uuid}\" class="message
             #{if message.user_from__username == @chat_session.username then ' pull-right\"' else '\"'}>
             <p class="msg-body">#{message.message_body}</p>
             <small class="msg-sender-timestamp">#{message.user_from__username} - #{stamp(message.timestamp)}</small>
-        </blockquote>"""
+        </blockquote>""")
         @chat_el.find('.messages-inner').append($message_el)
 
         # scroll the ui down, animated
         @ui_scroll_down(true)
-
-    get_user_chat_status: (user_chat_statuses) =>
-        self = this
-        (ucs for ucs in user_chat_statuses when ucs.user.username == self.chat_session.username)[0]
 
     activate: =>
         @chat_el.find('.toggle-active').addClass('js_active')
@@ -253,11 +247,11 @@ class Chat
         $messages_el = @chat_el.find('.messages')
         $messages_inner_el = @chat_el.find('.messages-inner')
 
-        if not animate
-            $message_el.scrollTop($messages_inner_el.outerHeight())
-        else
+        if animate
             $messages_el.animate
                 scrollTop: $messages_inner_el.outerHeight(), 1000
+        else
+            $messages_el.scrollTop($messages_inner_el.outerHeight())
 
     update_add_user_list: (chat_uuid) =>
         chat = $("#chat-#{chat_uuid}")
@@ -270,13 +264,10 @@ class Chat
 
 
 class ChatApp
-    chat_session = null
-    conn = null
-    user_state = null
-    user_list = null
-    chats = {}
 
-    init: =>
+    constructor: ->
+        @chat_session = null
+        @chats = {}
         @connect()
         @user_state = new UserState(@conn)
         @user_list = new UserList(@conn)
@@ -286,7 +277,7 @@ class ChatApp
         now = new Date()
         control.append(now.toLocaleTimeString() + ': ' + msg + '<br/>')
 
-    connect: ->
+    connect: =>
         @conn = io.connect 'https://' + window.location.host,
         'force_new_connection': false
         'rememberTransport': true
@@ -318,7 +309,7 @@ class ChatApp
 
             # init all chats
             for chat in chats
-                @chats[chat.uuid] = new Chat(@conn, chat)
+                @chats[chat.uuid] = new Chat(@conn, @chat_session, chat)
 
         @conn.on 'disconnect', (data) =>
             @debug_log('Disconnect')
@@ -337,10 +328,10 @@ class ChatApp
             @user_list.set_user_list(users)
 
         @conn.on 'ev_chat_created', (chat) =>
-            @chats[chat.uuid] = new Chat(@conn, chat)
+            @chats[chat.uuid] = new Chat(@conn, @chat_session, chat)
 
         @conn.on 'ev_you_were_added', (chat) =>
-            @chats[chat.uuid] = new Chat(@conn, chat)
+            @chats[chat.uuid] = new Chat(@conn, @chat_session, chat)
 
         @conn.on 'ev_chat_user_added', (chat_uuid, username, users) =>
             # TODO: remove username arg
@@ -361,6 +352,5 @@ class ChatApp
 
 
 $(->
-    chat_app = new ChatApp()
-    chat_app.init()
+    new ChatApp()
 )
