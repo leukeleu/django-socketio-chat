@@ -88,12 +88,20 @@
       this.conn = conn;
       this.set_user_list = __bind(this.set_user_list, this);
 
+      this.get_user_list = __bind(this.get_user_list, this);
+
       this.user_list_el = $('.users .user-list');
+      this.user_list = [];
     }
+
+    UserList.prototype.get_user_list = function() {
+      return this.user_list;
+    };
 
     UserList.prototype.set_user_list = function(users) {
       var $user_el, user, _i, _len, _results,
         _this = this;
+      this.user_list = users;
       this.user_list_el.empty();
       _results = [];
       for (_i = 0, _len = users.length; _i < _len; _i++) {
@@ -117,6 +125,9 @@
     function ParticipantList(conn, chat_session, chat_el, user_chat_statuses) {
       this.conn = conn;
       this.chat_session = chat_session;
+      this.user_chat_statuses = user_chat_statuses;
+      this.set_user_status = __bind(this.set_user_status, this);
+
       this.set_participant_list = __bind(this.set_participant_list, this);
 
       this.participant_list_el = $('<ul class="participant-list unstyled" />');
@@ -126,12 +137,13 @@
 
     ParticipantList.prototype.set_participant_list = function(user_chat_statuses) {
       var $user_el, user_chat_status, _i, _len, _results;
+      this.user_chat_statuses = user_chat_statuses;
       this.participant_list_el.empty();
       _results = [];
       for (_i = 0, _len = user_chat_statuses.length; _i < _len; _i++) {
         user_chat_status = user_chat_statuses[_i];
         if (user_chat_status.user.username !== this.chat_session.username) {
-          $user_el = $("<li class=\"" + user_chat_status.user.status + "\">" + user_chat_status.user.username + "</li>");
+          $user_el = $("<li class=\"" + user_chat_status.user.status + " " + user_chat_status.user.username + "\">" + user_chat_status.user.username + "</li>");
           _results.push(this.participant_list_el.append($user_el));
         } else {
           _results.push(void 0);
@@ -140,18 +152,31 @@
       return _results;
     };
 
+    ParticipantList.prototype.set_user_status = function(username, status) {
+      var ucs, _i, _len, _ref;
+      _ref = this.user_chat_statuses;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        ucs = _ref[_i];
+        if (ucs.user.username === username) {
+          ucs.user.status = status;
+        }
+      }
+      return this.set_participant_list(this.user_chat_statuses);
+    };
+
     return ParticipantList;
 
   })();
 
   Chat = (function() {
 
-    function Chat(conn, chat_session, chat) {
+    function Chat(conn, chat_session, chat, user_list) {
       var $chat_active_toggle, $message_input_el, $messages_el, message, self, _i, _len, _ref,
         _this = this;
       this.conn = conn;
       this.chat_session = chat_session;
       this.chat = chat;
+      this.user_list = user_list;
       this.update_add_user_list = __bind(this.update_add_user_list, this);
 
       this.ui_scroll_down = __bind(this.ui_scroll_down, this);
@@ -202,7 +227,7 @@
       });
       this.chat_el.find('.btn-show-add-user-list').click(function(e) {
         e.preventDefault();
-        return _this.update_add_user_list(chat.uuid);
+        return _this.update_add_user_list();
       });
       this.chat_el.find('.archive').click(function(e) {
         e.preventDefault();
@@ -297,21 +322,22 @@
       }
     };
 
-    Chat.prototype.update_add_user_list = function(chat_uuid) {
-      var $chat_user_list, chat, user, _i, _len, _ref,
+    Chat.prototype.update_add_user_list = function() {
+      var $chat_user_list, user, _i, _len, _ref, _results,
         _this = this;
-      chat = $("#chat-" + chat_uuid);
-      $chat_user_list = chat.find('.chat-controls .chat-user-list');
+      $chat_user_list = this.chat_el.find('.chat-user-list');
       $chat_user_list.empty();
-      _ref = this.chat_users;
+      _ref = this.user_list.get_user_list();
+      _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         user = _ref[_i];
-        $chat_user_list.append("<li><a href=\"#\" class=\"user-add\" data-username=\"" + user.username + "\"><i class=\"icon-user\"></i> " + user.username + "</a></li>");
+        $chat_user_list.append($("<li>\n    <a href=\"#\" class=\"user-add\" data-username=\"" + user.username + "\">\n        <i class=\"icon-user\"></i>\n        " + user.username + "\n    </a>\n</li>"));
+        _results.push($chat_user_list.on('click', '.user-add', function(e) {
+          e.preventDefault();
+          return _this.conn.emit('req_chat_add_user', _this.chat.uuid, $(e.target).data('username'));
+        }));
       }
-      return $chat_user_list.on('click', '.user-add', function(e) {
-        e.preventDefault();
-        return _this.conn.emit('req_chat_add_user', chat_uuid, $(e.target).data('username'));
-      });
+      return _results;
     };
 
     return Chat;
@@ -372,7 +398,7 @@
         _results = [];
         for (_i = 0, _len = chats.length; _i < _len; _i++) {
           chat = chats[_i];
-          _results.push(_this.chats[chat.uuid] = new Chat(_this.conn, _this.chat_session, chat));
+          _results.push(_this.chats[chat.uuid] = new Chat(_this.conn, _this.chat_session, chat, _this.user_list));
         }
         return _results;
       });
@@ -381,25 +407,49 @@
         return _this.conn = null;
       });
       this.conn.on('ev_user_became_available', function(username, users) {
+        var chat, chat_uuid, _ref, _results;
         _this.debug_log("" + username + " became available.");
-        return _this.user_list.set_user_list(users);
+        _this.user_list.set_user_list(users);
+        _ref = _this.chats;
+        _results = [];
+        for (chat_uuid in _ref) {
+          chat = _ref[chat_uuid];
+          _results.push(chat.participant_list.set_user_status(username, 'available'));
+        }
+        return _results;
       });
       this.conn.on('ev_user_became_busy', function(username, users) {
+        var chat, chat_uuid, _ref, _results;
         _this.debug_log("" + username + " became busy.");
-        return _this.user_list.set_user_list(users);
+        _this.user_list.set_user_list(users);
+        _ref = _this.chats;
+        _results = [];
+        for (chat_uuid in _ref) {
+          chat = _ref[chat_uuid];
+          _results.push(chat.participant_list.set_user_status(username, 'busy'));
+        }
+        return _results;
       });
       this.conn.on('ev_user_signed_off', function(username, users) {
+        var chat, chat_uuid, _ref, _results;
         _this.debug_log("" + username + " signed off.");
-        return _this.user_list.set_user_list(users);
+        _this.user_list.set_user_list(users);
+        _ref = _this.chats;
+        _results = [];
+        for (chat_uuid in _ref) {
+          chat = _ref[chat_uuid];
+          _results.push(chat.participant_list.set_user_status(username, 'offline'));
+        }
+        return _results;
       });
       this.conn.on('ev_chat_created', function(chat) {
-        return _this.chats[chat.uuid] = new Chat(_this.conn, _this.chat_session, chat);
+        return _this.chats[chat.uuid] = new Chat(_this.conn, _this.chat_session, chat, _this.user_list);
       });
       this.conn.on('ev_you_were_added', function(chat) {
-        return _this.chats[chat.uuid] = new Chat(_this.conn, _this.chat_session, chat);
+        return _this.chats[chat.uuid] = new Chat(_this.conn, _this.chat_session, chat, _this.user_list);
       });
-      this.conn.on('ev_chat_user_added', function(chat_uuid, username, users) {
-        return _this.chats[chat_uuid].participant_list.set_participant_list(users);
+      this.conn.on('ev_chat_user_added', function(chat_uuid, username, user_chat_statuses) {
+        return _this.chats[chat_uuid].participant_list.set_participant_list(user_chat_statuses);
       });
       this.conn.on('ev_message_sent', function(message, user_chat_statuses) {
         return _this.chats[message.chat__uuid].new_message(message, user_chat_statuses);
