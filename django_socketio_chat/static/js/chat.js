@@ -168,7 +168,7 @@
   Chat = (function() {
 
     function Chat(conn, chat_session, chat, user_list) {
-      var $chat_active_toggle, $message_input_el, $messages_el, message, self, _i, _len, _ref,
+      var $chat_active_toggle, $message_input_el, $messages_el, message, self, ucs, _i, _j, _len, _len1, _ref, _ref1,
         _this = this;
       this.conn = conn;
       this.chat_session = chat_session;
@@ -235,12 +235,18 @@
         this.activate();
       } else {
         this.deactivate();
-        this.set_unread_messages(user_chat_status.unread_messages);
+        _ref = this.chat.user_chat_statuses;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          ucs = _ref[_i];
+          if (ucs.user.username === this.chat_session.username) {
+            this.set_unread_messages(ucs.unread_messages);
+          }
+        }
       }
       if (this.chat.messages.length > 0) {
-        _ref = chat.messages;
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          message = _ref[_i];
+        _ref1 = chat.messages;
+        for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+          message = _ref1[_j];
           this.add_message(message);
         }
         this.ui_scroll_down();
@@ -258,7 +264,7 @@
       }
     };
 
-    Chat.prototype.add_message = function(message, user_chat_statuses) {
+    Chat.prototype.add_message = function(message) {
       var $message_el, stamp,
         _this = this;
       stamp = function(timestamp) {
@@ -270,7 +276,14 @@
     };
 
     Chat.prototype.new_message = function(message, user_chat_statuses) {
-      this.add_message(message, user_chat_statuses);
+      var ucs, _i, _len;
+      this.add_message(message);
+      for (_i = 0, _len = user_chat_statuses.length; _i < _len; _i++) {
+        ucs = user_chat_statuses[_i];
+        if (ucs.user.username === this.chat_session.username) {
+          this.set_unread_messages(ucs.unread_messages);
+        }
+      }
       return this.ui_scroll_down(true);
     };
 

@@ -198,7 +198,9 @@ class Chat
             @activate()
         else
             @deactivate()
-            @set_unread_messages(user_chat_status.unread_messages)
+            for ucs in @chat.user_chat_statuses
+                if ucs.user.username == @chat_session.username
+                    @set_unread_messages(ucs.unread_messages)
 
         # add messages
         if @chat.messages.length > 0
@@ -211,7 +213,7 @@ class Chat
             if ucs.user.username == @chat_session.username and  ucs.status == 'active'
                 return true
 
-    add_message: (message, user_chat_statuses) =>
+    add_message: (message) =>
 
         stamp = (timestamp) =>
             timestamp = new Date(timestamp)
@@ -226,7 +228,13 @@ class Chat
         @chat_el.find('.messages-inner').append($message_el)
 
     new_message: (message, user_chat_statuses) =>
-        @add_message(message, user_chat_statuses)
+        @add_message(message)
+
+        # set unread message count
+        for ucs in user_chat_statuses
+            if ucs.user.username == @chat_session.username
+                @set_unread_messages(ucs.unread_messages)
+
         @ui_scroll_down(true)
 
     activate: =>
@@ -368,7 +376,6 @@ class ChatApp
             @chats[chat_uuid].participant_list.set_participant_list(user_chat_statuses)
 
         @conn.on 'ev_message_sent', (message, user_chat_statuses) =>
-            # TODO: cleanup user_chat_statuses (unread messages)
             @chats[message.chat__uuid].new_message(message, user_chat_statuses)
 
         @conn.on 'ev_chat_activated', (chat_uuid) =>
