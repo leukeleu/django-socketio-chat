@@ -4,7 +4,7 @@ class UserState
     constructor: (@conn) ->
         @session_state_el = $('.session-state')
 
-        session_state_dropdown = """
+        session_state_dropdown_el = $("""
         <div class="btn-group">
             <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
                 <span class="state"></span>
@@ -16,20 +16,20 @@ class UserState
                 <li><a class="become-invisible" href="#">Invisible</a></li>
                 <li><a class="sign-off" href="#">Sign off</a></li>
             </ul>
-        </div>"""
+        </div>""")
 
-        @session_state_el.html(session_state_dropdown)
+        @session_state_el.html(session_state_dropdown_el)
 
-        session_state_dropdown.find('.become-available').click (e) =>
+        session_state_dropdown_el.find('.become-available').click (e) =>
             e.preventDefault()
             @conn.emit('req_user_become_available')
-        session_state_dropdown.find('.become-busy').click (e) =>
+        session_state_dropdown_el.find('.become-busy').click (e) =>
             e.preventDefault()
             @conn.emit('req_user_become_busy')
-        session_state_dropdown.find('.become-invisible').click (e) =>
+        session_state_dropdown_el.find('.become-invisible').click (e) =>
             e.preventDefault()
             @conn.emit('req_user_become_invisible')
-        session_state_dropdown.find('.sign-off').click (e) =>
+        session_state_dropdown_el.find('.sign-off').click (e) =>
             e.preventDefault()
             @conn.emit('req_user_sign_off')
 
@@ -93,7 +93,7 @@ class ParticipantList
     participant_list_el = null
 
     constructor: (@conn, chat_el, users) ->
-        @participant_list_el = $("<ul class=\"participant-list unstyled\" />")
+        @participant_list_el = $('<ul class="participant-list unstyled" />')
         @set_participant_list(users)
 
         chat_el.find('.chat-header').append(participant_list_el)
@@ -101,7 +101,6 @@ class ParticipantList
     set_participant_list: (users) =>
         # TODO: exclude yourself from participant list
         # users = (ucs.user for ucs in user_chat_statuses when ucs.user.username != @conn.chat_session.username)
-
         @participant_list_el.empty()
 
         for user in users
@@ -167,7 +166,7 @@ class Chat
             else
                 @conn.emit('req_chat_activate', chat.uuid)
 
-        # prevent text selection
+        # prevent text selection in chat header
         $chat_active_toggle.mousedown (e) =>
             e.preventDefault()
 
@@ -192,81 +191,73 @@ class Chat
             @ui_chat_deactivate(chat.uuid)
             @ui_chat_set_unread_messages(chat.uuid, user_chat_status.unread_messages)
         if chat.messages.length > 0
-            @update_chats_chat_messages_ui(chat.messages)
+            for message in chat.messages
+                @add_message(message)
+            @ui_scroll_down()
 
     add_message: (message, user_chat_statuses) =>
 
-
-    get_user_chat_status: (user_chat_statuses) =>
-        self = this
-        (ucs for ucs in user_chat_statuses when ucs.user.username == self.chat_session.username)[0]
-
-    activate: (chat_uuid) =>
-        chat = $("#chat-#{chat_uuid}")
-        toggle = chat.find('.toggle-active')
-        toggle.addClass('js_active')
-
-        # show messages
-        chat.find('.messages').show()
-        chat.find('.message-input').show()
-        @ui_chat_clear_unread_messages(chat_uuid)
-        @ui_chat_scroll_down(chat_uuid)
-
-    deactivate: (chat_uuid) =>
-        chat = $("#chat-#{chat_uuid}")
-        toggle = chat.find('.toggle-active')
-        toggle.removeClass('js_active')
-
-        # hide messages
-        chat.find('.messages').hide()
-        chat.find('.message-input').hide()
-
-    archive: (chat_uuid) =>
-        chat = $("#chat-#{chat_uuid}")
-        chat.remove()
-
-    ui_chat_set_unread_messages: (chat_uuid, count) =>
-        chat = $("#chat-#{chat_uuid}")
-        unread_messages = chat.find('.unread-messages')
-        if count > 0
-            unread_messages
-                .html(count)
-                .addClass('active')
-        else
-            unread_messages.removeClass('active')
-
-    ui_chat_clear_unread_messages: (chat_uuid) =>
-        chat = $("#chat-#{chat_uuid}")
-        chat.find('.unread-messages').html('')
-
-    update_chats_chat_messages_ui: (messages) =>
-        (@update_chats_chat_messages_message_ui(message) for message in messages)
-        @ui_chat_scroll_down(messages[0].chat__uuid)
-
-    update_chats_chat_messages_message_ui: (message) =>
-        $chat_messages_el = $("#chat-#{message.chat__uuid} .messages-inner")
         stamp = (timestamp) =>
             timestamp = new Date(timestamp)
             return ('0' + timestamp.getHours()).slice(-2) + ':' + ('0' + timestamp.getMinutes()).slice(-2)
-        s = """
+
+        $message_el = """
         <blockquote id=\"message-#{message.uuid}\" class="message
             #{if message.user_from__username == @chat_session.username then ' pull-right\"' else '\"'}>
             <p class="msg-body">#{message.message_body}</p>
             <small class="msg-sender-timestamp">#{message.user_from__username} - #{stamp(message.timestamp)}</small>
         </blockquote>"""
-        $chat_messages_el.append($(s))
+        @chat_el.find('.messages-inner').append($message_el)
 
-    ui_chat_scroll_down: (chat_uuid, animate=false) =>
-        $wpr = $("#chat-#{chat_uuid} .messages")
-        $msgs = $wpr.find('.messages-inner')
-        if not animate
-            $wpr.scrollTop($msgs.outerHeight())
+        # scroll the ui down, animated
+        @ui_scroll_down(true)
+
+    get_user_chat_status: (user_chat_statuses) =>
+        self = this
+        (ucs for ucs in user_chat_statuses when ucs.user.username == self.chat_session.username)[0]
+
+    activate: =>
+        @chat_el.find('.toggle-active').addClass('js_active')
+
+        # show messages
+        @chat_el
+            .find('.messages').show()
+            .find('.message-input').show()
+
+        @set_unread_messages()
+        @ui_scroll_down()
+
+    deactivate: =>
+        @chat_el.find('.toggle-active').removeClass('js_active')
+
+        # hide messages
+        @chat_el
+            .find('.messages').hide()
+            .find('.message-input').hide()
+
+    archive: =>
+        @chat_el.remove()
+
+    set_unread_messages: (count=0) =>
+        unread_messages = @chat_el.find('.unread-messages')
+        if count > 0
+            unread_messages
+                .html(count)
+                .addClass('active')
         else
-            $wpr.animate
-                scrollTop: $msgs.outerHeight(), 1000
+            unread_messages
+                .html('')
+                .removeClass('active')
 
-    ui_animate_new_message: (chat_uuid) =>
-        @ui_chat_scroll_down(chat_uuid, animate=true)
+    ui_scroll_down: (animate=false) =>
+        $messages_el = @chat_el.find('.messages')
+        $messages_inner_el = @chat_el.find('.messages-inner')
+
+        if not animate
+            $message_el.scrollTop($messages_inner_el.outerHeight())
+        else
+            $messages_el.animate
+                scrollTop: $messages_inner_el.outerHeight(), 1000
 
     update_add_user_list: (chat_uuid) =>
         chat = $("#chat-#{chat_uuid}")

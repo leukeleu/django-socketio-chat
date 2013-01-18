@@ -9,7 +9,7 @@
     session_state_el = null;
 
     function UserState(conn) {
-      var session_state_dropdown,
+      var session_state_dropdown_el,
         _this = this;
       this.conn = conn;
       this.set_signed_off = __bind(this.set_signed_off, this);
@@ -21,21 +21,21 @@
       this.set_available = __bind(this.set_available, this);
 
       this.session_state_el = $('.session-state');
-      session_state_dropdown = "<div class=\"btn-group\">\n    <a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">\n        <span class=\"state\"></span>\n        <span class=\"caret\"></span>\n    </a>\n    <ul class=\"dropdown-menu right-align-dropdown\">\n        <li><a class=\"become-available\" href=\"#\">Available</a></li>\n        <li><a class=\"become-busy\" href=\"#\">Busy</a></li>\n        <li><a class=\"become-invisible\" href=\"#\">Invisible</a></li>\n        <li><a class=\"sign-off\" href=\"#\">Sign off</a></li>\n    </ul>\n</div>";
-      this.session_state_el.html(session_state_dropdown);
-      session_state_dropdown.find('.become-available').click(function(e) {
+      session_state_dropdown_el = $("<div class=\"btn-group\">\n    <a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">\n        <span class=\"state\"></span>\n        <span class=\"caret\"></span>\n    </a>\n    <ul class=\"dropdown-menu right-align-dropdown\">\n        <li><a class=\"become-available\" href=\"#\">Available</a></li>\n        <li><a class=\"become-busy\" href=\"#\">Busy</a></li>\n        <li><a class=\"become-invisible\" href=\"#\">Invisible</a></li>\n        <li><a class=\"sign-off\" href=\"#\">Sign off</a></li>\n    </ul>\n</div>");
+      this.session_state_el.html(session_state_dropdown_el);
+      session_state_dropdown_el.find('.become-available').click(function(e) {
         e.preventDefault();
         return _this.conn.emit('req_user_become_available');
       });
-      session_state_dropdown.find('.become-busy').click(function(e) {
+      session_state_dropdown_el.find('.become-busy').click(function(e) {
         e.preventDefault();
         return _this.conn.emit('req_user_become_busy');
       });
-      session_state_dropdown.find('.become-invisible').click(function(e) {
+      session_state_dropdown_el.find('.become-invisible').click(function(e) {
         e.preventDefault();
         return _this.conn.emit('req_user_become_invisible');
       });
-      session_state_dropdown.find('.sign-off').click(function(e) {
+      session_state_dropdown_el.find('.sign-off').click(function(e) {
         e.preventDefault();
         return _this.conn.emit('req_user_sign_off');
       });
@@ -120,7 +120,7 @@
       this.conn = conn;
       this.set_participant_list = __bind(this.set_participant_list, this);
 
-      this.participant_list_el = $("<ul class=\"participant-list unstyled\" />");
+      this.participant_list_el = $('<ul class="participant-list unstyled" />');
       this.set_participant_list(users);
       chat_el.find('.chat-header').append(participant_list_el);
     }
@@ -149,22 +149,14 @@
     participant_list = null;
 
     function Chat(conn, chat) {
-      var $chat_active_toggle, $chat_list, $message_input, $message_input_el, $messages_el, self, user_chat_status,
+      var $chat_active_toggle, $chat_list, $message_input, $message_input_el, $messages_el, message, self, user_chat_status, _i, _len, _ref,
         _this = this;
       this.conn = conn;
       this.update_add_user_list = __bind(this.update_add_user_list, this);
 
-      this.ui_animate_new_message = __bind(this.ui_animate_new_message, this);
+      this.ui_scroll_down = __bind(this.ui_scroll_down, this);
 
-      this.ui_chat_scroll_down = __bind(this.ui_chat_scroll_down, this);
-
-      this.update_chats_chat_messages_message_ui = __bind(this.update_chats_chat_messages_message_ui, this);
-
-      this.update_chats_chat_messages_ui = __bind(this.update_chats_chat_messages_ui, this);
-
-      this.ui_chat_clear_unread_messages = __bind(this.ui_chat_clear_unread_messages, this);
-
-      this.ui_chat_set_unread_messages = __bind(this.ui_chat_set_unread_messages, this);
+      this.set_unread_messages = __bind(this.set_unread_messages, this);
 
       this.archive = __bind(this.archive, this);
 
@@ -225,11 +217,26 @@
         this.ui_chat_set_unread_messages(chat.uuid, user_chat_status.unread_messages);
       }
       if (chat.messages.length > 0) {
-        this.update_chats_chat_messages_ui(chat.messages);
+        _ref = chat.messages;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          message = _ref[_i];
+          this.add_message(message);
+        }
+        this.ui_scroll_down();
       }
     }
 
-    Chat.prototype.add_message = function(message, user_chat_statuses) {};
+    Chat.prototype.add_message = function(message, user_chat_statuses) {
+      var $message_el, stamp,
+        _this = this;
+      stamp = function(timestamp) {
+        timestamp = new Date(timestamp);
+        return ('0' + timestamp.getHours()).slice(-2) + ':' + ('0' + timestamp.getMinutes()).slice(-2);
+      };
+      $message_el = "<blockquote id=\"message-" + message.uuid + "\" class=\"message\n    " + (message.user_from__username === this.chat_session.username ? ' pull-right\"' : '\"') + ">\n    <p class=\"msg-body\">" + message.message_body + "</p>\n    <small class=\"msg-sender-timestamp\">" + message.user_from__username + " - " + (stamp(message.timestamp)) + "</small>\n</blockquote>";
+      this.chat_el.find('.messages-inner').append($message_el);
+      return this.ui_scroll_down(true);
+    };
 
     Chat.prototype.get_user_chat_status = function(user_chat_statuses) {
       var self, ucs;
@@ -247,89 +254,49 @@
       })())[0];
     };
 
-    Chat.prototype.activate = function(chat_uuid) {
-      var chat, toggle;
-      chat = $("#chat-" + chat_uuid);
-      toggle = chat.find('.toggle-active');
-      toggle.addClass('js_active');
-      chat.find('.messages').show();
-      chat.find('.message-input').show();
-      this.ui_chat_clear_unread_messages(chat_uuid);
-      return this.ui_chat_scroll_down(chat_uuid);
+    Chat.prototype.activate = function() {
+      this.chat_el.find('.toggle-active').addClass('js_active');
+      this.chat_el.find('.messages').show().find('.message-input').show();
+      this.set_unread_messages();
+      return this.ui_scroll_down();
     };
 
-    Chat.prototype.deactivate = function(chat_uuid) {
-      var chat, toggle;
-      chat = $("#chat-" + chat_uuid);
-      toggle = chat.find('.toggle-active');
-      toggle.removeClass('js_active');
-      chat.find('.messages').hide();
-      return chat.find('.message-input').hide();
+    Chat.prototype.deactivate = function() {
+      this.chat_el.find('.toggle-active').removeClass('js_active');
+      return this.chat_el.find('.messages').hide().find('.message-input').hide();
     };
 
-    Chat.prototype.archive = function(chat_uuid) {
-      var chat;
-      chat = $("#chat-" + chat_uuid);
-      return chat.remove();
+    Chat.prototype.archive = function() {
+      return this.chat_el.remove();
     };
 
-    Chat.prototype.ui_chat_set_unread_messages = function(chat_uuid, count) {
-      var chat, unread_messages;
-      chat = $("#chat-" + chat_uuid);
-      unread_messages = chat.find('.unread-messages');
+    Chat.prototype.set_unread_messages = function(count) {
+      var unread_messages;
+      if (count == null) {
+        count = 0;
+      }
+      unread_messages = this.chat_el.find('.unread-messages');
       if (count > 0) {
         return unread_messages.html(count).addClass('active');
       } else {
-        return unread_messages.removeClass('active');
+        return unread_messages.html('').removeClass('active');
       }
     };
 
-    Chat.prototype.ui_chat_clear_unread_messages = function(chat_uuid) {
-      var chat;
-      chat = $("#chat-" + chat_uuid);
-      return chat.find('.unread-messages').html('');
-    };
-
-    Chat.prototype.update_chats_chat_messages_ui = function(messages) {
-      var message, _i, _len;
-      for (_i = 0, _len = messages.length; _i < _len; _i++) {
-        message = messages[_i];
-        this.update_chats_chat_messages_message_ui(message);
-      }
-      return this.ui_chat_scroll_down(messages[0].chat__uuid);
-    };
-
-    Chat.prototype.update_chats_chat_messages_message_ui = function(message) {
-      var $chat_messages_el, s, stamp,
-        _this = this;
-      $chat_messages_el = $("#chat-" + message.chat__uuid + " .messages-inner");
-      stamp = function(timestamp) {
-        timestamp = new Date(timestamp);
-        return ('0' + timestamp.getHours()).slice(-2) + ':' + ('0' + timestamp.getMinutes()).slice(-2);
-      };
-      s = "<blockquote id=\"message-" + message.uuid + "\" class=\"message\n    " + (message.user_from__username === this.chat_session.username ? ' pull-right\"' : '\"') + ">\n    <p class=\"msg-body\">" + message.message_body + "</p>\n    <small class=\"msg-sender-timestamp\">" + message.user_from__username + " - " + (stamp(message.timestamp)) + "</small>\n</blockquote>";
-      return $chat_messages_el.append($(s));
-    };
-
-    Chat.prototype.ui_chat_scroll_down = function(chat_uuid, animate) {
-      var $msgs, $wpr;
+    Chat.prototype.ui_scroll_down = function(animate) {
+      var $messages_el, $messages_inner_el;
       if (animate == null) {
         animate = false;
       }
-      $wpr = $("#chat-" + chat_uuid + " .messages");
-      $msgs = $wpr.find('.messages-inner');
+      $messages_el = this.chat_el.find('.messages');
+      $messages_inner_el = this.chat_el.find('.messages-inner');
       if (!animate) {
-        return $wpr.scrollTop($msgs.outerHeight());
+        return $message_el.scrollTop($messages_inner_el.outerHeight());
       } else {
-        return $wpr.animate({
-          scrollTop: $msgs.outerHeight()
+        return $messages_el.animate({
+          scrollTop: $messages_inner_el.outerHeight()
         }, 1000);
       }
-    };
-
-    Chat.prototype.ui_animate_new_message = function(chat_uuid) {
-      var animate;
-      return this.ui_chat_scroll_down(chat_uuid, animate = true);
     };
 
     Chat.prototype.update_add_user_list = function(chat_uuid) {
