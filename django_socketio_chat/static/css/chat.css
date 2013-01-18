@@ -70,6 +70,7 @@
 
 .chat .participant-list li:before {
     content: ', ';
+    color: #ccc;
 }
 
 .chat .participant-list li:first-child:before {
