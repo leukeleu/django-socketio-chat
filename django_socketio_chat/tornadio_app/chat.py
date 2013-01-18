@@ -8,7 +8,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 from tornadio2 import SocketConnection, TornadioRouter, SocketServer, event
 from tornado import web
 
-from django.utils.html import escape
+from django.utils.html import escape, urlize
 from django.contrib.auth.models import User
 from django.contrib.sessions.models import Session
 
@@ -204,7 +204,7 @@ class ChatConnection(SocketConnection):
         if not self.user in chat.users.all():
             return
 
-        message = chat.add_message(self.user, escape(message_body))
+        message = chat.add_message(self.user, urlize(escape(message_body)))
         message_obj = prepare_for_emit(serializers.MessageSerializer(message).data)
         user_chat_statuses = chat.user_chat_statuses
         user_chat_statuses_obj = prepare_for_emit(
