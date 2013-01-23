@@ -3,6 +3,7 @@ from django.db import models
 
 from uuidfield import UUIDField
 
+from . import permissions
 
 class ChatSession(models.Model):
     """
@@ -30,11 +31,13 @@ class ChatSession(models.Model):
         """
         Includes users that are not connected, because Django has no notion of theit connection state.
         """
-        return User.objects.exclude(pk=self.user.pk).exclude(chat_session__status=self.SIGNED_OFF)
+        users =  permissions.users_that_see_me(self.user)
+        return users.exclude(pk=self.user.pk).exclude(chat_session__status=self.SIGNED_OFF)
 
     @property
     def users_that_i_see(self):
-        return User.objects.exclude(pk=self.user.pk)
+        users = permissions.users_that_i_see(self.user)
+        return users.exclude(pk=self.user.pk)
 
     @property
     def chats(self):
