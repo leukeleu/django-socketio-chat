@@ -1,6 +1,6 @@
 django==1.4.3
 mysql-python==1.2.3
-tornadio2==2.4.1
+tornadio2==0.0.4
 djangorestframework==2.1.16
 django-uuidfield==0.4.0
 
