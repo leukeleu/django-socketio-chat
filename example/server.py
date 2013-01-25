@@ -7,7 +7,7 @@ from tornado import web
 os.environ['DJANGO_SETTINGS_MODULE'] = 'example.settings'
 
 from django_socketio_chat.tornadio_app import chat
-
+from django.conf import settings
 logging.getLogger().setLevel(logging.INFO)
 
 # Create chat router
@@ -19,8 +19,8 @@ ChatRouter = TornadioRouter(chat.ChatConnection,
 application = web.Application(
     ChatRouter.apply_routes([]),
     socket_io_port=8001,
+    debug=settings.DEBUG
 )
 
 SocketServer(application)
-
 
