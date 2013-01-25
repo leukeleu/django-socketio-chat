@@ -49,40 +49,42 @@ class ChatConnection(SocketConnection):
         """
         Send the user all the relevant chat info if the user has a valid Django session.
         """
-
-        # get Django session
-        cookie = info.get_cookie('sessionid')
-        if cookie:
-            # get User for session
-            try:
-                session = Session.objects.get(session_key=cookie.value)
-                user_id = session.get_decoded().get('_auth_user_id')
-                # `store` user with connection
-                self.user = User.objects.get(pk=user_id)
-            except (User.DoesNotExist, Session.DoesNotExist):
-                return
-            else:
-                self.chat_session, created = ChatSession.objects.get_or_create(user=self.user)
-                reconnected = None
-                if not self.connections.get(self.user):
-                    # The server knows of no active connection for this user
-                    reconnected = True
-                self.connections[self.user] = self.connections.get(self.user, set())
-                self.connections[self.user].add(self)
-
-                if reconnected:
-                    # Notify other users if user is BUSY or AVAILABLE
-                    if self.chat_session.is_available:
-                        self.notify_users_that_see_me('ev_user_became_available')
-                    elif self.chat_session.is_busy:
-                        self.notify_users_that_see_me('ev_user_became_busy')
-
-                if self.chat_session.is_signed_off:
-                    chat_session_obj = prepare_for_emit(serializers.ChatSessionSerializer(self.chat_session).data)
-                    self.emit('ev_chat_session_status', chat_session_obj)
+        try:
+            # get Django session
+            cookie = info.get_cookie('sessionid')
+            if cookie:
+                # get User for session
+                try:
+                    session = Session.objects.get(session_key=cookie.value)
+                    user_id = session.get_decoded().get('_auth_user_id')
+                    # `store` user with connection
+                    self.user = User.objects.get(pk=user_id)
+                except (User.DoesNotExist, Session.DoesNotExist):
                     return
                 else:
-                    self.send_all_chat_info()
+                    self.chat_session, created = ChatSession.objects.get_or_create(user=self.user)
+                    reconnected = None
+                    if not self.connections.get(self.user):
+                        # The server knows of no active connection for this user
+                        reconnected = True
+                    self.connections[self.user] = self.connections.get(self.user, set())
+                    self.connections[self.user].add(self)
+
+                    if reconnected:
+                        # Notify other users if user is BUSY or AVAILABLE
+                        if self.chat_session.is_available:
+                            self.notify_users_that_see_me('ev_user_became_available')
+                        elif self.chat_session.is_busy:
+                            self.notify_users_that_see_me('ev_user_became_busy')
+
+                    if self.chat_session.is_signed_off:
+                        chat_session_obj = prepare_for_emit(serializers.ChatSessionSerializer(self.chat_session).data)
+                        self.emit('ev_chat_session_status', chat_session_obj)
+                        return
+                    else:
+                        self.send_all_chat_info()
+        except Exception, e:
+            logging.error(str(e))
 
     def send_all_chat_info(self):
         chat_session_obj = prepare_for_emit(serializers.ChatSessionSerializer(self.chat_session).data)
@@ -112,16 +114,19 @@ class ChatConnection(SocketConnection):
         If user is invisble, don't notify others, just sign off.
         Else sign off and notify others.
         """
-        logging.info('req_user_sign_off %s' % self.user)
-        if self.chat_session.is_signed_off:
-            return
-        if self.chat_session.is_invisible:
-            self.chat_session.sign_off()
-        else:
-            self.chat_session.sign_off()
-            self.notify_users_that_see_me('ev_user_signed_off')
-        chat_session_obj = prepare_for_emit(serializers.ChatSessionSerializer(self.chat_session).data)
-        self.emit('ev_chat_session_status', chat_session_obj)
+        try:
+            logging.info('req_user_sign_off %s' % self.user)
+            if self.chat_session.is_signed_off:
+                return
+            if self.chat_session.is_invisible:
+                self.chat_session.sign_off()
+            else:
+                self.chat_session.sign_off()
+                self.notify_users_that_see_me('ev_user_signed_off')
+            chat_session_obj = prepare_for_emit(serializers.ChatSessionSerializer(self.chat_session).data)
+            self.emit('ev_chat_session_status', chat_session_obj)
+        except Exception, e:
+            logging.error(str(e))
 
     @event('req_user_become_invisible')
     def become_invisible(self):
@@ -130,133 +135,164 @@ class ChatConnection(SocketConnection):
         If user is signed_off, don't notify others, just change state to invisible.
         Else also notify others.
         """
-        logging.info('req_user_become_invisible %s' % self.user)
-        if self.chat_session.is_invisible:
-            return
-        if self.chat_session.is_signed_off:
-            self.chat_session.become_invisible()
-        else:
-            self.chat_session.become_invisible()
-            self.notify_users_that_see_me('ev_user_signed_off')
-        self.send_all_chat_info()
+        try:
+            logging.info('req_user_become_invisible %s' % self.user)
+            if self.chat_session.is_invisible:
+                return
+            if self.chat_session.is_signed_off:
+                self.chat_session.become_invisible()
+            else:
+                self.chat_session.become_invisible()
+                self.notify_users_that_see_me('ev_user_signed_off')
+            self.send_all_chat_info()
+        except Exception, e:
+            logging.error(str(e))
 
     @event('req_user_become_available')
     def become_available(self):
-        logging.info('req_user_become_available %s' % self.user)
-        if self.chat_session.is_available:
-            return
-        self.chat_session.become_available()
-        self.notify_users_that_see_me('ev_user_became_available')
-        self.send_all_chat_info()
+        try:
+            logging.info('req_user_become_available %s' % self.user)
+            if self.chat_session.is_available:
+                return
+            self.chat_session.become_available()
+            self.notify_users_that_see_me('ev_user_became_available')
+            self.send_all_chat_info()
+        except Exception, e:
+            logging.error(str(e))
+
 
     @event('req_user_become_busy')
     def become_busy(self):
-        logging.info('req_user_become_busy %s' % self.user)
-        if self.chat_session.is_busy:
-            return
-        self.chat_session.become_busy()
-        self.notify_users_that_see_me('ev_user_became_busy')
-        self.send_all_chat_info()
+        try:
+            logging.info('req_user_become_busy %s' % self.user)
+            if self.chat_session.is_busy:
+                return
+            self.chat_session.become_busy()
+            self.notify_users_that_see_me('ev_user_became_busy')
+            self.send_all_chat_info()
+        except Exception, e:
+            logging.error(str(e))
 
     @event('req_chat_create')
     def chat_create(self, username):
-        logging.info('req_chat_create from %s with %s' % (self.user, username))
-        user = User.objects.get(username=username)
-        if user in self.chat_session.users_that_i_see:
-            chat = Chat.start(self.user, [user])
-            chat_obj = prepare_for_emit(CustomChatSerializer(chat).data)
-            for user in chat.users.all():
-                for connection in self.connections.get(user, []):
-                    connection.emit('ev_chat_created', chat_obj)
+        try:
+            logging.info('req_chat_create from %s with %s' % (self.user, username))
+            user = User.objects.get(username=username)
+            if user in self.chat_session.users_that_i_see:
+                chat = Chat.start(self.user, [user])
+                chat_obj = prepare_for_emit(CustomChatSerializer(chat).data)
+                for user in chat.users.all():
+                    for connection in self.connections.get(user, []):
+                        connection.emit('ev_chat_created', chat_obj)
+        except Exception, e:
+            logging.error(str(e))
 
     @event('req_chat_add_user')
     def chat_add_user(self, chat_uuid, username):
-        logging.info('req_chat_add_user from %s with %s' % (self.user, username))
-        chat = Chat.objects.get(uuid=chat_uuid)
-        user = User.objects.get(username=username)
-        if user in self.chat_session.users_that_i_see and self.user in chat.users.all() and user not in chat.users.all():
-            chat.add_users([user])
-            chat_obj = prepare_for_emit(CustomChatSerializer(chat).data)
+        try:
+            logging.info('req_chat_add_user from %s with %s' % (self.user, username))
+            chat = Chat.objects.get(uuid=chat_uuid)
+            user = User.objects.get(username=username)
+            if user in self.chat_session.users_that_i_see and self.user in chat.users.all() and user not in chat.users.all():
+                chat.add_users([user])
+                chat_obj = prepare_for_emit(CustomChatSerializer(chat).data)
+                user_chat_statuses = chat.user_chat_statuses
+                user_chat_statuses_obj = prepare_for_emit(
+                    [CustomUserChatStatusSerializer(ucs).data for ucs in user_chat_statuses.all()])
+
+                # send chat obj to new user
+                for connection in self.connections.get(user, []):
+                    connection.emit('ev_you_were_added', chat_obj)
+
+                # notify all users in chat
+                for user in chat.users.all():
+                    for connection in self.connections.get(user, []):
+                        connection.emit('ev_chat_user_added', chat.uuid.hex, username, user_chat_statuses_obj)
+        except Exception, e:
+            logging.error(str(e))
+
+    @event('req_message_send')
+    def message_send(self, message_body, chat_uuid):
+        try:
+            logging.info('req_message_send from %s with message_body %s' % (self.user, message_body))
+            chat = Chat.objects.get(uuid=chat_uuid)
+
+            if not self.user in chat.users.all():
+                return
+
+            message = chat.add_message(self.user, urlize(escape(message_body)))
+            message_obj = prepare_for_emit(serializers.MessageSerializer(message).data)
             user_chat_statuses = chat.user_chat_statuses
             user_chat_statuses_obj = prepare_for_emit(
                 [CustomUserChatStatusSerializer(ucs).data for ucs in user_chat_statuses.all()])
 
-            # send chat obj to new user
-            for connection in self.connections.get(user, []):
-                connection.emit('ev_you_were_added', chat_obj)
-
-            # notify all users in chat
             for user in chat.users.all():
                 for connection in self.connections.get(user, []):
-                    connection.emit('ev_chat_user_added', chat.uuid.hex, username, user_chat_statuses_obj)
+                    connection.emit('ev_message_sent', message_obj, user_chat_statuses_obj)
 
-    @event('req_message_send')
-    def message_send(self, message_body, chat_uuid):
-        logging.info('req_message_send from %s with message_body %s' % (self.user, message_body))
-        chat = Chat.objects.get(uuid=chat_uuid)
-
-        if not self.user in chat.users.all():
-            return
-
-        message = chat.add_message(self.user, urlize(escape(message_body)))
-        message_obj = prepare_for_emit(serializers.MessageSerializer(message).data)
-        user_chat_statuses = chat.user_chat_statuses
-        user_chat_statuses_obj = prepare_for_emit(
-            [CustomUserChatStatusSerializer(ucs).data for ucs in user_chat_statuses.all()])
-
-        for user in chat.users.all():
-            for connection in self.connections.get(user, []):
-                connection.emit('ev_message_sent', message_obj, user_chat_statuses_obj)
-
-        # Activate any archived user_chat_statusses
-        for user_chat_status in chat.user_chat_statuses.all().filter(status=UserChatStatus.ARCHIVED):
-            user_chat_status.activate()
-            chat_obj = prepare_for_emit(CustomChatSerializer(chat).data)
-            for connection in self.connections.get(user_chat_status.user, []):
-                connection.emit('ev_chat_created', chat_obj)
+            # Activate any archived user_chat_statusses
+            for user_chat_status in chat.user_chat_statuses.all().filter(status=UserChatStatus.ARCHIVED):
+                user_chat_status.activate()
+                chat_obj = prepare_for_emit(CustomChatSerializer(chat).data)
+                for connection in self.connections.get(user_chat_status.user, []):
+                    connection.emit('ev_chat_created', chat_obj)
+        except Exception, e:
+            logging.error(str(e))
 
     @event('req_chat_activate')
     def chat_activate(self, chat_uuid):
         """
         Change the UI state to visible.
         """
-        logging.info('req_chat_activate from %s for chat %s' % (self.user, chat_uuid))
-        chat = Chat.objects.get(uuid=chat_uuid)
-        if self.user in chat.users.all():
-            user_chat_status = chat.user_chat_statuses.get(user=self.user)
-            if user_chat_status.is_inactive:
-                user_chat_status.activate()
-                self.emit('ev_chat_activated', chat.uuid.hex)
+        try:
+            logging.info('req_chat_activate from %s for chat %s' % (self.user, chat_uuid))
+            chat = Chat.objects.get(uuid=chat_uuid)
+            if self.user in chat.users.all():
+                user_chat_status = chat.user_chat_statuses.get(user=self.user)
+                if user_chat_status.is_inactive:
+                    user_chat_status.activate()
+                    self.emit('ev_chat_activated', chat.uuid.hex)
+        except Exception, e:
+            logging.error(str(e))
 
     @event('req_chat_deactivate')
     def chat_deactivate(self, chat_uuid):
         """
         Change the UI state to invisible.
         """
-        logging.info('req_chat_deactivate from %s for chat %s' % (self.user, chat_uuid))
-        chat = Chat.objects.get(uuid=chat_uuid)
-        if self.user in chat.users.all():
-            user_chat_status = chat.user_chat_statuses.get(user=self.user)
-            if user_chat_status.is_active:
-                user_chat_status.deactivate()
-                self.emit('ev_chat_deactivated', chat.uuid.hex)
+        try:
+            logging.info('req_chat_deactivate from %s for chat %s' % (self.user, chat_uuid))
+            chat = Chat.objects.get(uuid=chat_uuid)
+            if self.user in chat.users.all():
+                user_chat_status = chat.user_chat_statuses.get(user=self.user)
+                if user_chat_status.is_active:
+                    user_chat_status.deactivate()
+                    self.emit('ev_chat_deactivated', chat.uuid.hex)
+        except Exception, e:
+            logging.error(str(e))
 
     @event('req_chat_archive')
     def chat_archive(self, chat_uuid):
         """
         Archive the chat.
         """
-        logging.info('req_chat_archive from %s for chat %s' % (self.user, chat_uuid))
-        chat = Chat.objects.get(uuid=chat_uuid)
-        if self.user in chat.users.all():
-            user_chat_status = chat.user_chat_statuses.get(user=self.user)
-            if not user_chat_status.is_archived:
-                user_chat_status.archive()
-                self.emit('ev_chat_archived', chat.uuid.hex)
+        try:
+            logging.info('req_chat_archive from %s for chat %s' % (self.user, chat_uuid))
+            chat = Chat.objects.get(uuid=chat_uuid)
+            if self.user in chat.users.all():
+                user_chat_status = chat.user_chat_statuses.get(user=self.user)
+                if not user_chat_status.is_archived:
+                    user_chat_status.archive()
+                    self.emit('ev_chat_archived', chat.uuid.hex)
+        except Exception, e:
+            logging.error(str(e))
 
     def on_disconnect(self):
         pass
 
     def on_close(self):
-        self.connections.get(self.user, set()).discard(self)
+        try:
+            self.connections.get(self.user, set()).discard(self)
+        except Exception, e:
+            logging.error(str(e))
 
