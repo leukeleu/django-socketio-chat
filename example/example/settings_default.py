@@ -1,5 +1,7 @@
 import os
 
+import django.conf.global_settings as DEFAULT_SETTINGS
+
 # TODO: This is not very safe.
 SESSION_COOKIE_HTTPONLY = False
 
@@ -37,6 +39,8 @@ MEDIA_URL = '/media/'
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATIC_URL = '/static/'
+
+STATICFILES_FINDERS = DEFAULT_SETTINGS.STATICFILES_FINDERS
 
 ROOT_URLCONF = 'example.urls'
 WSGI_APPLICATION = 'example.wsgi.application'
