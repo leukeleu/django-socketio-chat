@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
     name = "django-socketio-chat",
     version = __import__("django_socketio_chat").__version__,
-    author = "Marko Tibold, Niels van Dijk, Dennis Bunskoek",
+    author = "Dennis Bunskoek, Niels van Dijk, Marko Tibold",
     author_email = "info@leukeleu.nl",
     description = ("A Django chat app built on Tornadio2. Requires HAProxy"),
     long_description = open("README.md").read(),
@@ -20,7 +20,7 @@ setup(
             "Environment :: Web Environment",
             "Framework :: Django, SocketIO",
             "Intended Audience :: Developers",
-            "License :: OSI Approved :: BSD License",
+            "License :: OSI Approved :: Apache Software License",
             "Operating System :: POSIX",
             "Programming Language :: Python",
             "Topic :: Internet :: WWW/HTTP",

@@ -50,8 +50,9 @@ By default all users are allowed to chat with anybody.
 
 The example setting below illustrates this:
 
-   DJANGO_SOCKETIO_CHAT = {                                                                                           |~                                                                                                                     
-        'users_that_i_see': permissions.users_that_i_see,                                                              |~                                                                                                                     
-        'users_that_see_me': permissions.users_that_see_me                                                             |~                                                                                                                     
+```python
+   DJANGO_SOCKETIO_CHAT = {
+        'users_that_i_see': permissions.users_that_i_see,
+        'users_that_see_me': permissions.users_that_see_me
     } 
-
+```

@@ -1,3 +1,3 @@
-include README.rst
+include README.md
 recursive-include django_socketio_chat/templates *
 recursive-include django_socketio_chat/static *
