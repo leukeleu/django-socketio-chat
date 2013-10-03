@@ -1,20 +1,18 @@
 # Django - Socket.IO - Tornadio2 - chat over HTTPS
 
-This project is a basic implementation of a Socket.IO chat application, over HTTPS,
-integrated with Django user management.
+This is a basic implementation of a Socket.IO chat application, run over HTTPS, integrated with Django user management.
 
 The server setup is as follows:
 
-                                 ┌─[ 8000 ]-> Django
-                                 │
-    Internet -[ 443 ]-> HAProxy ─┤
-                                 │
-                                 └─[ 8001 ]-> Socket.io
 
-**Note** This project comes with an example HAProxy configuration which listens on port 8443.
+                               ┌─[ 8000 ]-> Django
+                               │
+    Internet -[ 443 ]-> nginx ─┤
+                               │
+                               └─[ 8001 ]-> Socket.IO
 
-HAProxy takes care of ssl encryption and proxying. All socket.io related requests are proxied to
-a small tornadio server.
+
+nginx takes care of SSL decryption and proxying. All websocket requests are proxied to a small Tornadio server.
 
 
 ## Setup
@@ -46,13 +44,11 @@ Create the d-socketio-chat database, and sync it.
 ### Limiting users
 
 You can configure who sees who with two callbacks that take a `user` object and return a queryset of users.
-By default all users are allowed to chat with anybody.
+By default all users are allowed to chat with everyone.
 
 The example setting below illustrates this:
 
-```python
-   DJANGO_SOCKETIO_CHAT = {
+    DJANGO_SOCKETIO_CHAT = {
         'users_that_i_see': permissions.users_that_i_see,
         'users_that_see_me': permissions.users_that_see_me
-    } 
-```
+    }

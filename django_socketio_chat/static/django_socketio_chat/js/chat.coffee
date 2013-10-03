@@ -311,7 +311,7 @@ class ChatApp
         @conn = io.connect 'https://' + window.location.host,
         'force_new_connection': false
         'rememberTransport': true
-        'resource': 'chat/socket.io'
+        'resource': 'websockets/chat'
 
         @debug_log('Connecting...')
 
