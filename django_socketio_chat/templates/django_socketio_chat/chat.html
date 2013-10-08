@@ -1,5 +1,3 @@
-{% load django_socketio_chat_tags %}
-
 <section class="chat-container">
     <div class="user clearfix">
         <h3><i class="icon-user"></i> {{ user.username }}</h3>
@@ -18,12 +16,11 @@
             <div class="chat-list"></div>
         </div>
 
-        {% django_socketio_chat_is_debug %} {# call the templatetags that sets the context #}
-        {% if debug %}
         <div class="debug">
             <h3>Debug</h3>
             <div class="debug-log"></div>
         </div>
-        {% endif %}
+
     </div>
 </section>
+
