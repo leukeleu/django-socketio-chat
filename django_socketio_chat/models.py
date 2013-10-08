@@ -5,6 +5,7 @@ from uuidfield import UUIDField
 
 from . import permissions
 
+
 class ChatSession(models.Model):
     """
     Model for storing session state (signed_in/ signed_off/ invisible)
@@ -25,13 +26,14 @@ class ChatSession(models.Model):
 
     user = models.ForeignKey(User, related_name='chat_session')
     status = models.IntegerField(choices=CHAT_SESSION_STATES, default=AVAILABLE)
+    ui_is_visible = models.BooleanField(default=True)
 
     @property
     def users_that_see_me(self):
         """
         Includes users that are not connected, because Django has no notion of theit connection state.
         """
-        users =  permissions.users_that_see_me(self.user)
+        users = permissions.users_that_see_me(self.user)
         return users.exclude(pk=self.user.pk).exclude(chat_session__status=self.SIGNED_OFF)
 
     @property
@@ -74,6 +76,14 @@ class ChatSession(models.Model):
     @property
     def is_busy(self):
         return self.status == self.BUSY
+
+    def ui_hide(self):
+        self.ui_is_visible = False
+        self.save()
+
+    def ui_show(self):
+        self.ui_is_visible = True
+        self.save()
 
     def get_status(self):
         return self.CHAT_SESSION_STATES[self.status][1]

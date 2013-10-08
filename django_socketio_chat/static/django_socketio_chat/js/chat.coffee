@@ -5,15 +5,18 @@ class UserState
 
         session_state_dropdown_el = $("""
         <div class="btn-group">
-            <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+            <a class="btn chat-toggle">
+                <div class="total-unread-messages badge"></div>
+                <i class="icon-comments"></i>
                 <span class="state"></span>
+            </a>
+            <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
                 <span class="caret"></span>
             </a>
             <ul class="dropdown-menu right-align-dropdown">
-                <li><a class="become-available" href="#">Available</a></li>
-                <li><a class="become-busy" href="#">Busy</a></li>
-                <li><a class="become-invisible" href="#">Invisible</a></li>
-                <li><a class="sign-off" href="#">Sign off</a></li>
+                <li><a class="become-available" href="#">Beschikbaar</a></li>
+                <li><a class="become-busy" href="#">Niet storen</a></li>
+                <li><a class="become-invisible" href="#">Onzichtbaar</a></li>
             </ul>
         </div>""")
 
@@ -32,35 +35,49 @@ class UserState
             e.preventDefault()
             @conn.emit('req_user_sign_off')
 
-    set_available: =>
-        $chat_window = $('.chat-window')
-        $chat_window.show()
+        # move user session state to navigation bar
+        @user_session_state_el = $('.chat-container .user')
+        @nav_login_logout = $('.nav.login-logout')
+        @user_session_state_el.insertBefore(@nav_login_logout).wrap('<nav class="nav nav-chat"></nav>')
 
-        @session_state_el.find('.state').html('Available')
+        # toggle chat UI
+        @btn_chat_toggle = $('.chat-toggle')
+        @btn_chat_toggle.on 'click': =>
+            if $('.chat-container').css('display') == 'none'
+                @conn.emit('req_user_ui_show')
+            else
+                @conn.emit('req_user_ui_hide')
+
+            # don't wait for the response
+            $('.chat-container').toggle()
+
+    set_available: =>
+        $('.chat-window').show()
+        @session_state_el.find('.state').html('Beschikbaar')
         @clear_btn_classes()
         @session_state_el.find('.btn').addClass('btn-success')
 
     set_busy: =>
-        $chat_window = $('.chat-window')
-        $chat_window.show()
-
-        @session_state_el.find('.state').html('Busy')
+        $('.chat-window').show()
+        @session_state_el.find('.state').html('Niet storen')
         @clear_btn_classes()
         @session_state_el.find('.btn').addClass('btn-danger')
 
     set_invisible: =>
-        $chat_window = $('.chat-window')
-        $chat_window.show()
-
-        @session_state_el.find('.state').html('Invisible')
+        $('.chat-window').show()
+        @session_state_el.find('.state').html('Onzichtbaar')
         @clear_btn_classes()
         @session_state_el.find('.btn').addClass('btn-inverse')
 
     set_signed_off: =>
-        $chat_window = $('.chat-window')
-        $chat_window.hide()
-
+        $('.chat-window').hide()
         @session_state_el.find('.state').html('Signed off')
+
+    set_ui_shown: =>
+        $('.chat-container').show()
+
+    set_ui_hidden: =>
+        $('.chat-container').hide()
 
     clear_btn_classes: =>
         @session_state_el.find('.btn').removeClass('btn-success btn-danger btn-inverse')
@@ -127,7 +144,7 @@ class Chat
     constructor: (@conn, @chat_session, @chat, @user_list) ->
         @chat_el = $("""
         <div id=\"chat-#{chat.uuid}\" class="chat well well-small">
-            <div class="chat-header toggle-active clearfix"></div>
+            <div class="chat-header toggle-active"></div>
         </div>""")
 
         # append participant list to chat header
@@ -138,23 +155,23 @@ class Chat
             <div class="chat-controls">
                 <div class="btn-group">
                     <a class="btn btn-small dropdown-toggle btn-show-add-user-list" data-toggle="dropdown" href="#">
-                        <i class="icon-plus"></i>
+                        <i class="icon-plus"></i> <i class="icon-user"></i>
                     </a>
-                    <ul class=\"dropdown-menu chat-user-list right-align-dropdown\"></ul>
+                    <ul class="dropdown-menu chat-user-list right-align-dropdown"></ul>
                 </div>
-                <a href=\"#\" class=\"archive btn btn-small\"><i class="icon-remove"></i></a>
-                <div class=\"unread-messages badge\"></div>
+                <a href="#" class="archive btn btn-small"><i class="icon-remove"></i></a>
+                <div class="unread-messages badge"></div>
             </div>"""))
 
         # append messages
-        $messages_el = $('<div class="messages"><div class="messages-inner clearfix"></div></div>')
+        $messages_el = $('<div class="messages"><div class="messages-inner"></div></div>')
         @chat_el.append($messages_el)
 
         # append new message input
         $message_input_el = $("""
         <div class="message-input input-prepend">
-            <div class="add-on"><i class="icon-user"></i></div>
-            <input type="text" placeholder="Type message">
+            <div class="add-on"><i class="icon-comment"></i></div>
+            <input type="text" placeholder="Type een bericht">
         </div>""")
         @chat_el.append($message_input_el)
 
@@ -266,6 +283,19 @@ class Chat
                 .html('')
                 .removeClass('active')
 
+        # TODO: find a less crude way to update the total unread messages count
+        @set_total_unread_messages()
+
+    set_total_unread_messages: =>
+        unread_messages_els = $('.chat-list').find('.unread-messages')
+
+        total_unread_messages = 0
+        for unread_messages_el in unread_messages_els
+            unread_messages = parseInt($(unread_messages_el).html(), 10)
+            total_unread_messages += unread_messages if unread_messages
+
+        $('.total-unread-messages').html(total_unread_messages or '')
+
     ui_scroll_down: (animate=false) =>
         $messages_el = @chat_el.find('.messages')
         $messages_inner_el = @chat_el.find('.messages-inner')
@@ -296,6 +326,7 @@ class Chat
 class ChatApp
 
     constructor: ->
+        $('.chat-container').hide()  # start hidden, chat will be shown on ev_data_update
         @chat_session = null
         @chats = {}
         @connect()
@@ -333,6 +364,12 @@ class ChatApp
                 @user_state.set_invisible()
             if @chat_session.status == 3
                 @user_state.set_busy()
+
+            # update UI visibility
+            if @chat_session.ui_is_visible == true
+                @user_state.set_ui_shown()
+            else
+                @user_state.set_ui_hidden()
 
             # update user list
             @user_list.set_user_list(chat_users)

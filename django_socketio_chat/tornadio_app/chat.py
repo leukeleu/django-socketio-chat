@@ -160,7 +160,6 @@ class ChatConnection(SocketConnection):
         except Exception, e:
             logging.error(str(e))
 
-
     @event('req_user_become_busy')
     def become_busy(self):
         try:
@@ -170,6 +169,32 @@ class ChatConnection(SocketConnection):
             self.chat_session.become_busy()
             self.notify_users_that_see_me('ev_user_became_busy')
             self.send_all_chat_info()
+        except Exception, e:
+            logging.error(str(e))
+
+    @event('req_user_ui_show')
+    def ui_show(self):
+        """
+        Don't notify others, just store the visibility of the UI.
+        """
+        try:
+            logging.info('req_user_ui_show %s' % self.user)
+            self.chat_session.ui_show()
+            chat_session_obj = prepare_for_emit(serializers.ChatSessionSerializer(self.chat_session).data)
+            self.emit('ev_chat_session_status', chat_session_obj)
+        except Exception, e:
+            logging.error(str(e))
+
+    @event('req_user_ui_hide')
+    def ui_hide(self):
+        """
+        Don't notify others, just store the visibility of the UI.
+        """
+        try:
+            logging.info('req_user_ui_hide %s' % self.user)
+            self.chat_session.ui_hide()
+            chat_session_obj = prepare_for_emit(serializers.ChatSessionSerializer(self.chat_session).data)
+            self.emit('ev_chat_session_status', chat_session_obj)
         except Exception, e:
             logging.error(str(e))
 
@@ -295,4 +320,3 @@ class ChatConnection(SocketConnection):
             self.connections.get(self.user, set()).discard(self)
         except Exception, e:
             logging.error(str(e))
-
